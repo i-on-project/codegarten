@@ -4,7 +4,7 @@ This document contains a short introduction to the i-on CodeGarten project, name
 
 # Goals
 
-The main goal of the i-on CodeGarten project is to createe and deploy a system to create and manage Git repos used by students while working on course assignments.
+The main goal of the i-on CodeGarten project is to create and deploy a system to create and manage Git repos used by students while working on course assignments.
 It is mainly inspired by the functionality and limitations of [GitHub Classroom](https://classroom.github.com/).
 
 # Uses cases
@@ -27,7 +27,7 @@ It is mainly inspired by the functionality and limitations of [GitHub Classroom]
 * The creation of a new assignment requires the following information.
   * Assignment name - a short human readable description of the assignment (e.g. "2020/2021 Summer - Concurrent Programming Set 1").
   * Repository name prefix - the prefix that will used for all repositories created for this assignment (e.g. `s2021-2-set1-`).
-  * Individual or group assigment:
+  * Individual or group assignment:
     * Individual assignments will have a repository created for each user.
     * Group assignments will have multiple users for each repository.
   * Optional GitHub template repository
