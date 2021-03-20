@@ -1,11 +1,11 @@
-# Sketch
+# Interaction Sketch
 
 - Don't discriminate authenticated user (both students and teachers can log in).
 
 ## Protecting Classroom Invites
 
-#### How to associate a CodeGarten account with a Student ID from a given Institution
-- The student inserts his student ID and will receive a verification link on his institutional e-mail, which will take him back to CodeGarten, verifying the ownership of the institutional e-mail
+#### How to associate a CodeGarten account with an Institutional ID
+- The user inserts his institutional e-mail and ID and will receive a verification link on it, which will take him back to CodeGarten, verifying the ownership of the institutional e-mail
 
 #### How do Classroom Invites work
 - Teacher generates an invite link for the classroom
