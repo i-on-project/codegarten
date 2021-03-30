@@ -18,6 +18,7 @@ CREATE TABLE CLASSROOM
 CREATE TABLE ASSIGNMENT
 (
     aid         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    cid         INT NOT NULL REFERENCES CLASSROOM(cid),
     name        VARCHAR(64) NOT NULL,
     description VARCHAR(256),
     type        VARCHAR(16) NOT NULL CHECK (type IN ('individual', 'group')),
