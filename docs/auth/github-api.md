@@ -1,7 +1,7 @@
-# GitHub API access
+# GitHub API Access
 
 ## Required Information
-Since we're using a GitHub App we need to store the following persistent information:
+Since we're using a GitHub App, it's required to store the following persistent information:
 * GitHub App Name - Used in HTTP Requests in the `User-Agent` header
 * GitHub App Id - Used in the JWT, which is used to request an installation token
 * GitHub App Client Id - Used while requesting an OAuth access token   
@@ -18,7 +18,8 @@ We also need to store the following information:
 ## Obtaining the Information
 The persistent information described above is obtained during the GitHub App's creation. Some of this information should remain private, most notably the app's private key and client secret. This information should also be easily modifiable since the GitHub App can change at any time.
 
-To obtain a user's access token, the CodeGarten API will only receive the authorization code which will be exchanged for an access token. That code should be obtained using a Client App (e.g. CodeGarten Web App). The Client App will need the GitHub App Client Id as well as a CodeGarten API Access Token that has enough privileges to create users. Since a GitHub User Access Token doesn't expire, we can store it next to the user information in our database.
+### Installation Access Token
+To obtain an installation access token, the API will have an endpoint which will respond with the GitHub App installation URI, which will be used to install the GitHub App to an organization. The browser will then present the installation form to the user and, after the user picks and installs the app into an organization, the browser will be redirected to a new URI, where the installation ID is present in its query string. This endpoint is part of what we call **CodeGarten Interaction Manager (IM)**, which is neither the API nor a client app. Its only responsibility is to respond to requests such as GitHub Installations and GitHub/CodeGarten Authentications. Via this endpoint, the API will be able to receive the installation ID, and store this information in the database alongside the organization's ID. This interaction should be made on a new browser window, which will close itself in the end.
 
-**TODO:** How to send Installation Id to CodeGarten API and stay on the client app
-* Perhaps we can use `state` as a redirect URI?
+### User Access Token
+To obtain a user's access token, the API will have an endpoint which will respond with an URI from the CodeGarten IM module. This URI will redirect the browser to the GitHub App's OAuth URI, which in turn will request the user to authenticate itself in GitHub. After completing the authentication, the browser will be redirected back to CodeGarten IM, passing along a authorization code in the query string. This code will be exchanged for a GitHub OAuth Access Token related to the GitHub user. This access token will then be stored in the database alongside the user's information, replacing the old one if it exists.
