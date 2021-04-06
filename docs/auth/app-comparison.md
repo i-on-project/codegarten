@@ -1,8 +1,8 @@
 # Differences between GitHub App and OAuth App
 
 ## Comparison
-* An OAuth application acts as an authenticated GitHub user (owner of the access token), while GitHub apps use their own identity
-* GitHub apps are installed in organizations (by an admin) or in an user, while OAuth apps are authorized to access user resources (e.g repositories that an user can access)
+* An OAuth application acts on behalf of an authenticated GitHub user (owner of the access token), while Gi tHub apps use their own identity
+* GitHub apps are installed in organizations (by an admin) and users, while OAuth apps are authorized by users to access resources as the user (e.g repositories that an user can access)
 * OAuth apps require the user to have administrator privileges to execute certain actions (e.g create repository in organization) while GitHub apps only need to be installed in the organization
 
 ## Notes
