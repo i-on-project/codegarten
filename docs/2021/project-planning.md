@@ -7,6 +7,7 @@
 * Analyze GitHub Classroom
 * Sketch the UI page/representation interaction
 * Create and Deliver the project form
+* Identify and document functional requirements
 
 ### Week 2 (22 March - 28 March)
 * Research [JDBI's](https://jdbi.org/) fluent API
@@ -17,8 +18,9 @@
 * Create and Deliver the project proposal
 
 ### Week 4 (12 April - 18 April)
-* Tweak the physical data model to support the new authentication architecture
+* Evolve the physical data model to support the new authentication architecture
 * Start developing the API (using [Spring](https://spring.io/))
+* Research and set up Continuous Integration
 
 ### Week 5 (19 April - 25 April)
 * Further develop the API
@@ -30,11 +32,9 @@
 * Research hosting possibilities for CodeGarten
 
 ### Week 7 (03 May - 09 May)
-* Final touches in order to have a working POC of CodeGarten
 * Deploy the beta version of CodeGarten
 
 ### Week 8 (10 May - 16 May)
-* Implement continuous integration for automatic testing of the API
 * Learn [React](https://reactjs.org/)
 * Start migrating Web App to React
 
@@ -48,21 +48,19 @@
 
 ### Week 11 (31 May - 06 June)
 * Start writing project tech report
-* ...
 
 ### Week 12 (07 June - 13 June)
 * Improve UI of Web App
-* ...
 
 ### Week 13 (14 June - 20 June)
 * Demonstrate the initial version of the report to PS class
 
 ### Week 14 (21 June - 27 June)
-* Add documentation for how to run the application
+* Add documentation for how to run an instance of the application
 
 ### Week 15 (28 June - 04 July)
-* Finishing touches
+* Finalize any pending work
 
 ### Week 16 (05 July - 13 July)
-* Finish the project
+* Finish the project report
 * Deliver the final version of CodeGarten
