@@ -32,7 +32,7 @@
 * Research hosting possibilities for CodeGarten
 
 ### Week 7 (03 May - 09 May)
-* Deploy the beta version of CodeGarten
+* Deploy the alpha version of CodeGarten
 
 ### Week 8 (10 May - 16 May)
 * Learn [React](https://reactjs.org/)
