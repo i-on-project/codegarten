@@ -61,6 +61,6 @@
 ### Week 15 (28 June - 04 July)
 * Finalize any pending work
 
-### Week 16 (05 July - 13 July)
+### Week 16 (05 July - 11 July)
 * Finish the project report
 * Deliver the final version of CodeGarten
