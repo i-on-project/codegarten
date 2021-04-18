@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
+import org.ionproject.codegarten.responses.Response
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import org.ionproject.codegarten.responses.Response
 import java.net.URI
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

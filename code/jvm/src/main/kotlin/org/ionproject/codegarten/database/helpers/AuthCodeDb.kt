@@ -8,5 +8,5 @@ private const val GET_AUTHCODE_QUERY = "$GET_AUTHCODES_BASE WHERE code = :code"
 
 @Component
 class AuthCodeDb : DatabaseHelper() {
-    fun getAuthCode(code: Int) = getOne(GET_AUTHCODE_QUERY, AuthCodeDao::class.java, Pair("code", code))
+    fun getAuthCode(code: String) = getOne(GET_AUTHCODE_QUERY, AuthCodeDao::class.java, Pair("code", code))
 }

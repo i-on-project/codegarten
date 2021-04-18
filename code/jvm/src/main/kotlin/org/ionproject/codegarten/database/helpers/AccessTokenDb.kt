@@ -8,5 +8,5 @@ private const val GET_ACESSTOKEN_QUERY = "$GET_ACESSTOKENS_BASE WHERE token = :t
 
 @Component
 class AccessTokenDb : DatabaseHelper() {
-    fun getAccessToken(token: Int) = getOne(GET_ACESSTOKEN_QUERY, AuthCodeDao::class.java, Pair("token", token))
+    fun getAccessToken(token: String) = getOne(GET_ACESSTOKEN_QUERY, AuthCodeDao::class.java, Pair("token", token))
 }
