@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping(AUTH_HREF)
-class AuthController {
+class AuthCodeController {
 
     @GetMapping("authorize")
     fun getAuthCode(

@@ -16,7 +16,7 @@ class GhAppInstallationController(val github: GitHubInterface) : BaseImControlle
         TODO()
     }
 
-    @GetMapping
+    @GetMapping("cb")
     fun orgInstallationCallback(
         @RequestParam installation_id: Int
     ) : ResponseEntity<Any> {
