@@ -3,7 +3,7 @@ SELECT
     aid,
     ASSIGNMENT.name AS name,
     ASSIGNMENT.description AS description,
-    TYPE,
+    type,
     repo_prefix,
     template,
     

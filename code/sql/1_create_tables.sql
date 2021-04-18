@@ -2,14 +2,14 @@ CREATE TABLE USERS
 (
     uid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name            VARCHAR(64) NOT NULL,
-    gh_id           VARCHAR(16) NOT NULL,
+    gh_id           INT NOT NULL,
     gh_token        VARCHAR(256) NOT NULL -- Encrypted GitHub access token
 );
 
 CREATE TABLE CLASSROOM
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    org_id          VARCHAR(16) NOT NULL,  -- GitHub organization id
+    org_id          INT NOT NULL,  -- GitHub organization id
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256)
 );
@@ -52,7 +52,7 @@ CREATE TABLE CLIENT
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name            VARCHAR(64) NOT NULL,
-    secret_hash     VARCHAR(256) NOT NULL,
+    secret          VARCHAR(256) NOT NULL, -- Hashed CodeGarten access token
     redirect_uri    VARCHAR(256) NOT NULL
 );
 
@@ -66,7 +66,7 @@ CREATE TABLE AUTHCODE
 
 CREATE TABLE ACCESSTOKEN
 (
-    token           VARCHAR(256) PRIMARY KEY, -- Encrypted CodeGarten access token
+    token           VARCHAR(256) PRIMARY KEY, -- Hashed CodeGarten access token
     expiration_date TIMESTAMP NOT NULL,
     user_id         INT NOT NULL REFERENCES USERS(uid),
     client_id       INT NOT NULL REFERENCES CLIENT(cid)
