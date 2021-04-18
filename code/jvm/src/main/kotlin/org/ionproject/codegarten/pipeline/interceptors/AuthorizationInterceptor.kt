@@ -11,7 +11,10 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @Target(AnnotationTarget.FUNCTION)
-annotation class RequiresAuth
+annotation class RequiresUserAuth
+
+@Target(AnnotationTarget.FUNCTION)
+annotation class RequiresClientAuth
 
 const val AUTH_SCHEME = "Token"
 const val AUTH_HEADER = "Authorization"
@@ -29,7 +32,7 @@ class AuthorizationInterceptor(val db: UsersDb) : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         val routeHandler = handler as? HandlerMethod
 
-        if (routeHandler?.hasMethodAnnotation(RequiresAuth::class.java) == true) {
+        if (routeHandler?.hasMethodAnnotation(RequiresUserAuth::class.java) == true) {
             // username:pwd
             logger.info("AuthorizationInterceptor - PreHandle with handler ${handler.javaClass.name} requires authentication")
             val authorizationHeader = request.getHeader(AUTH_HEADER)?.trim()
