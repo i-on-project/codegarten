@@ -39,3 +39,22 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+task<Exec>("dbTestsUp") {
+	commandLine("docker-compose", "up", "-d", "codegarten-db")
+}
+
+task<Exec>("dbTestsWait") {
+	commandLine("docker", "exec", "codegarten-db", "/app/bin/wait-for-postgres.sh", "localhost")
+	dependsOn("dbTestsUp")
+}
+
+task<Exec>("dbTestsDown") {
+	commandLine("docker-compose", "down")
+}
+
+tasks {
+	named<Test>("test") {
+		dependsOn("dbTestsWait")
+	}
+}
