@@ -1,0 +1,12 @@
+FROM postgres:13-alpine
+
+USER postgres
+WORKDIR /app
+
+COPY ./sql/1_create_tables.sql /docker-entrypoint-initdb.d/1_create_tables.sql
+COPY ./sql/2_create_views.sql /docker-entrypoint-initdb.d/2_create_views.sql
+
+COPY --chown=postgres:postgres ./jvm/tests/scripts/wait-for-postgres.sh ./bin/wait-for-postgres.sh
+RUN chmod +x ./bin/wait-for-postgres.sh
+
+EXPOSE 5432
