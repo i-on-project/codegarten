@@ -2,16 +2,16 @@ CREATE FUNCTION func_create_classroom_seq()
 RETURNS TRIGGER AS
 $$
     BEGIN
-    	-- Check if it's the first classroom with org_id
-    	PERFORM cid
+        -- Check if it's the first classroom with org_id
+        PERFORM cid
         FROM CLASSROOM
         WHERE org_id = NEW.org_id;
-       	
-   	    IF NOT FOUND THEN
-        	EXECUTE format('CREATE sequence classroom_number_seq_%s', NEW.org_id);
+
+        IF NOT FOUND THEN
+            EXECUTE format('CREATE sequence classroom_number_seq_%s', NEW.org_id);
         END IF;
        
-       	NEW.number = nextval('classroom_number_seq_' || NEW.org_id);
+        NEW.number = nextval('classroom_number_seq_' || NEW.org_id);
         EXECUTE format('CREATE sequence assignment_number_seq_%s', NEW.cid);
         RETURN NEW;
     END
@@ -22,13 +22,13 @@ CREATE FUNCTION func_cleanup_classroom_seq()
 RETURNS TRIGGER AS
 $$
     BEGIN
-	    -- Check if it's the last classroom with org_id
-    	PERFORM cid
+        -- Check if it's the last classroom with org_id
+        PERFORM cid
         FROM CLASSROOM
         WHERE org_id = OLD.org_id AND cid != OLD.cid;
-       	
-   	    IF NOT FOUND THEN
-        	EXECUTE format('DROP sequence classroom_number_seq_%s', OLD.org_id);
+           
+        IF NOT FOUND THEN
+            EXECUTE format('DROP sequence classroom_number_seq_%s', OLD.org_id);
         END IF;
        
         EXECUTE format('DROP sequence assignment_number_seq_%s', OLD.cid);

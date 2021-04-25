@@ -15,8 +15,8 @@ FROM ASSIGNMENT JOIN CLASSROOM ON (ASSIGNMENT.cid = CLASSROOM.cid);
 
 CREATE VIEW V_DELIVERY AS
 SELECT
-	did,
-	DELIVERY.number AS number,
+    did,
+    DELIVERY.number AS number,
     tag,
     due_date,
     

@@ -10,7 +10,7 @@ CREATE TABLE CLASSROOM
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     org_id          INT NOT NULL,  -- GitHub organization id
-    number			INT NOT NULL,  -- Number in relation to the organization
+    number          INT NOT NULL,  -- Number in relation to the organization
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
     UNIQUE(org_id, number)
@@ -20,7 +20,7 @@ CREATE TABLE ASSIGNMENT
 (
     aid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     cid             INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL,
-    number			INT NOT NULL,  -- Number in relation to the classroom
+    number          INT NOT NULL,  -- Number in relation to the classroom
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
     type            VARCHAR(16) NOT NULL CHECK (type IN ('individual', 'group')),
@@ -31,9 +31,9 @@ CREATE TABLE ASSIGNMENT
 
 CREATE TABLE DELIVERY
 (
-	did				INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    aid    		    INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
-    number			INT NOT NULL,  -- Number in relation to the assignment
+    did             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
+    number          INT NOT NULL,  -- Number in relation to the assignment
     tag             VARCHAR(64),
     due_date        TIMESTAMP,
     UNIQUE(aid, number)
@@ -51,7 +51,7 @@ CREATE TABLE USER_ASSIGNMENT
 (
     uid             INT REFERENCES USERS(uid) ON DELETE CASCADE NOT NULL,
     aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
-    repo_id			INT NOT NULL,
+    repo_id         INT NOT NULL,
     PRIMARY KEY(uid, aid)
 );
 
