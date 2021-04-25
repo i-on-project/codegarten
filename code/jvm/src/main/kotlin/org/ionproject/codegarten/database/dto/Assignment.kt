@@ -1,13 +1,16 @@
-package org.ionproject.codegarten.database.dao
+package org.ionproject.codegarten.database.dto
 
-data class AssignmentDao(
+data class Assignment(
     val aid: Int,
+    val number: Int,
     val name: String,
     val description: String?,
     val type: String,
     val repo_prefix: String,
     val template: String?,
 
+    val org_id: Int,
     val classroom_id: Int,
+    val classroom_number: Int,
     val classroom_name: String,
 )

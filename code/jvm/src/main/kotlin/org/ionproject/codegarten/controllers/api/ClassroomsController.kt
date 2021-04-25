@@ -1,11 +1,15 @@
 package org.ionproject.codegarten.controllers.api
 
+import org.ionproject.codegarten.Routes.CLASSROOMS_HREF
+import org.ionproject.codegarten.Routes.CLASSROOM_BY_NUMBER_HREF
+import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
+import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.controllers.models.ClassroomCreateInputModel
 import org.ionproject.codegarten.controllers.models.ClassroomEditInputModel
-import org.ionproject.codegarten.controllers.models.UserAddInputModel
-import org.ionproject.codegarten.database.dao.UserDao
+import org.ionproject.codegarten.database.dto.User
+import org.ionproject.codegarten.database.helpers.ClassroomsDb
+import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
-import org.ionproject.codegarten.pipeline.interceptors.USER_ATTRIBUTE
 import org.ionproject.codegarten.responses.Response
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -13,97 +17,58 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestAttribute
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("$ORGS_HREF/{orgId}/classrooms")
-class ClassroomsController : BaseApiController() {
+class ClassroomsController(val db: ClassroomsDb) {
 
     @RequiresUserAuth
-    @GetMapping
-    fun getClassrooms(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @RequestParam(defaultValue = PAGE_DEFAULT_VALUE) page: Int,
-        @RequestParam(defaultValue = COUNT_DEFAULT_VALUE) count: Int
+    @GetMapping(CLASSROOMS_HREF)
+    fun getUserClassrooms(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        pagination: Pagination,
+        user: User
     ): ResponseEntity<Response> {
         TODO()
     }
 
     @RequiresUserAuth
-    @GetMapping("{classroomId}")
+    @GetMapping(CLASSROOM_BY_NUMBER_HREF)
     fun getClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        user: User
     ): ResponseEntity<Response> {
         TODO()
     }
 
     @RequiresUserAuth
-    @GetMapping("{classroomId}/users")
-    fun getUsersOfClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int
-    ): ResponseEntity<Response> {
-        TODO()
-    }
-
-    @RequiresUserAuth
-    @PostMapping
+    @PostMapping(CLASSROOMS_HREF)
     fun createClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        user: User,
         input: ClassroomCreateInputModel
     ): ResponseEntity<Response> {
         TODO()
     }
 
     @RequiresUserAuth
-    @PutMapping("{classroomId}")
+    @PutMapping(CLASSROOM_BY_NUMBER_HREF)
     fun editClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int,
-        @RequestParam(defaultValue = PAGE_DEFAULT_VALUE) page: Int,
-        @RequestParam(defaultValue = COUNT_DEFAULT_VALUE) count: Int,
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        user: User,
         input: ClassroomEditInputModel
     ): ResponseEntity<Response> {
         TODO()
     }
 
     @RequiresUserAuth
-    @DeleteMapping("{classroomId}")
+    @DeleteMapping(CLASSROOM_BY_NUMBER_HREF)
     fun deleteClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int
-    ): ResponseEntity<Response> {
-        TODO()
-    }
-
-    @RequiresUserAuth
-    @PutMapping("{classroomId}/users")
-    fun addUserToClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int,
-        input: UserAddInputModel
-    ): ResponseEntity<Response> {
-        TODO()
-    }
-
-    @RequiresUserAuth
-    @DeleteMapping("{classroomId}/users/{uid}")
-    fun removeUserFromClassroom(
-        @RequestAttribute(name = USER_ATTRIBUTE) user: UserDao,
-        @PathVariable orgId: Int,
-        @PathVariable classroomId: Int,
-        @PathVariable userId: Int,
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        user: User
     ): ResponseEntity<Response> {
         TODO()
     }

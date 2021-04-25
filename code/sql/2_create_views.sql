@@ -8,6 +8,7 @@ SELECT
     repo_prefix,
     template,
     
+    CLASSROOM.org_id AS org_id,
     CLASSROOM.cid AS classroom_id,
     CLASSROOM.number AS classroom_number,
     CLASSROOM.name AS classroom_name
@@ -24,6 +25,7 @@ SELECT
     V_ASSIGNMENT.number AS assignment_number,
     V_ASSIGNMENT.name AS assignment_name,
     
+    org_id,
     classroom_id,
     classroom_number,
     classroom_name

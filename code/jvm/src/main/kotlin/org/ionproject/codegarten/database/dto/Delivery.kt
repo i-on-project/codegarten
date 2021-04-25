@@ -1,0 +1,18 @@
+package org.ionproject.codegarten.database.dto
+
+import java.time.OffsetDateTime
+
+data class Delivery(
+    val did: Int,
+    val tag: String,
+    val due_date: OffsetDateTime,
+
+    val assignment_id: Int,
+    val assignment_number: Int,
+    val assignment_name: String,
+
+    val org_id: Int,
+    val classroom_id: Int,
+    val classroom_number: Int,
+    val classroom_name: String,
+)

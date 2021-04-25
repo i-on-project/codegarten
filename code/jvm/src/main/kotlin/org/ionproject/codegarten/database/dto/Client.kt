@@ -1,6 +1,6 @@
-package org.ionproject.codegarten.database.dao
+package org.ionproject.codegarten.database.dto
 
-data class ClientDao(
+data class Client(
     val cid: Int,
     val name: String,
     val secret: String,

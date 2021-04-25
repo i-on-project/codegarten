@@ -1,14 +1,16 @@
 package org.ionproject.codegarten
 
+import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
+import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -22,16 +24,19 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 }
 
 @Component
-class MvcConfig : WebMvcConfigurer {
-
-	@Autowired
-	private lateinit var authorizationInterceptor: AuthorizationInterceptor
+class MvcConfig(val authInterceptor: AuthorizationInterceptor) : WebMvcConfigurer {
 
 	override fun addInterceptors(registry: InterceptorRegistry) {
-		registry.addInterceptor(authorizationInterceptor)
+		registry.addInterceptor(authInterceptor)
+	}
+
+	override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
+		resolvers.add(PaginationResolver())
+		resolvers.add(UserResolver())
 	}
 }
 
 fun main(args: Array<String>) {
+	System.setProperty("server.port", Routes.PORT)
 	runApplication<CodeGartenApplication>(*args)
 }

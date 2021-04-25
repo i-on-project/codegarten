@@ -1,6 +1,6 @@
-package org.ionproject.codegarten.database.dao
+package org.ionproject.codegarten.database.dto
 
-data class UserDao(
+data class User(
     val uid: Int,
     val name: String,
     val gh_id: String,
