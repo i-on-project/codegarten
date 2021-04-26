@@ -5,6 +5,7 @@ import org.ionproject.codegarten.auth.AuthHeaderValidator.AUTH_SCHEME
 import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
@@ -99,6 +100,20 @@ class ExceptionHandler {
             URI("/problems/invalid-input").includeHost(),
             "Invalid Input",
             HttpStatus.BAD_REQUEST,
+            ex.localizedMessage,
+            request.requestURI
+        )
+    }
+
+    @ExceptionHandler(value = [ClientException::class])
+    private fun handleClientException(
+        ex: ClientException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> {
+        return handleExceptionResponse(
+            URI("/problems/invalid-client").includeHost(),
+            "Invalid Client",
+            HttpStatus.UNAUTHORIZED,
             ex.localizedMessage,
             request.requestURI
         )

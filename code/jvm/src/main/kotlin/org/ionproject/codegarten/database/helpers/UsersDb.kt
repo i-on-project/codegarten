@@ -58,4 +58,8 @@ class UsersDb(
             Int::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
+
+    fun createUser(name: String, ghId: Int, ghToken: String): User {
+        TODO()
+    }
 }

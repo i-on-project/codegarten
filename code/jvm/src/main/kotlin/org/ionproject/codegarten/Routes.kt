@@ -22,6 +22,10 @@ object Routes {
     const val ASSIGNMENT_PARAM = "assignmentNumber"
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
+    const val CLIENT_ID_PARAM = "client_id"
+    const val STATE_PARAM = "state"
+    const val CODE_PARAM = "code"
+    const val ERR_PARAM = "error"
 
 
     // Error
@@ -31,9 +35,10 @@ object Routes {
     // Interaction Manager routes
     const val AUTH_HREF = "$IM_BASE_URI/oauth"
     const val AUTH_CODE_HREF = "$AUTH_HREF/authorize"
+    const val AUTH_CODE_CB_HREF = "$AUTH_CODE_HREF/cb"
     const val AUTH_TOKEN_HREF = "$AUTH_HREF/access_token"
     const val GH_INSTALLATIONS_HREF = "$IM_BASE_URI/github/install"
-    const val GH_INSTALLATIONS_CB_HREF = "$IM_BASE_URI/github/install/cb"
+    const val GH_INSTALLATIONS_CB_HREF = "$GH_INSTALLATIONS_HREF/cb"
 
 
     // Users

@@ -59,7 +59,7 @@ CREATE TABLE CLIENT
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name            VARCHAR(64) NOT NULL,
-    secret          VARCHAR(256) NOT NULL, -- Hashed CodeGarten access token
+    secret          VARCHAR(256) NOT NULL, -- Hashed client secret
     redirect_uri    VARCHAR(256) NOT NULL
 );
 

@@ -3,6 +3,7 @@ package org.ionproject.codegarten
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
+import org.ionproject.codegarten.remote.GitHubInterface
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -21,6 +22,15 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	fun getJdbi() = Jdbi
 		.create(configProperties.dbConnectionString)
 		.installPlugin(KotlinPlugin())
+
+	// TODO: Pass individual parameters
+	@Bean
+	fun getGithubInterface() =
+		GitHubInterface(
+			configProperties.githubAppClientId,
+			configProperties.githubAppClientSecret,
+		)
+
 }
 
 @Component
