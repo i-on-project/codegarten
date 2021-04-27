@@ -2,7 +2,7 @@ CREATE TABLE USERS
 (
     uid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name            VARCHAR(64) NOT NULL,
-    gh_id           INT NOT NULL,
+    gh_id           INT NOT NULL UNIQUE,
     gh_token        VARCHAR(256) NOT NULL -- Encrypted GitHub access token
 );
 

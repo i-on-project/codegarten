@@ -30,24 +30,18 @@ fun <T> Jdbi.getOne(query: String, mapTo: Class<T>, binds: Map<String, Any>? = n
         res.get()
     }
 
-fun <T, V> Jdbi.insertAndGet(insertQuery: String, generatedIdType: Class<V>,
-                       getInsertedQuery: String, mapTo: Class<T>,
-                       insertBinds: Map<String, Any>? = null, getBindKey: String? = null): T =
+fun <T> Jdbi.insertAndGetGeneratedKey(
+    insertQuery: String,
+    generatedIdType: Class<T>,
+    insertBinds: Map<String, Any>? = null
+): T =
     this.withHandle<T, Exception> {
         val insertHandle = it.createUpdate(insertQuery)
         insertBinds?.forEach { entry -> insertHandle.bind(entry.key, entry.value) }
 
-        val key = insertHandle
+        insertHandle
             .executeAndReturnGeneratedKeys()
             .mapTo(generatedIdType)
-            .one()
-
-        val getHandle = it.createQuery(getInsertedQuery)
-        if (getBindKey != null)
-            getHandle.bind(getBindKey, key)
-
-        getHandle
-            .mapTo(mapTo)
             .one()
     }
 

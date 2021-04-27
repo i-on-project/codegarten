@@ -36,7 +36,7 @@ object Routes {
     const val AUTH_HREF = "$IM_BASE_URI/oauth"
     const val AUTH_CODE_HREF = "$AUTH_HREF/authorize"
     const val AUTH_CODE_CB_HREF = "$AUTH_CODE_HREF/cb"
-    const val AUTH_TOKEN_HREF = "$AUTH_HREF/access_token"
+    const val AUTH_TOKEN_HREF = "$API_BASE_URI/oauth/access_token"
     const val GH_INSTALLATIONS_HREF = "$IM_BASE_URI/github/install"
     const val GH_INSTALLATIONS_CB_HREF = "$GH_INSTALLATIONS_HREF/cb"
 

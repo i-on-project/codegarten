@@ -1,5 +1,6 @@
 package org.ionproject.codegarten
 
+import org.ionproject.codegarten.auth.AuthUtils
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
@@ -10,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.stereotype.Component
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
@@ -23,14 +25,19 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 		.create(configProperties.dbConnectionString)
 		.installPlugin(KotlinPlugin())
 
-	// TODO: Pass individual parameters
 	@Bean
 	fun getGithubInterface() =
 		GitHubInterface(
 			configProperties.githubAppClientId,
 			configProperties.githubAppClientSecret,
+			Jackson2ObjectMapperBuilder().build()
 		)
 
+	@Bean
+	fun getOAuthUtils() = AuthUtils(
+		configProperties.cipherKey.toByteArray(),
+		configProperties.cipherIv.toByteArray()
+	)
 }
 
 @Component

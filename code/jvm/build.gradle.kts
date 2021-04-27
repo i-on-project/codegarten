@@ -28,6 +28,8 @@ dependencies {
 	implementation("org.jdbi:jdbi3-core:3.18.0")
 	implementation("org.jdbi:jdbi3-kotlin:3.18.0")
 
+	implementation("com.squareup.okhttp3:okhttp:4.9.0")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 

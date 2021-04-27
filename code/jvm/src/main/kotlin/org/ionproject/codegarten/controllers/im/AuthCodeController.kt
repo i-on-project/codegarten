@@ -6,7 +6,7 @@ import org.ionproject.codegarten.Routes.CLIENT_ID_PARAM
 import org.ionproject.codegarten.Routes.CODE_PARAM
 import org.ionproject.codegarten.Routes.ERR_PARAM
 import org.ionproject.codegarten.Routes.STATE_PARAM
-import org.ionproject.codegarten.auth.OAuthUtils
+import org.ionproject.codegarten.auth.AuthUtils
 import org.ionproject.codegarten.database.dto.Client
 import org.ionproject.codegarten.database.helpers.AuthCodesDb
 import org.ionproject.codegarten.database.helpers.ClientsDb
@@ -25,8 +25,8 @@ class AuthCodeController(
     val clientsDb: ClientsDb,
     val authCodesDb: AuthCodesDb,
     val usersDb: UsersDb,
+    val authUtils: AuthUtils
 ) {
-    // TODO: Argument resolver for request parameters
 
     @GetMapping(AUTH_CODE_HREF)
     fun getAuthCode(
@@ -71,16 +71,33 @@ class AuthCodeController(
             redirectUri += "?$ERR_PARAM=$error"
         } else {
             val githubUser = github.getUserFromAuthCode(githubCode!!)
-            val cgUser = usersDb.createUser(githubUser.username, githubUser.userId, githubUser.accessToken)
 
-            val cgCode = OAuthUtils.generateAuthCode()
+            val cgUserId =
+                try {
+                    val user = usersDb.getUserByGitHubId(githubUser.userId)
+                    usersDb.editUser(
+                        user.uid,
+                        githubToken = authUtils.encrypt(githubUser.accessToken)
+                    )
+
+                    user.uid
+                } catch (ex: NotFoundException) {
+                    usersDb.createUser(
+                        githubUser.username,
+                        githubUser.userId,
+                        authUtils.encrypt(githubUser.accessToken)
+                    )
+                }
+
+            // TODO: Loop until insertion succeeds
+            val cgCodeWrapper = authUtils.generateAuthCode()
             authCodesDb.createAuthCode(
-                cgCode.code,
-                cgCode.expirationDate,
-                cgUser.uid,
+                cgCodeWrapper.code,
+                cgCodeWrapper.expirationDate,
+                cgUserId,
                 clientId.toInt()
             )
-            redirectUri += "?$CODE_PARAM=$cgCode"
+            redirectUri += "?$CODE_PARAM=${cgCodeWrapper.code}"
         }
 
         if (stateToSend.isNotEmpty()) {
@@ -92,5 +109,4 @@ class AuthCodeController(
             .header("Location", redirectUri)
             .body(null)
     }
-
 }

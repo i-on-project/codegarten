@@ -3,7 +3,6 @@ package org.ionproject.codegarten.auth
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.slf4j.LoggerFactory
-import org.springframework.util.Base64Utils
 
 object AuthHeaderValidator {
     const val AUTH_SCHEME = "Bearer"
@@ -22,15 +21,7 @@ object AuthHeaderValidator {
         }
 
         // Get user credentials
-        val token: String
-        try {
-            val credentials = header.drop(AUTH_SCHEME.length + 1).trim()
-            token = String(Base64Utils.decodeFromString(credentials))
-        } catch(ex: Exception) {
-            logger.info("Could not get user credentials")
-            throw AuthorizationException("Bad credentials")
-        }
-
+        val token = header.drop(AUTH_SCHEME.length + 1).trim()
         return validateUserFunction(token)
     }
 }

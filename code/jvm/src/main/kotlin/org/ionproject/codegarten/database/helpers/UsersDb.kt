@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 
 private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS"
 private const val GET_USER_QUERY = "$GET_USERS_BASE WHERE uid = :userId"
+private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USERS_BASE WHERE gh_id = :githubId"
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
     "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_CLASSROOM where cid = :classroomId) ORDER BY uid"
@@ -20,6 +21,12 @@ private const val GET_USERS_IN_ASSIGNMENT_COUNT =
     "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
     "classroom_number = :classroomNumber AND number = :assignmentNumber)"
 
+private const val CREATE_USER_QUERY =
+    "INSERT INTO USERS(name, gh_id, gh_token) VALUES (:name, :ghId, :ghToken)"
+
+private const val UPDATE_USER_START = "UPDATE USERS SET"
+private const val UPDATE_USER_END = "WHERE uid = :userId"
+
 @Component
 class UsersDb(
     val classroomsDb: ClassroomsDb,
@@ -28,6 +35,14 @@ class UsersDb(
 ) {
 
     fun getUserById(userId: Int) = jdbi.getOne(GET_USER_QUERY, User::class.java, mapOf("userId" to userId))
+
+    fun getUserByGitHubId(githubId: Int) =
+        jdbi.getOne(
+            GET_USER_BY_GITHUB_ID_QUERY, User::class.java,
+            mapOf(
+                "githubId" to githubId
+            )
+        )
 
     fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<User> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
@@ -59,7 +74,30 @@ class UsersDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
 
-    fun createUser(name: String, ghId: Int, ghToken: String): User {
-        TODO()
+    fun createUser(name: String, ghId: Int, ghToken: String) =
+        jdbi.insertAndGetGeneratedKey(
+            CREATE_USER_QUERY, Int::class.java,
+            mapOf(
+                "name" to name,
+                "ghId" to ghId,
+                "ghToken" to ghToken
+            ),
+        )
+
+    fun editUser(userId: Int, name: String? = null, githubToken: String? = null) {
+        if (name == null && githubToken == null) {
+            return
+        }
+
+        val updateFields = mutableMapOf<String, Any>()
+        if (name != null) updateFields["name"] = name
+        if (githubToken != null) updateFields["gh_token"] = githubToken
+
+        jdbi.update(
+            UPDATE_USER_START,
+            updateFields,
+            UPDATE_USER_END,
+            mapOf("userId" to userId)
+        )
     }
 }
