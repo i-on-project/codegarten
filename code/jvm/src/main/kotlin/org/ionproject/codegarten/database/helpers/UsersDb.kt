@@ -1,12 +1,13 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.User
+import org.ionproject.codegarten.exceptions.NotFoundException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS"
 private const val GET_USER_QUERY = "$GET_USERS_BASE WHERE uid = :userId"
-private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USERS_BASE WHERE gh_id = :githubId"
+private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USERS_BASE WHERE gh_id = :gitHubId"
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
     "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_CLASSROOM where cid = :classroomId) ORDER BY uid"
@@ -36,11 +37,11 @@ class UsersDb(
 
     fun getUserById(userId: Int) = jdbi.getOne(GET_USER_QUERY, User::class.java, mapOf("userId" to userId))
 
-    fun getUserByGitHubId(githubId: Int) =
+    fun getUserByGitHubId(gitHubId: Int) =
         jdbi.getOne(
             GET_USER_BY_GITHUB_ID_QUERY, User::class.java,
             mapOf(
-                "githubId" to githubId
+                "gitHubId" to gitHubId
             )
         )
 
@@ -74,6 +75,17 @@ class UsersDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
 
+    fun createOrUpdateUser(name: String, ghId: Int, ghToken: String): Int {
+        try {
+            val user = getUserByGitHubId(ghId)
+            editUser(user.uid, gitHubToken = ghToken)
+
+            return user.uid
+        } catch (ex: NotFoundException) {
+            return createUser(name, ghId, ghToken)
+        }
+    }
+
     fun createUser(name: String, ghId: Int, ghToken: String) =
         jdbi.insertAndGetGeneratedKey(
             CREATE_USER_QUERY, Int::class.java,
@@ -84,14 +96,14 @@ class UsersDb(
             ),
         )
 
-    fun editUser(userId: Int, name: String? = null, githubToken: String? = null) {
-        if (name == null && githubToken == null) {
+    fun editUser(userId: Int, name: String? = null, gitHubToken: String? = null) {
+        if (name == null && gitHubToken == null) {
             return
         }
 
         val updateFields = mutableMapOf<String, Any>()
         if (name != null) updateFields["name"] = name
-        if (githubToken != null) updateFields["gh_token"] = githubToken
+        if (gitHubToken != null) updateFields["gh_token"] = gitHubToken
 
         jdbi.update(
             UPDATE_USER_START,

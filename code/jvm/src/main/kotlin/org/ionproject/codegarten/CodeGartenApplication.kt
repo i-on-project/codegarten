@@ -1,10 +1,11 @@
 package org.ionproject.codegarten
 
-import org.ionproject.codegarten.auth.AuthUtils
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
 import org.ionproject.codegarten.remote.GitHubInterface
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.springframework.boot.autoconfigure.SpringBootApplication
@@ -28,13 +29,16 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	@Bean
 	fun getGithubInterface() =
 		GitHubInterface(
-			configProperties.githubAppClientId,
-			configProperties.githubAppClientSecret,
+			configProperties.gitHubAppId,
+			configProperties.gitHubAppClientId,
+			configProperties.gitHubAppName,
+			configProperties.gitHubAppClientSecret,
+			getCryptoUtils().readRsaPrivateKey(configProperties.gitHubAppPrivateKeyPemPath), //TODO: Find way to not instantiate utils
 			Jackson2ObjectMapperBuilder().build()
 		)
 
 	@Bean
-	fun getOAuthUtils() = AuthUtils(
+	fun getCryptoUtils() = CryptoUtils(
 		configProperties.cipherKey.toByteArray(),
 		configProperties.cipherIv.toByteArray()
 	)
@@ -55,5 +59,6 @@ class MvcConfig(val authInterceptor: AuthorizationInterceptor) : WebMvcConfigure
 
 fun main(args: Array<String>) {
 	System.setProperty("server.port", Routes.PORT)
+	java.security.Security.addProvider(BouncyCastleProvider())
 	runApplication<CodeGartenApplication>(*args)
 }

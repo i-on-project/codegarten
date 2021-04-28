@@ -6,10 +6,18 @@ CREATE TABLE USERS
     gh_token        VARCHAR(256) NOT NULL -- Encrypted GitHub access token
 );
 
+CREATE TABLE INSTALLATION
+(
+    org_id          INT PRIMARY KEY NOT NULL, -- GitHub organization id
+    iid             INT UNIQUE NOT NULL,
+    access_token    VARCHAR(256) NOT NULL, -- Encrypted GitHub installation access token
+    expiration_date TIMESTAMP NOT NULL
+);
+
 CREATE TABLE CLASSROOM
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    org_id          INT NOT NULL,  -- GitHub organization id
+    org_id          INT REFERENCES INSTALLATION(org_id) ON DELETE CASCADE NOT NULL,
     number          INT NOT NULL,  -- Number in relation to the organization
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),

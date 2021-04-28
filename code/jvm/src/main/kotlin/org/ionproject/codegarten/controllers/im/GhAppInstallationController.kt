@@ -2,24 +2,53 @@ package org.ionproject.codegarten.controllers.im
 
 import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_CB_HREF
 import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_HREF
+import org.ionproject.codegarten.Routes.INSTALLATION_ID_PARAM
+import org.ionproject.codegarten.Routes.SETUP_ACTION_PARAM
+import org.ionproject.codegarten.database.helpers.InstallationsDb
 import org.ionproject.codegarten.remote.GitHubInterface
+import org.ionproject.codegarten.remote.responses.isOrganization
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class GhAppInstallationController(val github: GitHubInterface) {
+class GhAppInstallationController(
+    val gitHub: GitHubInterface,
+    val installationsDb: InstallationsDb,
+    val cryptoUtils: CryptoUtils
+) {
 
     @GetMapping(GH_INSTALLATIONS_HREF)
     fun installToOrg() : ResponseEntity<Any> {
-        TODO()
+        return ResponseEntity
+            .status(302)
+            .header("Location", gitHub.getInstallationUri().toString())
+            .body(null)
     }
 
+
+    // TODO: Find a way to know if the callback is coming from an installation request by the server app
     @GetMapping(GH_INSTALLATIONS_CB_HREF)
     fun orgInstallationCallback(
-        @RequestParam installation_id: Int
+        @RequestParam(name = INSTALLATION_ID_PARAM) installationId: Int?,
+        @RequestParam(name = SETUP_ACTION_PARAM) setupAction: String?
     ) : ResponseEntity<Any> {
-        TODO()
+        if (installationId != null) {
+            val installationOrg = gitHub.getInstallationOrg(installationId)
+            if (installationOrg.account.isOrganization()) {
+                val installationToken = gitHub.getInstallationToken(installationId)
+                installationsDb.createOrUpdateInstallation(
+                    installationId, installationOrg.account.id,
+                    cryptoUtils.encrypt(installationToken.token), installationToken.expires_at
+                )
+            }
+        }
+
+        // TODO: Make a better response
+        return ResponseEntity
+            .status(200)
+            .body("Installation successful/requested/ignored. You can close this tab...")
     }
 }

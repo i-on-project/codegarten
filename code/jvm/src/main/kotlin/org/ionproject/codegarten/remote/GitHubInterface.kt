@@ -1,43 +1,52 @@
 package org.ionproject.codegarten.remote
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.ionproject.codegarten.remote.dto.GitHubUser
-import org.ionproject.codegarten.remote.responses.GitHubAccessTokenResponse
+import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_TOKEN_URI
+import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_USER_URI
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubAuthUri
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationAccessTokenUri
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationUri
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubNewInstallationUri
+import org.ionproject.codegarten.remote.responses.GitHubInstallationAccessTokenResponse
+import org.ionproject.codegarten.remote.responses.GitHubInstallationResponse
+import org.ionproject.codegarten.remote.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.responses.GitHubUserResponse
-import org.springframework.web.util.UriTemplate
-import java.net.URI
-
-private const val GITHUB_AUTH_ENDPOINT = "https://github.com/login/oauth/authorize"
-private const val GITHUB_TOKEN_ENDPOINT = "https://github.com/login/oauth/access_token"
-
-private const val GITHUB_API_HOST = "https://api.github.com"
-private const val GITHUB_USER_ENDPOINT = "user"
-private const val GITHUB_ORGANIZATIONS_ENDPOINT = "user/orgs"
+import java.security.Key
+import java.time.Instant
 
 class GitHubInterface(
+    val appId: Int,
     val clientId: String,
+    val clientName: String,
     val clientSecret: String,
+    val clientPrivateKey: Key,
     val mapper: ObjectMapper
 ) {
 
-    private val authEndpoint = UriTemplate("$GITHUB_AUTH_ENDPOINT?client_id={clientId}&state={state}&response_type=code")
     private val httpClient = OkHttpClient()
 
-    private fun getRequestBuilder(url: String, token: String? = null): Request.Builder {
-        val toReturn = Request.Builder().url(url).addHeader("Accept", "application/json")
-        if (token != null) toReturn.addHeader("Authorization", "token $token")
-        return toReturn
+    fun getAuthUri(state: String) = getGitHubAuthUri(clientId, state)
+    fun getInstallationUri() = getGitHubNewInstallationUri(clientName.toLowerCase().replace(' ', '-'))
+
+    private fun getGitHubAppJwt(): String {
+        val currTimeInSeconds = Instant.now().epochSecond
+
+        return Jwts.builder()
+            .claim("iss", appId)
+            .claim("iat", currTimeInSeconds - 60)
+            .claim("exp", currTimeInSeconds + (10 * 60))
+            .signWith(clientPrivateKey, SignatureAlgorithm.RS256)
+            .compact()
     }
 
-    fun getAuthEndpoint(state: String): URI {
-        return authEndpoint.expand(clientId, state)
-    }
-
-    fun getUserFromAuthCode(authCode: String): GitHubUser {
-        val req = getRequestBuilder(GITHUB_TOKEN_ENDPOINT)
+    fun getAccessTokenFromAuthCode(authCode: String): GitHubUserAccessTokenResponse {
+        val req = Request.Builder()
+            .from(GITHUB_TOKEN_URI, clientName)
             .post(
                 FormBody.Builder()
                     .add("code", authCode)
@@ -47,22 +56,33 @@ class GitHubInterface(
             )
             .build()
 
-        val resBody = httpClient.newCall(req).execute().body!!.string()
-        val accessTokenResponse = mapper.readValue(resBody, GitHubAccessTokenResponse::class.java)
-
-        return getUserInfo(accessTokenResponse.access_token)
+        return httpClient.callAndMap(req, mapper, GitHubUserAccessTokenResponse::class.java)
     }
 
-    fun getUserInfo(accessToken: String): GitHubUser {
-        val req = getRequestBuilder("$GITHUB_API_HOST/$GITHUB_USER_ENDPOINT", accessToken).build()
+    fun getUserInfo(accessToken: String): GitHubUserResponse {
+        val req = Request.Builder()
+            .from(GITHUB_USER_URI, clientName, accessToken)
+            .build()
 
-        val resBody = httpClient.newCall(req).execute().body!!.string()
-        val userResponse = mapper.readValue(resBody, GitHubUserResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubUserResponse::class.java)
+    }
 
-        return GitHubUser(
-            userResponse.id,
-            userResponse.login,
-            accessToken
-        )
+    fun getInstallationOrg(installationId: Int): GitHubInstallationResponse {
+        val gitHubAppJwt = getGitHubAppJwt()
+        val req = Request.Builder()
+            .from(getGitHubInstallationUri(installationId), clientName, gitHubAppJwt)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
+    }
+
+    fun getInstallationToken(installationId: Int): GitHubInstallationAccessTokenResponse {
+        val gitHubAppJwt = getGitHubAppJwt()
+        val req = Request.Builder()
+            .from(getGitHubInstallationAccessTokenUri(installationId), clientName, gitHubAppJwt)
+            .post(FormBody.Builder().build())
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubInstallationAccessTokenResponse::class.java)
     }
 }

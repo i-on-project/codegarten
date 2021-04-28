@@ -1,0 +1,1 @@
+This folder contains sensitive information such as GitHub App's private key

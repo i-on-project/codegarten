@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class OrgsController(
-    gh: GitHubInterface
+    gitHub: GitHubInterface
 ) {
 
     @RequiresUserAuth

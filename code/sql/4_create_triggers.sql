@@ -1,10 +1,18 @@
--- Make sure this trigger is executed with transaction level SERIALIZABLE
+CREATE TRIGGER trig_create_installation_seq
+BEFORE INSERT ON INSTALLATION
+FOR EACH ROW 
+EXECUTE PROCEDURE func_create_installation_seq();
+
+CREATE TRIGGER trig_cleanup_installation_seq
+BEFORE DELETE ON INSTALLATION
+FOR EACH ROW 
+EXECUTE PROCEDURE func_cleanup_installation_seq();
+
 CREATE TRIGGER trig_create_classroom_seq
 BEFORE INSERT ON CLASSROOM
 FOR EACH ROW 
 EXECUTE PROCEDURE func_create_classroom_seq();
 
--- Make sure this trigger is executed with transaction level SERIALIZABLE
 CREATE TRIGGER trig_cleanup_classroom_seq
 BEFORE DELETE ON CLASSROOM
 FOR EACH ROW 
