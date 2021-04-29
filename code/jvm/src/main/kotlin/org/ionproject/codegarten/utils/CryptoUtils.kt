@@ -1,5 +1,6 @@
 package org.ionproject.codegarten.utils
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.PemReader
 import org.springframework.util.Base64Utils
 import org.springframework.util.Base64Utils.encodeToString
@@ -10,12 +11,9 @@ import java.security.KeyFactory
 import java.security.MessageDigest
 import java.security.spec.PKCS8EncodedKeySpec
 import java.time.OffsetDateTime
-import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.math.abs
-import kotlin.math.min
 import kotlin.random.Random
 
 
@@ -39,6 +37,8 @@ class CryptoUtils(cipherKeyPath: String) {
     private val cipherKey: ByteArray
 
     init {
+        java.security.Security.addProvider(BouncyCastleProvider())
+
         // Read cipher key file content into variable (adding padding if necessary)
         val key = File(cipherKeyPath).readText()
         var toAssign: ByteArray? = null

@@ -1,6 +1,5 @@
 package org.ionproject.codegarten
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
@@ -59,6 +58,5 @@ class MvcConfig(val authInterceptor: AuthorizationInterceptor) : WebMvcConfigure
 
 fun main(args: Array<String>) {
 	System.setProperty("server.port", Routes.PORT)
-	java.security.Security.addProvider(BouncyCastleProvider())
 	runApplication<CodeGartenApplication>(*args)
 }
