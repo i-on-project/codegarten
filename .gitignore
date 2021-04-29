@@ -1,6 +1,3 @@
-# Sensitive Information
-*.pem
-
 # Logs
 logs
 *.log

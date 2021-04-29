@@ -3,15 +3,19 @@ package org.ionproject.codegarten.utils
 import org.bouncycastle.util.io.pem.PemReader
 import org.springframework.util.Base64Utils
 import org.springframework.util.Base64Utils.encodeToString
+import java.io.File
 import java.io.FileReader
 import java.security.Key
 import java.security.KeyFactory
 import java.security.MessageDigest
 import java.security.spec.PKCS8EncodedKeySpec
 import java.time.OffsetDateTime
+import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.math.abs
+import kotlin.math.min
 import kotlin.random.Random
 
 
@@ -20,19 +24,37 @@ private const val ACCESS_TOKEN_LENGTH = 32
 
 private const val CIPHER_ALGORITHM = "AES"
 private const val CIPHER_TRANSFORMATION = "$CIPHER_ALGORITHM/CBC/PKCS5PADDING"
+private const val CIPHER_IV_LENGTH = 16
+private val KEY_LENGTH_RANGES = listOf(0..16, 17..24, 25..32)
 
 data class CodeWrapper(
     val code: String,
     val expirationDate: OffsetDateTime
 )
 
-class CryptoUtils(
-    val cipherKey: ByteArray,
-    val cipherIv: ByteArray
-) {
+class CryptoUtils(cipherKeyPath: String) {
 
     private val validChars: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     private val digester = MessageDigest.getInstance("SHA-256")
+    private val cipherKey: ByteArray
+
+    init {
+        // Read cipher key file content into variable (adding padding if necessary)
+        val key = File(cipherKeyPath).readText()
+        var toAssign: ByteArray? = null
+        for (range in KEY_LENGTH_RANGES) {
+            if (range.contains(key.length)) {
+                toAssign = String.format("%1$-" + range.last + "s", key).toByteArray()
+                break
+            }
+        }
+
+        if (toAssign == null) {
+            toAssign = key.substring(0, KEY_LENGTH_RANGES.last().last).toByteArray()
+        }
+
+        cipherKey = toAssign
+    }
 
     fun generateAuthCode() = generateRandomCode(AUTH_CODE_LENGTH, OffsetDateTime.now().plusMinutes(1))
     fun generateAccessToken() = generateRandomCode(ACCESS_TOKEN_LENGTH, OffsetDateTime.now().plusWeeks(2))
@@ -61,15 +83,17 @@ class CryptoUtils(
             SecretKeySpec(
                 cipherKey,
                 CIPHER_ALGORITHM
-            ),
-            IvParameterSpec(cipherIv)
+            )
         )
-
-        val encryptedValue = cipher.doFinal(toEncrypt.toByteArray())
+        val encryptedValue = cipher.iv + cipher.doFinal(toEncrypt.toByteArray())
         return encodeToString(encryptedValue)
     }
 
-    fun decrypt(toDecrypt: ByteArray): String {
+    fun decrypt(toDecrypt: String): String {
+        val decoded = Base64Utils.decode(toDecrypt.toByteArray())
+        val iv = decoded.take(CIPHER_IV_LENGTH).toByteArray()
+        val content = decoded.drop(CIPHER_IV_LENGTH).toByteArray()
+
         val cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)
         cipher.init(
             Cipher.DECRYPT_MODE,
@@ -77,10 +101,9 @@ class CryptoUtils(
                 cipherKey,
                 CIPHER_ALGORITHM
             ),
-            IvParameterSpec(cipherIv)
+            IvParameterSpec(iv)
         )
-
-        val decryptedValue = cipher.doFinal(Base64Utils.decode(toDecrypt))
+        val decryptedValue = cipher.doFinal(content)
         return String(decryptedValue)
     }
 
@@ -92,37 +115,5 @@ class CryptoUtils(
         val factory = KeyFactory.getInstance("RSA")
         val keySpec = PKCS8EncodedKeySpec(keyContent)
         return factory.generatePrivate(keySpec)
-
-        /*
-        val key = File(filePath)
-            .readText()
-            .replace("-----BEGIN RSA PRIVATE KEY-----", "")
-            .replace("-----END RSA PRIVATE KEY-----", "")
-            .replace("\n", "")
-            .toByteArray()
-
-        val keyFactory = KeyFactory.getInstance("RSA")
-        val keySpec = PKCS8EncodedKeySpec(readPkcs1PrivateKey(Base64Utils.decode(key)))
-        return keyFactory.generatePrivate(keySpec) */
-    }
-
-    private fun readPkcs1PrivateKey(pkcs1Bytes: ByteArray): ByteArray {
-        // We can't use Java internal APIs to parse ASN.1 structures, so we build a PKCS#8 key Java can understand
-        val pkcs1Length = pkcs1Bytes.size
-        val totalLength = pkcs1Length + 22
-        val pkcs8Header = byteArrayOf(
-            0x30, 0x82.toByte(), (totalLength shr 8 and 0xff).toByte(), (totalLength and 0xff).toByte(), // Sequence + total length
-            0x2, 0x1, 0x0,  // Integer (0)
-            0x30, 0xD, 0x6, 0x9, 0x2A, 0x86.toByte(), 0x48, 0x86.toByte(), 0xF7.toByte(), 0xD, 0x1, 0x1, 0x1, 0x5, 0x0,  // Sequence: 1.2.840.113549.1.1.1, NULL
-            0x4, 0x82.toByte(), (pkcs1Length shr 8 and 0xff).toByte(), (pkcs1Length and 0xff).toByte() // Octet string + length
-        )
-        return join(pkcs8Header, pkcs1Bytes)
-    }
-
-    private fun join(byteArray1: ByteArray, byteArray2: ByteArray): ByteArray {
-        val bytes = ByteArray(byteArray1.size + byteArray2.size)
-        System.arraycopy(byteArray1, 0, bytes, 0, byteArray1.size)
-        System.arraycopy(byteArray2, 0, bytes, byteArray1.size, byteArray2.size)
-        return bytes
     }
 }

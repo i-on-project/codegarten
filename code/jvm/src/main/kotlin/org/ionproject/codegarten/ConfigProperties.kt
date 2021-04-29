@@ -16,6 +16,5 @@ data class ConfigProperties(
     val gitHubAppPrivateKeyPemPath: String,
 
     // Used to encrypt/decrypt access tokens and other sensitive information
-    val cipherKey: String,
-    val cipherIv: String, // 16 Bytes
+    val cipherKeyPath: String
 )

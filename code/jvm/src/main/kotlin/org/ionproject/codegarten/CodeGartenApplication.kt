@@ -21,6 +21,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @ConfigurationPropertiesScan
 @SpringBootApplication
 class CodeGartenApplication(private val configProperties: ConfigProperties) {
+
+	private val cryptoUtils = CryptoUtils(configProperties.cipherKeyPath)
+
 	@Bean
 	fun getJdbi() = Jdbi
 		.create(configProperties.dbConnectionString)
@@ -33,15 +36,12 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 			configProperties.gitHubAppClientId,
 			configProperties.gitHubAppName,
 			configProperties.gitHubAppClientSecret,
-			getCryptoUtils().readRsaPrivateKey(configProperties.gitHubAppPrivateKeyPemPath), //TODO: Find way to not instantiate utils
+			cryptoUtils.readRsaPrivateKey(configProperties.gitHubAppPrivateKeyPemPath),
 			Jackson2ObjectMapperBuilder().build()
 		)
 
 	@Bean
-	fun getCryptoUtils() = CryptoUtils(
-		configProperties.cipherKey.toByteArray(),
-		configProperties.cipherIv.toByteArray()
-	)
+	fun getCryptoUtils() = cryptoUtils
 }
 
 @Component
