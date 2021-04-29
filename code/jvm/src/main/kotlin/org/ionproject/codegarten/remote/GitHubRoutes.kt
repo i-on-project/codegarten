@@ -14,7 +14,9 @@ object GitHubRoutes {
     const val INSTALLATION_PARAM = "installationId"
     const val CLIENT_ID_PARAM = "clientId"
     const val STATE_PARAM = "state"
-
+    const val USER_PARAM = "userId"
+    const val ORG_PARAM = "orgId"
+    const val USERNAME_PARAM = "username"
 
 
     // OAuth
@@ -42,6 +44,26 @@ object GitHubRoutes {
     fun getGitHubInstallationAccessTokenUri(installationId: Int) =
         GITHUB_INSTALLATION_ACCESS_TOKEN_URI_TEMPLATE.expand(installationId)
 
+
     // User
     const val GITHUB_USER_URI = "$GITHUB_API_HOST/user"
+    const val GITHUB_USER_BY_ID_URI = "$GITHUB_USER_URI/{$USER_PARAM}"
+
+    val GITHUB_USER_BY_ID_URI_TEMPLATE = UriTemplate(GITHUB_USER_BY_ID_URI)
+
+    fun getGitHubUserByIdUri(userId: Int) = GITHUB_USER_BY_ID_URI_TEMPLATE.expand(userId)
+
+
+    // Organizations
+    const val GITHUB_ORGS_URI = "$GITHUB_API_HOST/organizations"
+    const val GITHUB_ORG_URI = "$GITHUB_ORGS_URI/{$ORG_PARAM}"
+    const val GITHUB_ORG_MEMBERSHIPS_URI = "$GITHUB_ORG_URI/memberships"
+    const val GITHUB_ORG_MEMBERSHIP_URI = "$GITHUB_ORG_MEMBERSHIPS_URI/{$USERNAME_PARAM}"
+
+    val GITHUB_ORG_URI_TEMPLATE = UriTemplate(GITHUB_ORG_URI)
+    val GITHUB_ORG_MEMBERSHIP_TEMPLATE = UriTemplate(GITHUB_ORG_MEMBERSHIP_URI)
+
+    fun getGitHubOrgUri(orgId: Int) = GITHUB_ORG_URI_TEMPLATE.expand(orgId)
+    fun getGitHubMembershipUri(orgId: Int, username: String) = GITHUB_ORG_MEMBERSHIP_TEMPLATE.expand(orgId, username)
+
 }

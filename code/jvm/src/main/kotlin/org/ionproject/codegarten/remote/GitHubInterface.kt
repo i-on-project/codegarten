@@ -6,14 +6,19 @@ import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_TOKEN_URI
 import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_USER_URI
 import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubAuthUri
 import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationAccessTokenUri
 import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationUri
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubMembershipUri
 import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubNewInstallationUri
+import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.responses.GitHubInstallationResponse
+import org.ionproject.codegarten.remote.responses.GitHubOrgMembershipResponse
 import org.ionproject.codegarten.remote.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.responses.GitHubUserResponse
 import java.security.Key
@@ -84,5 +89,27 @@ class GitHubInterface(
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubInstallationAccessTokenResponse::class.java)
+    }
+
+    fun getUser(userId: Int): GitHubUserResponse {
+        val req = Request.Builder()
+            .from(getGitHubUserByIdUri(userId), clientName)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubUserResponse::class.java)
+    }
+
+    fun getMembership(orgId: Int, userId: Int, accessToken: String): GitHubOrgMembershipResponse {
+        val username = getUser(userId).login
+        val req = Request.Builder()
+            .from(getGitHubMembershipUri(orgId, username), clientName, accessToken)
+            .build()
+
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubOrgMembershipResponse::class.java)
+        } catch (ex: HttpRequestException) {
+            throw AuthorizationException("Error getting user membership")
+        }
+
     }
 }

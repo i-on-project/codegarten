@@ -8,6 +8,7 @@ import org.ionproject.codegarten.database.helpers.AccessTokensDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.remote.GitHubInterface
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
@@ -19,12 +20,16 @@ import javax.servlet.http.HttpServletResponse
 @Target(AnnotationTarget.FUNCTION)
 annotation class RequiresUserAuth
 
+@Target(AnnotationTarget.FUNCTION)
+annotation class RequiresUserInOrg
+
 const val USER_ATTRIBUTE = "user-attribute"
 
 @Component
 class AuthorizationInterceptor(
     val tokensDb: AccessTokensDb,
-    val usersDb: UsersDb
+    val usersDb: UsersDb,
+    val gitHubInterface: GitHubInterface,
 ) : HandlerInterceptor {
 
     private val logger = LoggerFactory.getLogger(AuthorizationInterceptor::class.java)
@@ -44,14 +49,21 @@ class AuthorizationInterceptor(
         return usersDb.getUserById(accessToken.user_id)
     }
 
+    fun verifyUserInOrg() {
+        //TODO
+    }
+
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         val routeHandler = handler as? HandlerMethod
 
-        if (routeHandler == null || !routeHandler.hasMethodAnnotation(RequiresUserAuth::class.java)) {
+        if (routeHandler == null ||
+            !routeHandler.hasMethodAnnotation(RequiresUserAuth::class.java) &&
+            !routeHandler.hasMethodAnnotation(RequiresUserInOrg::class.java)
+        ) {
             return true
         }
 
-        // Handler has 'RequiresAuth' annotation. We need to decode the auth header into username:pwd
+        // Handler has 'RequiresUserAuth' annotation. We need to decode the auth header
         val authorizationHeader = request.getHeader(AUTH_HEADER)?.trim()
         logger.info("PreHandle with handler ${handler.javaClass.name} requires authentication")
 
@@ -59,7 +71,12 @@ class AuthorizationInterceptor(
 
         // User is valid
         request.setAttribute(USER_ATTRIBUTE, user)
-        logger.info("User with name ${user.name} is valid")
+        logger.info("User with name '${user.name}' has a valid access_token")
+
+        if (routeHandler.hasMethodAnnotation(RequiresUserInOrg::class.java)) {
+            // TODO
+        }
+
         return true
     }
 }

@@ -1,6 +1,6 @@
 package org.ionproject.codegarten.remote.responses
 
-import org.ionproject.codegarten.remote.responses.GitHubAccountType.ORGANIZATION
+import com.fasterxml.jackson.annotation.JsonProperty
 
 data class GitHubInstallationResponse(
     val id: Int,
@@ -10,12 +10,10 @@ data class GitHubInstallationResponse(
 data class GitHubAccountResponse(
     val login: String,
     val id: Int,
-    val type: String,
+    val type: GitHubAccountType,
 )
 
-enum class GitHubAccountType(val type: String) {
-    ORGANIZATION("Organization"),
-    USER("User")
+enum class GitHubAccountType {
+    @JsonProperty("Organization") ORGANIZATION,
+    @JsonProperty("User") USER;
 }
-
-fun GitHubAccountResponse.isOrganization() = ORGANIZATION.type == this.type

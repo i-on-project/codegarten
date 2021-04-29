@@ -3,6 +3,7 @@ package org.ionproject.codegarten.remote
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import java.net.URI
 
 
@@ -18,6 +19,8 @@ fun Request.Builder.from(uri: String, clientName: String, token: String? = null)
 }
 
 fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: Class<T>): T {
-    val resBody = this.newCall(request).execute().body!!.string()
-    return mapper.readValue(resBody, mapTo)
+    val res = this.newCall(request).execute()
+    if (res.code in 400 until 600) throw HttpRequestException(res.code)
+
+    return mapper.readValue(res.body!!.string(), mapTo)
 }

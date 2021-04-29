@@ -24,7 +24,6 @@ object Routes {
     const val USER_PARAM = "userId"
     const val CLIENT_ID_PARAM = "client_id"
     const val INSTALLATION_ID_PARAM = "installation_id"
-    const val SETUP_ACTION_PARAM = "setup_action"
     const val STATE_PARAM = "state"
     const val CODE_PARAM = "code"
     const val ERR_PARAM = "error"

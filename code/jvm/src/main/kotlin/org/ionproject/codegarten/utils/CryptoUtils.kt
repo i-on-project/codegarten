@@ -3,7 +3,6 @@ package org.ionproject.codegarten.utils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.PemReader
 import org.springframework.util.Base64Utils
-import org.springframework.util.Base64Utils.encodeToString
 import java.io.File
 import java.io.FileReader
 import java.security.Key
@@ -15,7 +14,6 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
-
 
 private const val AUTH_CODE_LENGTH = 20
 private const val ACCESS_TOKEN_LENGTH = 32
@@ -86,7 +84,7 @@ class CryptoUtils(cipherKeyPath: String) {
             )
         )
         val encryptedValue = cipher.iv + cipher.doFinal(toEncrypt.toByteArray())
-        return encodeToString(encryptedValue)
+        return Base64Utils.encodeToString(encryptedValue)
     }
 
     fun decrypt(toDecrypt: String): String {
