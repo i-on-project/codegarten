@@ -1,4 +1,4 @@
-package org.ionproject.codegarten.remote.responses
+package org.ionproject.codegarten.remote.github.responses
 
 data class GitHubUserResponse(
     val login: String,

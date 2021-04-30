@@ -4,8 +4,8 @@ import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_CB_HREF
 import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_HREF
 import org.ionproject.codegarten.Routes.INSTALLATION_ID_PARAM
 import org.ionproject.codegarten.database.helpers.InstallationsDb
-import org.ionproject.codegarten.remote.GitHubInterface
-import org.ionproject.codegarten.remote.responses.GitHubAccountType.ORGANIZATION
+import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.responses.GitHubAccountType.ORGANIZATION
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +28,6 @@ class GhAppInstallationController(
     }
 
 
-    // TODO: Find a way to know if the callback is coming from an installation request by the server app
     @GetMapping(GH_INSTALLATIONS_CB_HREF)
     fun orgInstallationCallback(
         @RequestParam(name = INSTALLATION_ID_PARAM) installationId: Int?

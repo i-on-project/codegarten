@@ -1,17 +1,16 @@
 package org.ionproject.codegarten.pipeline.argumentresolvers
 
+import org.ionproject.codegarten.Routes.DEFAULT_LIMIT
+import org.ionproject.codegarten.Routes.DEFAULT_PAGE
+import org.ionproject.codegarten.Routes.LIMIT_PARAM
+import org.ionproject.codegarten.Routes.MAX_LIMIT
+import org.ionproject.codegarten.Routes.PAGE_PARAM
 import org.ionproject.codegarten.exceptions.PaginationException
 import org.springframework.core.MethodParameter
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
-
-private const val PAGE_PARAMETER_NAME = "page"
-private const val LIMIT_PARAMETER_NAME = "limit"
-private const val DEFAULT_PAGE = 0
-private const val DEFAULT_LIMIT = 10
-private const val MAX_LIMIT = 100
 
 data class Pagination(
     val page: Int,
@@ -29,8 +28,8 @@ class PaginationResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?): Pagination {
 
-        val page = webRequest.getParameter(PAGE_PARAMETER_NAME)?.toInt() ?: DEFAULT_PAGE
-        val limit = webRequest.getParameter(LIMIT_PARAMETER_NAME)?.toInt() ?: DEFAULT_LIMIT
+        val page = webRequest.getParameter(PAGE_PARAM)?.toInt() ?: DEFAULT_PAGE
+        val limit = webRequest.getParameter(LIMIT_PARAM)?.toInt() ?: DEFAULT_LIMIT
 
         if (page < 0) throw PaginationException("Page can't be negative")
         if (limit < 0) throw PaginationException("Limit can't be negative")

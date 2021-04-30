@@ -3,7 +3,7 @@ package org.ionproject.codegarten
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
-import org.ionproject.codegarten.remote.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin

@@ -1,4 +1,4 @@
-package org.ionproject.codegarten.remote
+package org.ionproject.codegarten.remote.github
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
@@ -6,21 +6,28 @@ import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.HttpRequestException
-import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_TOKEN_URI
-import org.ionproject.codegarten.remote.GitHubRoutes.GITHUB_USER_URI
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubAuthUri
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationAccessTokenUri
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubInstallationUri
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubMembershipUri
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubNewInstallationUri
-import org.ionproject.codegarten.remote.GitHubRoutes.getGitHubUserByIdUri
-import org.ionproject.codegarten.remote.responses.GitHubInstallationAccessTokenResponse
-import org.ionproject.codegarten.remote.responses.GitHubInstallationResponse
-import org.ionproject.codegarten.remote.responses.GitHubOrgMembershipResponse
-import org.ionproject.codegarten.remote.responses.GitHubUserAccessTokenResponse
-import org.ionproject.codegarten.remote.responses.GitHubUserResponse
+import org.ionproject.codegarten.remote.callAndMap
+import org.ionproject.codegarten.remote.callAndMapList
+import org.ionproject.codegarten.remote.from
+import org.ionproject.codegarten.remote.github.GitHubRoutes.GITHUB_TOKEN_URI
+import org.ionproject.codegarten.remote.github.GitHubRoutes.GITHUB_USER_URI
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubAuthUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallationAccessTokenUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallationOfOrgUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallationUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubMembershipUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstallationUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
+import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubUserAccessTokenResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole.NOT_A_MEMBER
+import org.ionproject.codegarten.remote.github.responses.GitHubUserResponse
 import java.security.Key
 import java.time.Instant
 
@@ -81,6 +88,15 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
     }
 
+    fun getOrgInstallation(orgId: Int): GitHubInstallationResponse {
+        val gitHubAppJwt = getGitHubAppJwt()
+        val req = Request.Builder()
+            .from(getGitHubInstallationOfOrgUri(orgId), clientName, gitHubAppJwt)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
+    }
+
     fun getInstallationToken(installationId: Int): GitHubInstallationAccessTokenResponse {
         val gitHubAppJwt = getGitHubAppJwt()
         val req = Request.Builder()
@@ -99,17 +115,32 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubUserResponse::class.java)
     }
 
-    fun getMembership(orgId: Int, userId: Int, accessToken: String): GitHubOrgMembershipResponse {
+    fun getUserOrgMembership(orgId: Int, userId: Int, accessToken: String): GitHubOrgMembershipResponse {
         val username = getUser(userId).login
         val req = Request.Builder()
             .from(getGitHubMembershipUri(orgId, username), clientName, accessToken)
             .build()
 
-        try {
-            return httpClient.callAndMap(req, mapper, GitHubOrgMembershipResponse::class.java)
+        return try {
+            httpClient.callAndMap(req, mapper, GitHubOrgMembershipResponse::class.java)
         } catch (ex: HttpRequestException) {
-            throw AuthorizationException("Error getting user membership")
+            GitHubOrgMembershipResponse(NOT_A_MEMBER)
         }
+    }
 
+    fun getUserOrgs(accessToken: String, page: Int, limit: Int): List<GitHubOrganizationResponse> {
+        val req = Request.Builder()
+            .from(getGithubUserOrgsUri(page, limit), clientName, accessToken)
+            .build()
+
+        return httpClient.callAndMapList(req, mapper, GitHubOrganizationResponse::class.java)
+    }
+
+    fun getOrgById(orgId: Int, accessToken: String): GitHubOrganizationResponse {
+        val req = Request.Builder()
+            .from(getGitHubOrgUri(orgId), clientName, accessToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java)
     }
 }

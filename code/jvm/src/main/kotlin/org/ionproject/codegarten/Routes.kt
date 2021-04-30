@@ -14,8 +14,9 @@ object Routes {
     const val API_BASE_URI = "/api"
     const val IM_BASE_URI = "/im"
 
-    const val PAGE_TEMPLATE_QUERY = "{?page,limit}"
-    const val PAGE_QUERY = "?page={page}&limit={limit}"
+    const val DEFAULT_PAGE = 0
+    const val DEFAULT_LIMIT = 10
+    const val MAX_LIMIT = 100
 
     const val ORG_PARAM = "orgId"
     const val CLASSROOM_PARAM = "classroomNumber"
@@ -28,6 +29,15 @@ object Routes {
     const val CODE_PARAM = "code"
     const val ERR_PARAM = "error"
 
+    const val PAGE_PARAM = "page"
+    const val LIMIT_PARAM = "limit"
+    const val NEXT_PAGE_PARAM = "next"
+    const val PREVIOUS_PAGE_PARAM = "prev"
+    const val SELF_PARAM = "self"
+
+    // Pagination
+    const val PAGE_TEMPLATE_QUERY = "{?$PAGE_PARAM,$LIMIT_PARAM}"
+    const val PAGE_QUERY = "?page={$PAGE_PARAM}&limit={$LIMIT_PARAM}"
 
     // Error
     const val ERROR_HREF = "/error"
@@ -131,25 +141,25 @@ object Routes {
 
 
     // Helpers
-    fun createSirenLinkListForPagination(uri: URI, page: Int, limit: Int, collectionSize: Int): List<SirenLink> {
+    fun createSirenLinkListForPagination(uri: URI, page: Int, limit: Int, collectionSize: Int = Int.MAX_VALUE, pageSize: Int = Int.MAX_VALUE): List<SirenLink> {
         val toReturn = mutableListOf(
-            SirenLink(listOf("self"), UriTemplate("${uri}$PAGE_QUERY").expand(page, limit)),
-            SirenLink(listOf("page"), hrefTemplate = "${uri}$PAGE_TEMPLATE_QUERY")
+            SirenLink(listOf(SELF_PARAM), UriTemplate("${uri}$PAGE_QUERY").expand(page, limit)),
+            SirenLink(listOf(PAGE_PARAM), hrefTemplate = "${uri}$PAGE_TEMPLATE_QUERY")
         )
 
         if (page > 0 && collectionSize > 0)
             toReturn.add(
                 SirenLink(
-                    listOf("previous"),
+                    listOf(PREVIOUS_PAGE_PARAM),
                     UriTemplate("${uri}$PAGE_QUERY")
                         .expand(page - 1, limit)
                 )
             )
 
-        if (collectionSize > ((page + 1) * limit))
+        if (collectionSize > ((page + 1) * limit) && pageSize > 0)
             toReturn.add(
                 SirenLink(
-                    listOf("next"),
+                    listOf(NEXT_PAGE_PARAM),
                     UriTemplate("${uri}$PAGE_QUERY")
                         .expand(page + 1, limit)
                 )

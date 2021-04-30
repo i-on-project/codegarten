@@ -14,7 +14,7 @@ import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.NotFoundException
-import org.ionproject.codegarten.remote.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.JdbiException
 import org.springframework.http.ResponseEntity
@@ -34,7 +34,7 @@ class AuthCodeController(
     @GetMapping(AUTH_CODE_HREF)
     fun getAuthCode(
         @RequestParam(name = CLIENT_ID_PARAM) clientId: Int?,
-        @RequestParam(name = STATE_PARAM) state: String? = "",
+        @RequestParam(name = STATE_PARAM) state: String?,
     ): ResponseEntity<Any> {
         if (clientId == null) throw ClientException("client_id not provided")
         try {
@@ -43,7 +43,10 @@ class AuthCodeController(
             throw ClientException("Invalid client")
         }
 
-        val stateToSend = "$clientId:$state"
+        var stateToSend = "$clientId:"
+        if (state != null) {
+            stateToSend += state
+        }
 
         return ResponseEntity
             .status(302)
