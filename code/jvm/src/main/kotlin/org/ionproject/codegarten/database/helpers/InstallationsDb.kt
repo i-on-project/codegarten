@@ -10,7 +10,7 @@ private const val GET_INSTALLATIONS_BASE = "SELECT iid, org_id, access_token, ex
 private const val GET_INSTALLATION_QUERY = "$GET_INSTALLATIONS_BASE WHERE iid = :installationId"
 private const val GET_INSTALLATION_BY_ORG_ID_QUERY = "$GET_INSTALLATIONS_BASE WHERE org_id = :orgId"
 
-private const val CREATE_INSTALLATION_QUERY = "INSERT INTO INSTALLATION VALUES(:installationId, :orgId, :accessToken, :exp)"
+private const val CREATE_INSTALLATION_QUERY = "INSERT INTO INSTALLATION VALUES(:orgId, :installationId, :accessToken, :exp)"
 
 private const val UPDATE_INSTALLATION_START = "UPDATE INSTALLATION SET"
 private const val UPDATE_INSTALLATION_END = "WHERE org_id = :orgId"

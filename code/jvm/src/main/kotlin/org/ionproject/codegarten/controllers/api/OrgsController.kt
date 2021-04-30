@@ -49,6 +49,7 @@ class OrgsController(
                     name = it.login,
                     description = if (it.description.isNullOrEmpty()) null else it.description
                 ).toSirenObject(
+                    rel = listOf("item"),
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id).includeHost()),
                         SirenLink(listOf("github"), getGithubLoginUri(it.login)),

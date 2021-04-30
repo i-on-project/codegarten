@@ -1,6 +1,9 @@
 package org.ionproject.codegarten
 
+import org.ionproject.codegarten.pipeline.argumentresolvers.AssignmentResolver
+import org.ionproject.codegarten.pipeline.argumentresolvers.GitHubUserOrgRoleResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
+import org.ionproject.codegarten.pipeline.argumentresolvers.UserClassroomResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -53,6 +56,9 @@ class MvcConfig(val authInterceptor: AuthorizationInterceptor) : WebMvcConfigure
 	override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
 		resolvers.add(PaginationResolver())
 		resolvers.add(UserResolver())
+		resolvers.add(GitHubUserOrgRoleResolver())
+		resolvers.add(UserClassroomResolver())
+		resolvers.add(AssignmentResolver())
 	}
 }
 

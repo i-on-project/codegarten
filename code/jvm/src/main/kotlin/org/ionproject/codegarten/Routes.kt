@@ -9,7 +9,7 @@ object Routes {
     val INPUT_CONTENT_TYPE = MediaType.APPLICATION_FORM_URLENCODED
 
     const val SCHEME = "http"
-    const val PORT = "8080"
+    const val PORT = "8000"
     const val HOST = "localhost:$PORT"
     const val API_BASE_URI = "/api"
     const val IM_BASE_URI = "/im"
@@ -112,8 +112,11 @@ object Routes {
     const val USERS_OF_CLASSROOM_HREF = "$CLASSROOM_BY_NUMBER_HREF/users"
     const val USER_OF_CLASSROOM_HREF = "$USERS_OF_CLASSROOM_HREF/{$USER_PARAM}"
 
+    val USERS_OF_CLASSROOM_HREF_TEMPLATE = UriTemplate(USERS_OF_CLASSROOM_HREF)
     val USER_OF_CLASSROOM_HREF_TEMPLATE = UriTemplate(USER_OF_CLASSROOM_HREF)
 
+    fun getUsersOfClassroomUri(orgId: Int, classroomNumber: Int) =
+        USERS_OF_CLASSROOM_HREF_TEMPLATE.expand(orgId, classroomNumber)
     fun getUserOfClassroomUri(orgId: Int, classroomNumber: Int, userId: Int) =
         USER_OF_CLASSROOM_HREF_TEMPLATE.expand(orgId, classroomNumber, userId)
 
