@@ -18,7 +18,7 @@ DROP TRIGGER IF EXISTS trig_cleanup_assignment_seq ON ASSIGNMENT;
 DROP TRIGGER IF EXISTS trig_get_delivery_number ON DELIVERY;
 
 DROP FUNCTION IF EXISTS func_create_installation_seq;
-DROP FUNCTION IF EXISTS func_create_installation_seq;
+DROP FUNCTION IF EXISTS func_cleanup_installation_seq;
 DROP FUNCTION IF EXISTS func_create_classroom_seq;
 DROP FUNCTION IF EXISTS func_cleanup_classroom_seq;
 DROP FUNCTION IF EXISTS func_get_assignment_number;
