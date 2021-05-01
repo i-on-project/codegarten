@@ -9,7 +9,7 @@ object Routes {
     val INPUT_CONTENT_TYPE = MediaType.APPLICATION_FORM_URLENCODED
 
     const val SCHEME = "http"
-    const val PORT = "8000"
+    const val PORT = "8080"
     const val HOST = "localhost:$PORT"
     const val API_BASE_URI = "/api"
     const val IM_BASE_URI = "/im"

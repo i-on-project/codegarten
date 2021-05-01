@@ -3,35 +3,65 @@ package org.ionproject.codegarten.controllers.api
 import org.ionproject.codegarten.Routes.ASSIGNMENT_PARAM
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
+import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.USERS_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.USER_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USER_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
+import org.ionproject.codegarten.Routes.includeHost
+import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.UserAddInputModel
 import org.ionproject.codegarten.controllers.models.UserEditInputModel
+import org.ionproject.codegarten.controllers.models.UserOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
+import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubRoutes
 import org.ionproject.codegarten.responses.Response
+import org.ionproject.codegarten.responses.siren.SirenLink
+import org.ionproject.codegarten.responses.toResponseEntity
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RestController
+import java.net.URI
 
 @RestController
-class UsersController(db: UsersDb) {
+class UsersController(
+    val usersDb: UsersDb,
+    val gitHub: GitHubInterface,
+) {
 
     @RequiresUserAuth
     @GetMapping(USER_HREF)
     fun getUser(
         user: User
     ): ResponseEntity<Response> {
-        TODO()
+        val ghUser = gitHub.getUserInfo(user.gh_token)
+
+        return UserOutputModel(
+            id = user.uid,
+            name = user.name,
+            gitHubId = user.gh_id,
+            gitHubName = ghUser.login
+        ).toSirenObject(
+            actions = listOf(
+                UserActions.getEditUserAction(),
+                UserActions.getDeleteUserAction()
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), URI(USER_HREF).includeHost()),
+                SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(ghUser.login)),
+                SirenLink(listOf("avatar"), URI(ghUser.avatar_url))
+            )
+        ).toResponseEntity(HttpStatus.OK)
     }
 
     @RequiresUserAuth

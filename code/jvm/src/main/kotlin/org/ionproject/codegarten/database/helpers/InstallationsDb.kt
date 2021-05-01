@@ -1,7 +1,6 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Installation
-import org.ionproject.codegarten.exceptions.NotFoundException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 import java.time.OffsetDateTime
@@ -21,8 +20,8 @@ class InstallationsDb(val jdbi: Jdbi) {
     fun getInstallation(installationId: Int) =
         jdbi.getOne(GET_INSTALLATION_QUERY, Installation::class.java, mapOf("installationId" to installationId))
 
-    fun getInstallationByOrgId(orgId: Int) =
-        jdbi.getOne(GET_INSTALLATION_BY_ORG_ID_QUERY, Installation::class.java, mapOf("orgId" to orgId))
+    fun tryGetInstallationByOrgId(orgId: Int) =
+        jdbi.tryGetOne(GET_INSTALLATION_BY_ORG_ID_QUERY, Installation::class.java, mapOf("orgId" to orgId))
 
     fun createOrUpdateInstallation(
         installationId: Int,
@@ -30,11 +29,11 @@ class InstallationsDb(val jdbi: Jdbi) {
         accessToken: String,
         expirationDate: OffsetDateTime
     ) {
-        try {
-            getInstallationByOrgId(orgId) // Will throw if the installation is not present
+        val maybeInstallation = tryGetInstallationByOrgId(orgId)
+        if (maybeInstallation.isPresent) {
             editInstallation(orgId, installationId = installationId, accessToken, expirationDate)
-        } catch (ex: NotFoundException) {
-            return createInstallation(installationId, orgId, accessToken, expirationDate)
+        } else {
+            createInstallation(installationId, orgId, accessToken, expirationDate)
         }
     }
 

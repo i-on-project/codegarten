@@ -6,6 +6,7 @@ import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserClassroomResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
+import org.ionproject.codegarten.pipeline.interceptors.InstallationInterceptor
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
@@ -47,10 +48,14 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 }
 
 @Component
-class MvcConfig(val authInterceptor: AuthorizationInterceptor) : WebMvcConfigurer {
+class MvcConfig(
+	val authInterceptor: AuthorizationInterceptor,
+	val installationInterceptor: InstallationInterceptor
+) : WebMvcConfigurer {
 
 	override fun addInterceptors(registry: InterceptorRegistry) {
 		registry.addInterceptor(authInterceptor)
+		registry.addInterceptor(installationInterceptor)
 	}
 
 	override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {

@@ -13,6 +13,8 @@ import org.ionproject.codegarten.database.helpers.AuthCodesDb
 import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ClientException
+import org.ionproject.codegarten.exceptions.HttpRequestException
+import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
@@ -75,7 +77,13 @@ class AuthCodeController(
         if (error != null) {
             redirectUri += "?$ERR_PARAM=$error"
         } else {
-            val accessToken = gitHub.getAccessTokenFromAuthCode(gitHubCode!!).access_token
+            val accessToken: String
+            try {
+                accessToken = gitHub.getAccessTokenFromAuthCode(gitHubCode!!).access_token
+            } catch (ex: HttpRequestException) {
+                throw InvalidInputException("Invalid GitHub auth code")
+            }
+
             val ghUser = gitHub.getUserInfo(accessToken)
 
             val cgUserId = usersDb.createOrUpdateUser(

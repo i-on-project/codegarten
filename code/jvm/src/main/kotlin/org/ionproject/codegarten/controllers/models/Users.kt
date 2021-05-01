@@ -6,6 +6,7 @@ import org.ionproject.codegarten.responses.siren.SirenClass.user
 class UserOutputModel(
     val id: Int,
     val name: String,
+    val gitHubId: Int,
     val gitHubName: String
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(user)

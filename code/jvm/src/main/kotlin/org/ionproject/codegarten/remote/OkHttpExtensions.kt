@@ -1,5 +1,6 @@
 package org.ionproject.codegarten.remote
 
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -23,12 +24,23 @@ fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: C
     val res = this.newCall(request).execute()
     if (res.code in 400 until 600) throw HttpRequestException(res.code)
 
-    return mapper.readValue(res.body!!.string(), mapTo)
+    try {
+        return mapper.readValue(res.body!!.string(), mapTo)
+    } catch (ex: JsonMappingException) {
+        throw HttpRequestException(res.code)
+    }
 }
 
 fun <T> OkHttpClient.callAndMapList(request: Request, mapper: ObjectMapper, mapTo: Class<T>): List<T> {
     val res = this.newCall(request).execute()
     if (res.code in 400 until 600) throw HttpRequestException(res.code)
 
-    return mapper.readValue(res.body!!.string(), mapper.typeFactory.constructCollectionType(List::class.java, mapTo))
+    try {
+        return mapper.readValue(
+            res.body!!.string(),
+            mapper.typeFactory.constructCollectionType(List::class.java, mapTo)
+        )
+    } catch (ex: JsonMappingException) {
+        throw HttpRequestException(res.code)
+    }
 }

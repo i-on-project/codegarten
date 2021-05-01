@@ -54,7 +54,8 @@ class OrgsController(
                         SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id).includeHost()),
                         SirenLink(listOf("github"), getGithubLoginUri(it.login)),
                         SirenLink(listOf("avatar"), URI(it.avatar_url)),
-                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id).includeHost())
+                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id).includeHost()),
+                        SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
                     )
                 )
             },
@@ -81,7 +82,8 @@ class OrgsController(
                 SirenLink(listOf(SELF_PARAM), getOrgByIdUri(orgId).includeHost()),
                 SirenLink(listOf("github"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("avatar"), URI(org.avatar_url)),
-                SirenLink(listOf("classrooms"), getClassroomsUri(org.id).includeHost())
+                SirenLink(listOf("classrooms"), getClassroomsUri(org.id).includeHost()),
+                SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
             )
         ).toResponseEntity(HttpStatus.OK)
     }
