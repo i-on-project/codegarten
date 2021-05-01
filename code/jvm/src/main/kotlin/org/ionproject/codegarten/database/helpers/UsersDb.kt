@@ -14,11 +14,22 @@ private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS
 private const val GET_USER_QUERY = "$GET_USERS_BASE WHERE uid = :userId"
 private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USERS_BASE WHERE gh_id = :gitHubId"
 
+private const val CREATE_USER_QUERY =
+    "INSERT INTO USERS(name, gh_id, gh_token) VALUES (:name, :ghId, :ghToken)"
+
+private const val INSERT_USER_IN_CLASSROOM_QUERY = "INSERT INTO USER_CLASSROOM VALUES(:role, :userId, :classroomId)"
+
+private const val UPDATE_USER_START = "UPDATE USERS SET"
+private const val UPDATE_USER_END = "WHERE uid = :userId"
+
+private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
+
+
 private const val GET_USERS_IN_CLASSROOM_QUERY =
     "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_CLASSROOM where cid = :classroomId) ORDER BY uid"
 private const val GET_USERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid IN " +
-    "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
+        "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
 
 private const val GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY =
     "SELECT type from USER_CLASSROOM where uid = :userId AND cid = :classroomId"
@@ -27,18 +38,10 @@ private const val GET_USERS_IN_ASSIGNMENT_QUERY =
     "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_ASSIGNMENT where aid = :assignmentId) ORDER BY uid"
 private const val GET_USERS_IN_ASSIGNMENT_COUNT =
     "SELECT COUNT(uid) as count FROM USER_ASSIGNMENT where aid IN " +
-    "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
-    "classroom_number = :classroomNumber AND number = :assignmentNumber)"
+        "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
+        "classroom_number = :classroomNumber AND number = :assignmentNumber)"
 
 private const val GET_USER_IN_ASSIGNMENT = "SELECT uid from USER_ASSIGNMENT where aid = :assignmentId"
-
-private const val CREATE_USER_QUERY =
-    "INSERT INTO USERS(name, gh_id, gh_token) VALUES (:name, :ghId, :ghToken)"
-
-private const val INSERT_USER_IN_CLASSROOM_QUERY = "INSERT INTO USER_CLASSROOM VALUES(:role, :userId, :classroomId)"
-
-private const val UPDATE_USER_START = "UPDATE USERS SET"
-private const val UPDATE_USER_END = "WHERE uid = :userId"
 
 @Component
 class UsersDb(
@@ -56,6 +59,51 @@ class UsersDb(
                 "gitHubId" to gitHubId
             )
         )
+
+    fun createOrUpdateUser(name: String, ghId: Int, ghToken: String): Int {
+        try {
+            val user = getUserByGitHubId(ghId)
+            editUser(user.uid, gitHubToken = ghToken)
+
+            return user.uid
+        } catch (ex: NotFoundException) {
+            return createUser(name, ghId, ghToken)
+        }
+    }
+
+    fun createUser(name: String, ghId: Int, ghToken: String) =
+        jdbi.insertAndGetGeneratedKey(
+            CREATE_USER_QUERY, Int::class.java,
+            mapOf(
+                "name" to name,
+                "ghId" to ghId,
+                "ghToken" to ghToken
+            ),
+        )
+
+    fun editUser(userId: Int, name: String? = null, gitHubToken: String? = null) {
+        if (name == null && gitHubToken == null) {
+            return
+        }
+
+        val updateFields = mutableMapOf<String, Any>()
+        if (name != null) updateFields["name"] = name
+        if (gitHubToken != null) updateFields["gh_token"] = gitHubToken
+
+        jdbi.update(
+            UPDATE_USER_START,
+            updateFields,
+            UPDATE_USER_END,
+            mapOf("userId" to userId)
+        )
+    }
+
+    fun deleteUser(userId: Int) {
+        jdbi.delete(
+            DELETE_USER_QUERY,
+            mapOf("userId" to userId)
+        )
+    }
 
     fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<User> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
@@ -121,44 +169,6 @@ class UsersDb(
 
         if (userMembership.isPresent) return Optional.of(assignment)
         return Optional.empty()
-    }
-
-    fun createOrUpdateUser(name: String, ghId: Int, ghToken: String): Int {
-        try {
-            val user = getUserByGitHubId(ghId)
-            editUser(user.uid, gitHubToken = ghToken)
-
-            return user.uid
-        } catch (ex: NotFoundException) {
-            return createUser(name, ghId, ghToken)
-        }
-    }
-
-    fun createUser(name: String, ghId: Int, ghToken: String) =
-        jdbi.insertAndGetGeneratedKey(
-            CREATE_USER_QUERY, Int::class.java,
-            mapOf(
-                "name" to name,
-                "ghId" to ghId,
-                "ghToken" to ghToken
-            ),
-        )
-
-    fun editUser(userId: Int, name: String? = null, gitHubToken: String? = null) {
-        if (name == null && gitHubToken == null) {
-            return
-        }
-
-        val updateFields = mutableMapOf<String, Any>()
-        if (name != null) updateFields["name"] = name
-        if (gitHubToken != null) updateFields["gh_token"] = gitHubToken
-
-        jdbi.update(
-            UPDATE_USER_START,
-            updateFields,
-            UPDATE_USER_END,
-            mapOf("userId" to userId)
-        )
     }
 
     fun addUserToClassroom(classroomId: Int, userId: Int, role: UserClassroomMembership) {

@@ -9,8 +9,9 @@ class AssignmentOutputModel(
     val description: String?,
     val type: String,
     val repoPrefix: String,
-    val repoTemplate: String,
-    val classroom: String
+    val repoTemplate: String?,
+    val classroom: String,
+    val organization: String,
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(assignment)
 }
@@ -30,6 +31,7 @@ data class AssignmentCreateInputModel(
     val repoPrefix: String?,
     val repoTemplate: String?,
 )
+val validAssignmentTypes = listOf("individual", "group")
 
 data class AssignmentEditInputModel(
     val name: String?,

@@ -137,7 +137,7 @@ class ClassroomsController(
         user: User,
         orgMembership: GitHubUserOrgRole,
         input: ClassroomCreateInputModel
-    ): ResponseEntity<Response> {
+    ): ResponseEntity<Any> {
         if (orgMembership != GitHubUserOrgRole.ADMIN) throw AuthorizationException("User is not an organization admin")
 
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -157,8 +157,10 @@ class ClassroomsController(
         user: User,
         userClassroom: UserClassroom,
         input: ClassroomEditInputModel
-    ): ResponseEntity<Response> {
+    ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
+
+        if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
 
         classroomsDb.editClassroom(orgId, classroomNumber, input.name, input.description)
         return ResponseEntity
@@ -174,7 +176,7 @@ class ClassroomsController(
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
         userClassroom: UserClassroom
-    ): ResponseEntity<Response> {
+    ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
 
         classroomsDb.deleteClassroom(orgId, classroomNumber)

@@ -8,6 +8,13 @@ private const val GET_ASSIGNMENTS_BASE =
     "SELECT aid, number, name, description, type, repo_prefix, template, org_id, classroom_id, classroom_number, classroom_name FROM V_ASSIGNMENT"
 private const val GET_ASSIGNMENT_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND number = :number"
+private const val GET_ASSIGNMENT_BY_ID_QUERY =
+    "$GET_ASSIGNMENTS_BASE WHERE aid = :assignmentId"
+
+private const val GET_ASSIGNMENTS_OF_CLASSROOM_QUERY =
+    "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber ORDER BY number"
+private const val GET_ASSIGNMENTS_OF_CLASSROOM_COUNT =
+    "SELECT COUNT(aid) as count FROM V_ASSIGNMENT WHERE org_id = :orgId AND classroom_number = :classroomNumber"
 
 private const val GET_ASSIGNMENTS_OF_USER_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
@@ -15,6 +22,15 @@ private const val GET_ASSIGNMENTS_OF_USER_QUERY =
 private const val GET_ASSIGNMENTS_OF_USER_COUNT =
     "SELECT COUNT(aid) as count FROM V_ASSIGNMENT WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
     "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId)"
+
+private const val CREATE_ASSIGNMENT_QUERY =
+    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, template) VALUES" +
+    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplate)"
+
+private const val UPDATE_ASSIGNMENT_START = "UPDATE ASSIGNMENT SET"
+private const val UPDATE_ASSIGNMENT_END = "WHERE aid = :assignmentId"
+
+private const val DELETE_ASSIGNMENT_QUERY = "DELETE FROM ASSIGNMENT WHERE aid = :assignmentId"
 
 @Component
 class AssignmentsDb(
@@ -29,11 +45,25 @@ class AssignmentsDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "number" to assignmentNumber)
         )
 
-    fun getAssignmentsOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, perPage: Int): List<Assignment> {
-        classroomsDb.getClassroomByNumber(orgId, classroomNumber) // Check if classroom exists (will throw exception if not found)
+    fun getAllAssignments(orgId: Int, classroomNumber: Int, page: Int, limit: Int): List<Assignment> {
+        return jdbi.getList(
+            GET_ASSIGNMENTS_OF_CLASSROOM_QUERY,
+            Assignment::class.java, page, limit,
+            mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
+        )
+    }
+
+    fun getAllAssignmentsCount(orgId: Int, classroomNumber: Int): Int =
+        jdbi.getOne(
+            GET_ASSIGNMENTS_OF_CLASSROOM_COUNT,
+            Int::class.java,
+            mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
+        )
+
+    fun getAssignmentsOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, limit: Int): List<Assignment> {
         return jdbi.getList(
             GET_ASSIGNMENTS_OF_USER_QUERY,
-            Assignment::class.java, page, perPage,
+            Assignment::class.java, page, limit,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "userId" to userId)
         )
     }
@@ -44,4 +74,51 @@ class AssignmentsDb(
             Int::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "userId" to userId)
         )
+
+    fun createAssignment(orgId: Int, classroomNumber: Int, name: String, description: String? = null,
+                         type: String, repoPrefix: String, repoTemplate: String? = null): Assignment {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+
+        return jdbi.insertAndGet(
+            CREATE_ASSIGNMENT_QUERY, Int::class.java,
+            GET_ASSIGNMENT_BY_ID_QUERY, Assignment::class.java,
+            mapOf(
+                "classroomId" to classroomId,
+                "name" to name,
+                "description" to description,
+                "type" to type,
+                "repoPrefix" to repoPrefix,
+                "repoTemplate" to repoTemplate
+            ),
+            "assignmentId"
+        )
+    }
+
+    fun editAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int,
+                       name: String? = null, description: String? = null) {
+        if (name == null && description == null) {
+            return
+        }
+
+        val assignmentId = getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+
+        val updateFields = mutableMapOf<String, Any>()
+        if (name != null) updateFields["name"] = name
+        if (description != null) updateFields["description"] = description
+
+        jdbi.update(
+            UPDATE_ASSIGNMENT_START,
+            updateFields,
+            UPDATE_ASSIGNMENT_END,
+            mapOf("assignmentId" to assignmentId)
+        )
+    }
+
+    fun deleteAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int) {
+        val assignmentId = getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        jdbi.delete(
+            DELETE_ASSIGNMENT_QUERY,
+            mapOf("assignmentId" to assignmentId)
+        )
+    }
 }

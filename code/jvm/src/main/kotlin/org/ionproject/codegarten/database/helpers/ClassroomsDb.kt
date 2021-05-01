@@ -16,10 +16,10 @@ private const val GET_CLASSROOMS_OF_USER_COUNT =
 
 private const val CREATE_CLASSROOM_QUERY = "INSERT INTO CLASSROOM(org_id, name, description) VALUES(:orgId, :name, :description)"
 
-private const val DELETE_CLASSROOM_QUERY = "DELETE FROM CLASSROOM WHERE org_id = :orgId and number = :classroomNumber"
-
 private const val UPDATE_CLASSROOM_START = "UPDATE CLASSROOM SET"
 private const val UPDATE_CLASSROOM_END = "WHERE number = :classroomNumber AND org_id = :orgId"
+
+private const val DELETE_CLASSROOM_QUERY = "DELETE FROM CLASSROOM WHERE org_id = :orgId and number = :classroomNumber"
 
 @Component
 class ClassroomsDb(val jdbi: Jdbi) {
@@ -31,11 +31,11 @@ class ClassroomsDb(val jdbi: Jdbi) {
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
         )
 
-    fun getClassroomsOfUser(orgId: Int, userId: Int, page: Int, perPage: Int) =
+    fun getClassroomsOfUser(orgId: Int, userId: Int, page: Int, limit: Int) =
         jdbi.getList(
             GET_CLASSROOMS_OF_USER_QUERY,
             Classroom::class.java,
-            page, perPage,
+            page, limit,
             mapOf(
                 "userId" to userId,
                 "orgId" to orgId

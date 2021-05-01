@@ -6,10 +6,12 @@ import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.USERS_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
+import org.ionproject.codegarten.Routes.USER_BY_ID_HREF
 import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.USER_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USER_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
+import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.UserAddInputModel
@@ -17,6 +19,7 @@ import org.ionproject.codegarten.controllers.models.UserEditInputModel
 import org.ionproject.codegarten.controllers.models.UserOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.helpers.UsersDb
+import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -24,6 +27,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -37,11 +41,12 @@ import java.net.URI
 class UsersController(
     val usersDb: UsersDb,
     val gitHub: GitHubInterface,
+    val cryptoUtils: CryptoUtils,
 ) {
 
     @RequiresUserAuth
     @GetMapping(USER_HREF)
-    fun getUser(
+    fun getAuthenticatedUser(
         user: User
     ): ResponseEntity<Response> {
         val ghUser = gitHub.getUserInfo(user.gh_token)
@@ -64,22 +69,52 @@ class UsersController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
+    @GetMapping(USER_BY_ID_HREF)
+    fun getUserById(
+        @PathVariable(name = USER_PARAM) userId: Int,
+    ): ResponseEntity<Response> {
+        val user = usersDb.getUserById(userId)
+        val ghUser = gitHub.getUser(user.gh_id, cryptoUtils.decrypt(user.gh_token))
+
+        return UserOutputModel(
+            id = user.uid,
+            name = user.name,
+            gitHubId = user.gh_id,
+            gitHubName = ghUser.login
+        ).toSirenObject(
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getUserByIdUri(userId).includeHost()),
+                SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(ghUser.login)),
+                SirenLink(listOf("avatar"), URI(ghUser.avatar_url))
+            )
+        ).toResponseEntity(HttpStatus.OK)
+    }
+
     @RequiresUserAuth
     @PutMapping(USER_HREF)
     fun editUser(
         user: User,
         input: UserEditInputModel
-    ): ResponseEntity<Response> {
-        TODO()
+    ): ResponseEntity<Any> {
+        if (input.name == null) throw InvalidInputException("Missing name")
+
+        usersDb.editUser(user.uid, input.name)
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .header("Location", getUserByIdUri(user.uid).includeHost().toString())
+            .body(null)
     }
 
     @RequiresUserAuth
     @DeleteMapping(USER_HREF)
     fun deleteUser(
         user: User,
-        input: UserEditInputModel
-    ): ResponseEntity<Response> {
-        TODO()
+    ): ResponseEntity<Any> {
+        usersDb.deleteUser(user.uid)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(null)
     }
 
     // Users of Classrooms Handlers

@@ -25,7 +25,12 @@ data class SirenActionField(
     val name: String,
     val title: String? = null,
     val type: SirenFieldType? = null,
-    val value: Any? = null
+    val value: Any? = null,
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SirenOneOf(
+    val oneOf: List<Any>
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

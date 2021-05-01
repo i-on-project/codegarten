@@ -9,6 +9,7 @@ import org.ionproject.codegarten.database.dto.AccessToken
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AccessTokensDb
+import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -45,6 +46,7 @@ const val ASSIGNMENT_ATTRIBUTE = "assignment-attribute"
 @Component
 class AuthorizationInterceptor(
     val tokensDb: AccessTokensDb,
+    val assignmentsDb: AssignmentsDb,
     val usersDb: UsersDb,
     val gitHubInterface: GitHubInterface,
     val cryptoUtils: CryptoUtils
@@ -126,15 +128,24 @@ class AuthorizationInterceptor(
 
                     request.setAttribute(CLASSROOM_MEMBERSHIP_ATTRIBUTE, userClassroom)
 
-                    if (userClassroom.role != UserClassroomMembership.TEACHER && requiresUserInAssignment) {
+                    if (requiresUserInAssignment) {
                         val assignmentNumber = pathVars[ASSIGNMENT_PARAM]?.toIntOrNull() ?:
                             throw InvalidInputException("Invalid assignment number")
 
-                        val assignment =
-                            usersDb.tryGetAssignmentOfUser(orgId, classroomNumber, assignmentNumber, user.uid)
+                        val assignment = when (userClassroom.role) {
+                            UserClassroomMembership.TEACHER -> {
+                                assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
+                            }
+                            UserClassroomMembership.STUDENT -> {
+                                val assignment =
+                                    usersDb.tryGetAssignmentOfUser(orgId, classroomNumber, assignmentNumber, user.uid)
+                                if (assignment.isEmpty) throw AuthorizationException("User is not in assignment")
+                                assignment.get()
+                            }
+                            else -> throw AuthorizationException("User is not in classroom")
+                        }
 
-                        if (assignment.isEmpty) throw AuthorizationException("User is not in assignment")
-                        request.setAttribute(ASSIGNMENT_ATTRIBUTE, assignment.get())
+                        request.setAttribute(ASSIGNMENT_ATTRIBUTE, assignment)
                     }
                 }
             }
