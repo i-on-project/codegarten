@@ -42,6 +42,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -136,7 +137,7 @@ class ClassroomsController(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         user: User,
         orgMembership: GitHubUserOrgRole,
-        input: ClassroomCreateInputModel
+        @RequestBody input: ClassroomCreateInputModel
     ): ResponseEntity<Any> {
         if (orgMembership != GitHubUserOrgRole.ADMIN) throw AuthorizationException("User is not an organization admin")
 
@@ -156,7 +157,7 @@ class ClassroomsController(
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        input: ClassroomEditInputModel
+        @RequestBody input: ClassroomEditInputModel
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
 

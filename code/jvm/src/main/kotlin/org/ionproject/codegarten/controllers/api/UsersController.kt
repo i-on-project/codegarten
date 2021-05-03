@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
@@ -94,7 +95,7 @@ class UsersController(
     @PutMapping(USER_HREF)
     fun editUser(
         user: User,
-        input: UserEditInputModel
+        @RequestBody input: UserEditInputModel
     ): ResponseEntity<Any> {
         if (input.name == null) throw InvalidInputException("Missing name")
 
@@ -135,7 +136,7 @@ class UsersController(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
-        input: UserAddInputModel
+        @RequestBody input: UserAddInputModel
     ): ResponseEntity<Response> {
         TODO()
     }
@@ -171,7 +172,7 @@ class UsersController(
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         user: User,
-        input: UserAddInputModel
+        @RequestBody input: UserAddInputModel
     ): ResponseEntity<Response> {
         TODO("Create repository if template exists")
     }

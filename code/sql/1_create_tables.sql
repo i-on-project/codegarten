@@ -21,7 +21,8 @@ CREATE TABLE CLASSROOM
     number          INT NOT NULL,  -- Number in relation to the organization
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
-    UNIQUE(org_id, number)
+    UNIQUE(org_id, number),
+    UNIQUE(org_id, name)
 );
 
 CREATE TABLE ASSIGNMENT
@@ -34,7 +35,9 @@ CREATE TABLE ASSIGNMENT
     type            VARCHAR(16) NOT NULL CHECK (type IN ('individual', 'group')),
     repo_prefix     VARCHAR(64) NOT NULL,
     repo_template   INT, -- Id of the template repository
-    UNIQUE(cid, number)
+    UNIQUE(cid, number),
+    UNIQUE(cid, name),
+    UNIQUE(cid, repo_prefix)
 );
 
 CREATE TABLE DELIVERY

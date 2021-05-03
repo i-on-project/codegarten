@@ -5,9 +5,12 @@ import org.ionproject.codegarten.responses.siren.SirenClass.delivery
 import java.time.OffsetDateTime
 
 class DeliveryOutputModel(
+    val id: Int,
     val tag: String,
-    val due_date: OffsetDateTime,
-    val assignment: String
+    val dueDate: OffsetDateTime?,
+    val assignment: String,
+    val classroom: String,
+    val organization: String
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(delivery)
 }
@@ -22,9 +25,10 @@ class DeliveriesOutputModel(
 
 data class DeliveryCreateInputModel(
     val tag: String?,
-    val due_date: OffsetDateTime?,
+    val dueDate: String?,
 )
 
 data class DeliveryEditInputModel(
-    val due_date: OffsetDateTime?,
+    val tag: String?,
+    val dueDate: String?
 )

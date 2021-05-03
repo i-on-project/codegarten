@@ -4,6 +4,7 @@ import java.time.OffsetDateTime
 
 data class Delivery(
     val did: Int,
+    val number: Int,
     val tag: String,
     val due_date: OffsetDateTime,
 

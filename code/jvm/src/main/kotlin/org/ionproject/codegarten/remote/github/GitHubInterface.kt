@@ -25,12 +25,12 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole.NOT_A_MEMBER
-import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
-import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import java.security.Key
 import java.time.Instant
 

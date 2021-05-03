@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
@@ -190,7 +191,7 @@ class AssignmentsController(
         user: User,
         userClassroom: UserClassroom,
         installation: Installation,
-        input: AssignmentCreateInputModel
+        @RequestBody input: AssignmentCreateInputModel
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
 
@@ -230,7 +231,7 @@ class AssignmentsController(
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        input: AssignmentEditInputModel
+        @RequestBody input: AssignmentEditInputModel
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
 

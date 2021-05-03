@@ -6,7 +6,7 @@ import org.springframework.web.util.UriTemplate
 import java.net.URI
 
 object Routes {
-    val INPUT_CONTENT_TYPE = MediaType.APPLICATION_FORM_URLENCODED
+    val INPUT_CONTENT_TYPE = MediaType.APPLICATION_JSON
 
     const val SCHEME = "http"
     const val PORT = "8080"
