@@ -118,10 +118,9 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java)
     }
 
-    fun getUserOrgMembership(orgId: Int, userId: Int, accessToken: String): GitHubOrgMembershipResponse {
-        val username = getUser(userId, accessToken).login
+    fun getUserOrgMembership(orgId: Int, accessToken: String): GitHubOrgMembershipResponse {
         val req = Request.Builder()
-            .from(getGitHubMembershipUri(orgId, username), clientName, accessToken)
+            .from(getGitHubMembershipUri(orgId), clientName, accessToken)
             .build()
 
         return try {

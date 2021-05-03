@@ -81,7 +81,6 @@ class AuthorizationInterceptor(
     fun getAndVerifyOrgMembership(orgId: Int, user: User): GitHubUserOrgRole {
         val membership = gitHubInterface.getUserOrgMembership(
             orgId,
-            user.gh_id,
             user.gh_token
         )
 

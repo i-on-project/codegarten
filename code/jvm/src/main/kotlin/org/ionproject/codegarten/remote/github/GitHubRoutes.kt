@@ -61,14 +61,14 @@ object GitHubRoutes {
     // Organizations
     const val GITHUB_ORGS_URI = "$GITHUB_API_HOST/organizations"
     const val GITHUB_ORG_URI = "$GITHUB_ORGS_URI/{$ORG_PARAM}"
-    const val GITHUB_ORG_MEMBERSHIPS_URI = "$GITHUB_ORG_URI/memberships"
-    const val GITHUB_ORG_MEMBERSHIP_URI = "$GITHUB_ORG_MEMBERSHIPS_URI/{$USERNAME_PARAM}"
+    const val GITHUB_ORG_MEMBERSHIPS_URI = "$GITHUB_USER_URI/memberships/organizations"
+    const val GITHUB_ORG_MEMBERSHIP_URI = "$GITHUB_ORG_MEMBERSHIPS_URI/{$ORG_PARAM}"
 
     val GITHUB_ORG_URI_TEMPLATE = UriTemplate(GITHUB_ORG_URI)
     val GITHUB_ORG_MEMBERSHIP_TEMPLATE = UriTemplate(GITHUB_ORG_MEMBERSHIP_URI)
 
     fun getGitHubOrgUri(orgId: Int) = GITHUB_ORG_URI_TEMPLATE.expand(orgId)
-    fun getGitHubMembershipUri(orgId: Int, username: String) = GITHUB_ORG_MEMBERSHIP_TEMPLATE.expand(orgId, username)
+    fun getGitHubMembershipUri(orgId: Int) = GITHUB_ORG_MEMBERSHIP_TEMPLATE.expand(orgId)
 
 
     // Installations
