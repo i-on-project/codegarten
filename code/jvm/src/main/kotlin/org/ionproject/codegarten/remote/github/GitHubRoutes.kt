@@ -2,12 +2,12 @@ package org.ionproject.codegarten.remote.github
 
 import org.ionproject.codegarten.Routes.LIMIT_PARAM
 import org.ionproject.codegarten.Routes.PAGE_PARAM
-import org.springframework.http.MediaType
 import org.springframework.web.util.UriTemplate
 
 object GitHubRoutes {
 
-    val ACCEPT_CONTENT_TYPE = MediaType.APPLICATION_JSON_VALUE
+    // This accept value allows checking if a repository is a template via the is_template key
+    val ACCEPT_CONTENT_TYPE = "application/vnd.github.baptiste-preview+json"
 
     const val GITHUB_HOST = "https://github.com"
     const val GITHUB_API_HOST = "https://api.github.com"
@@ -20,6 +20,8 @@ object GitHubRoutes {
     const val ORG_PARAM = "orgId"
     const val USERNAME_PARAM = "username"
     const val LOGIN_PARAM = "login"
+    const val REPO_ID_PARAM = "repoId"
+    const val REPO_NAME_PARAM = "repoName"
 
 
     // OAuth
@@ -81,11 +83,22 @@ object GitHubRoutes {
     val GITHUB_INSTALLATION_ACCESS_TOKEN_URI_TEMPLATE = UriTemplate(GITHUB_INSTALLATION_ACCESS_TOKEN_URI)
     val GITHUB_INSTALLATION_OF_ORG_URI_TEMPLATE = UriTemplate(GITHUB_INSTALLATION_OF_ORG_URI)
 
-
     fun getGitHubNewInstallationUri(appName: String) = GITHUB_NEW_INSTALLATION_URI_TEMPLATE.expand(appName)
     fun getGitHubInstallationUri(installationId: Int) = GITHUB_INSTALLATION_URI_TEMPLATE.expand(installationId)
     fun getGitHubInstallationAccessTokenUri(installationId: Int) =
         GITHUB_INSTALLATION_ACCESS_TOKEN_URI_TEMPLATE.expand(installationId)
     fun getGitHubInstallationOfOrgUri(orgId: Int) = GITHUB_INSTALLATION_OF_ORG_URI_TEMPLATE.expand(orgId)
 
+
+    // Repositories
+    const val GITHUB_REPOS_ID_URI = "$GITHUB_API_HOST/repositories"
+    const val GITHUB_REPO_ID_URI = "$GITHUB_REPOS_ID_URI/{$REPO_ID_PARAM}"
+    const val GITHUB_REPOS_NAME_URI = "$GITHUB_API_HOST/repos"
+    const val GITHUB_REPO_NAME_URI = "$GITHUB_REPOS_NAME_URI/{$LOGIN_PARAM}/{$REPO_ID_PARAM}"
+
+    val GITHUB_REPO_ID_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_URI)
+    val GITHUB_REPO_NAME_URI_TEMPLATE = UriTemplate(GITHUB_REPO_NAME_URI)
+
+    fun getGitHubRepoByIdUri(repoId: Int) = GITHUB_REPO_ID_URI_TEMPLATE.expand(repoId)
+    fun getGitHubRepoByNameUri(login: String, repoName: String) = GITHUB_REPO_NAME_URI_TEMPLATE.expand(login, repoName)
 }

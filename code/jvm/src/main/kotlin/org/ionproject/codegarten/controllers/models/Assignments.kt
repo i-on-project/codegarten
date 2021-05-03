@@ -16,6 +16,17 @@ class AssignmentOutputModel(
     override fun getSirenClasses() = listOf(assignment)
 }
 
+class AssignmentItemOutputModel(
+    val id: Int,
+    val name: String,
+    val description: String?,
+    val type: String,
+    val classroom: String,
+    val organization: String,
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(assignment)
+}
+
 class AssignmentsOutputModel(
     val collectionSize: Int,
     val pageIndex: Int,

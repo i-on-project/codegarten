@@ -6,7 +6,7 @@ SELECT
     ASSIGNMENT.description AS description,
     type,
     repo_prefix,
-    template,
+    repo_template,
     
     CLASSROOM.org_id AS org_id,
     CLASSROOM.cid AS classroom_id,

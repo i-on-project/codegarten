@@ -19,6 +19,8 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallatio
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubMembershipUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstallationUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByIdUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByNameUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
@@ -27,7 +29,8 @@ import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResp
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole.NOT_A_MEMBER
-import org.ionproject.codegarten.remote.github.responses.GitHubUserResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import java.security.Key
 import java.time.Instant
 
@@ -71,12 +74,12 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubUserAccessTokenResponse::class.java)
     }
 
-    fun getUserInfo(accessToken: String): GitHubUserResponse {
+    fun getUserInfo(accessToken: String): GitHubLoginResponse {
         val req = Request.Builder()
             .from(GITHUB_USER_URI, clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubUserResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java)
     }
 
     fun getInstallationOrg(installationId: Int): GitHubInstallationResponse {
@@ -107,12 +110,12 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubInstallationAccessTokenResponse::class.java)
     }
 
-    fun getUser(userId: Int, accessToken: String): GitHubUserResponse {
+    fun getUser(userId: Int, accessToken: String): GitHubLoginResponse {
         val req = Request.Builder()
             .from(getGitHubUserByIdUri(userId), clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubUserResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java)
     }
 
     fun getUserOrgMembership(orgId: Int, userId: Int, accessToken: String): GitHubOrgMembershipResponse {
@@ -142,5 +145,21 @@ class GitHubInterface(
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java)
+    }
+
+    fun getRepoById(repoId: Int, accessToken: String): GitHubRepoResponse {
+        val req = Request.Builder()
+            .from(getGitHubRepoByIdUri(repoId), clientName, accessToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+    }
+
+    fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse {
+        val req = Request.Builder()
+            .from(getGitHubRepoByNameUri(login, repoName), clientName, accessToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
     }
 }

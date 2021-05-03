@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class GitHubOrgMembershipResponse (
     val role: GitHubUserOrgRole,
-    val user: GitHubUserResponse? = null,
+    val user: GitHubLoginResponse? = null,
 )
 
 enum class GitHubUserOrgRole {

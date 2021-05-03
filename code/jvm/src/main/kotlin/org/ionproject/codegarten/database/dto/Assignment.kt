@@ -7,7 +7,7 @@ data class Assignment(
     val description: String?,
     val type: String,
     val repo_prefix: String,
-    val template: String?,
+    val repo_template: Int?,
 
     val org_id: Int,
     val classroom_id: Int,

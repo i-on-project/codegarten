@@ -5,7 +5,7 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private const val GET_ASSIGNMENTS_BASE =
-    "SELECT aid, number, name, description, type, repo_prefix, template, org_id, classroom_id, classroom_number, classroom_name FROM V_ASSIGNMENT"
+    "SELECT aid, number, name, description, type, repo_prefix, repo_template, org_id, classroom_id, classroom_number, classroom_name FROM V_ASSIGNMENT"
 private const val GET_ASSIGNMENT_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND number = :number"
 private const val GET_ASSIGNMENT_BY_ID_QUERY =
@@ -24,8 +24,8 @@ private const val GET_ASSIGNMENTS_OF_USER_COUNT =
     "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId)"
 
 private const val CREATE_ASSIGNMENT_QUERY =
-    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, template) VALUES" +
-    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplate)"
+    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template) VALUES" +
+    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplateId)"
 
 private const val UPDATE_ASSIGNMENT_START = "UPDATE ASSIGNMENT SET"
 private const val UPDATE_ASSIGNMENT_END = "WHERE aid = :assignmentId"
@@ -76,7 +76,7 @@ class AssignmentsDb(
         )
 
     fun createAssignment(orgId: Int, classroomNumber: Int, name: String, description: String? = null,
-                         type: String, repoPrefix: String, repoTemplate: String? = null): Assignment {
+                         type: String, repoPrefix: String, repoTemplateId: Int? = null): Assignment {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
 
         return jdbi.insertAndGet(
@@ -88,7 +88,7 @@ class AssignmentsDb(
                 "description" to description,
                 "type" to type,
                 "repoPrefix" to repoPrefix,
-                "repoTemplate" to repoTemplate
+                "repoTemplateId" to repoTemplateId
             ),
             "assignmentId"
         )

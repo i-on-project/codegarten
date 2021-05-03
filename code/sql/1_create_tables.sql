@@ -33,7 +33,7 @@ CREATE TABLE ASSIGNMENT
     description     VARCHAR(256),
     type            VARCHAR(16) NOT NULL CHECK (type IN ('individual', 'group')),
     repo_prefix     VARCHAR(64) NOT NULL,
-    template        VARCHAR(256), -- Link to GitHub template repository
+    repo_template   INT, -- Id of the template repository
     UNIQUE(cid, number)
 );
 

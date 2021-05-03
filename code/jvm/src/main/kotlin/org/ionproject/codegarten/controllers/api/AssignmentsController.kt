@@ -19,21 +19,26 @@ import org.ionproject.codegarten.controllers.api.actions.AssignmentActions.getDe
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions.getEditAssignmentAction
 import org.ionproject.codegarten.controllers.models.AssignmentCreateInputModel
 import org.ionproject.codegarten.controllers.models.AssignmentEditInputModel
+import org.ionproject.codegarten.controllers.models.AssignmentItemOutputModel
 import org.ionproject.codegarten.controllers.models.AssignmentOutputModel
 import org.ionproject.codegarten.controllers.models.AssignmentsOutputModel
 import org.ionproject.codegarten.controllers.models.validAssignmentTypes
 import org.ionproject.codegarten.database.dto.Assignment
+import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
+import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenLink
@@ -46,6 +51,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RestController
+import java.net.URI
 
 @RestController
 class AssignmentsController(
@@ -88,13 +94,11 @@ class AssignmentsController(
             pageSize = assignments.size,
         ).toSirenObject(
             entities = assignments.map {
-                AssignmentOutputModel(
+                AssignmentItemOutputModel(
                     id = it.aid,
                     name = it.name,
                     description = it.description,
                     type = it.type,
-                    repoPrefix = it.repo_prefix,
-                    repoTemplate = it.template,
                     classroom = it.classroom_name,
                     organization = org.login
                 ).toSirenObject(
@@ -144,36 +148,48 @@ class AssignmentsController(
             else -> throw AuthorizationException("User is not a member of the classroom")
         }
 
+        val sirenLinks = mutableListOf(
+            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number).includeHost()),
+            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignment.number).includeHost()),
+            SirenLink(listOf("users"), getUsersOfAssignmentUri(orgId, classroomNumber, assignment.number).includeHost()),
+            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
+            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+            SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+        )
+
         val org = gitHub.getOrgById(orgId, user.gh_token)
+        var repo: GitHubRepoResponse? = null
+        if (assignment.repo_template != null) {
+            try {
+                repo = gitHub.getRepoById(assignment.repo_template, user.gh_token)
+                sirenLinks.add(1, SirenLink(listOf("templateGitHub"), URI(repo.html_url)))
+            } catch (e: HttpRequestException) {} // If we can't get the template, we ignore the repository
+        }
+
         return AssignmentOutputModel(
             id = assignment.aid,
             name = assignment.name,
             description = assignment.description,
             type = assignment.type,
             repoPrefix = assignment.repo_prefix,
-            repoTemplate = assignment.template,
+            repoTemplate = repo?.name,
             classroom = assignment.classroom_name,
             organization = org.login
         ).toSirenObject(
             actions = actions,
-            links = listOf(
-                SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number).includeHost()),
-                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignment.number).includeHost()),
-                SirenLink(listOf("users"), getUsersOfAssignmentUri(orgId, classroomNumber, assignment.number).includeHost()),
-                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
-            )
+            links = sirenLinks
         ).toResponseEntity(HttpStatus.OK)
     }
 
     @RequiresUserInClassroom
+    @RequiresGhAppInstallation
     @PostMapping(ASSIGNMENTS_HREF)
     fun createAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
         userClassroom: UserClassroom,
+        installation: Installation,
         input: AssignmentCreateInputModel
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
@@ -183,8 +199,21 @@ class AssignmentsController(
         if (!validAssignmentTypes.contains(input.type)) throw InvalidInputException("Invalid type. Must be one of: $validAssignmentTypes")
         if (input.repoPrefix == null) throw InvalidInputException("Missing repoPrefix")
 
+        var repoId: Int? = null
+        if (input.repoTemplate != null) {
+            val org = gitHub.getOrgById(orgId, installation.accessToken)
+            val repo = try {
+                gitHub.getRepoByName(org.login, input.repoTemplate, installation.accessToken)
+            } catch (ex: HttpRequestException) {
+                throw InvalidInputException("Repository '${input.repoTemplate}' is not in the organization")
+            }
+
+            if (!repo.is_template) throw InvalidInputException("Repository '${repo.name}' is not a template repository")
+            repoId = repo.id
+        }
+
         val createdAssignment = assignmentsDb.createAssignment(orgId, classroomNumber,
-            input.name, input.description, input.type, input.repoPrefix, input.repoTemplate
+            input.name, input.description, input.type, input.repoPrefix, repoId
         )
 
         return ResponseEntity

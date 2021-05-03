@@ -173,7 +173,7 @@ class UsersController(
         user: User,
         input: UserAddInputModel
     ): ResponseEntity<Response> {
-        TODO()
+        TODO("Create repository if template exists")
     }
 
     @RequiresUserAuth

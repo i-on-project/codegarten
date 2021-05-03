@@ -22,6 +22,8 @@ import javax.servlet.http.HttpServletResponse
 @Target(AnnotationTarget.FUNCTION)
 annotation class RequiresGhAppInstallation
 
+const val INSTALLATION_ATTRIBUTE = "installation-attribute"
+
 @Component
 class InstallationInterceptor(
     val installationsDb: InstallationsDb,
@@ -51,7 +53,7 @@ class InstallationInterceptor(
         return Installation(installation.id, orgId, tokenResponse.token, tokenResponse.expires_at)
     }
 
-    private fun updateInstallationToken(installation: Installation) {
+    private fun updateInstallationToken(installation: Installation): Installation {
         val tokenResponse = gitHub.getInstallationToken(installation.iid)
 
         installationsDb.editInstallation(
@@ -60,6 +62,8 @@ class InstallationInterceptor(
             accessToken = cryptoUtils.encrypt(tokenResponse.token),
             expirationDate = tokenResponse.expires_at
         )
+
+        return Installation(installation.iid, installation.org_id, tokenResponse.token, tokenResponse.expires_at)
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -73,7 +77,7 @@ class InstallationInterceptor(
         val pathVars = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, String>
         val orgId = pathVars[Routes.ORG_PARAM]?.toIntOrNull() ?: throw InvalidInputException("Invalid organization id")
 
-        val installation = installationsDb
+        var installation = installationsDb
             .tryGetInstallationByOrgId(orgId)
             .orElseGet {
                 // If the installation is not present in the database, we need to insert it
@@ -83,8 +87,10 @@ class InstallationInterceptor(
         val isExpired = installation.expiration_date.isBefore(OffsetDateTime.now())
         if (isExpired) {
             // If the token is expired, we need to update it
-            updateInstallationToken(installation)
+            installation = updateInstallationToken(installation)
         }
+
+        request.setAttribute(INSTALLATION_ATTRIBUTE, installation)
 
         return true
     }
