@@ -6,7 +6,10 @@ import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.ionproject.codegarten.exceptions.HttpRequestException
+import org.ionproject.codegarten.remote.MEDIA_TYPE_JSON
+import org.ionproject.codegarten.remote.call
 import org.ionproject.codegarten.remote.callAndMap
 import org.ionproject.codegarten.remote.callAndMapList
 import org.ionproject.codegarten.remote.from
@@ -21,10 +24,12 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstalla
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByNameUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubInvitationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
@@ -160,5 +165,28 @@ class GitHubInterface(
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+    }
+
+    fun createRepo(orgId: Int, repoName: String, installationToken: String): GitHubRepoResponse {
+        val json = mapper.createObjectNode()
+        json.put("name", repoName)
+        json.put("private", true)
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubReposOfOrgUri(orgId), clientName, installationToken)
+            .post(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+    }
+
+    fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
+        val req = Request.Builder()
+            .from("https://api.github.com/repositories/$repoId/collaborators/$username", clientName, installationToken)
+            .put(FormBody.Builder().build())
+            .build()
+
+        httpClient.call(req)
     }
 }

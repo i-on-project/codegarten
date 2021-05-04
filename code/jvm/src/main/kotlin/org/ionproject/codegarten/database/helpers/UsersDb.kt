@@ -3,6 +3,8 @@ package org.ionproject.codegarten.database.helpers
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
+import org.ionproject.codegarten.database.dto.UserAssignment
+import org.ionproject.codegarten.database.dto.UserClassroomDto
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.exceptions.NotFoundException
@@ -26,7 +28,7 @@ private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
 
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
-    "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_CLASSROOM where cid = :classroomId) ORDER BY uid"
+    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM WHERE classroom_id = :classroomId ORDER BY uid"
 private const val GET_USER_IN_CLASSROOM_QUERY =
     "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
 private const val GET_USERS_IN_CLASSROOM_COUNT =
@@ -39,17 +41,22 @@ private const val UPDATE_USER_IN_CLASSROOM_START = "UPDATE USER_CLASSROOM SET"
 private const val UPDATE_USER_IN_CLASSROOM_END = "WHERE uid = :userId"
 private const val DELETE_USER_FROM_CLASSROOM_QUERY = "DELETE FROM USER_CLASSROOM WHERE uid = :userId AND cid = :classroomId"
 
+private const val GET_USER_MEMBERSHIP_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM"
+
 private const val GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY =
-    "SELECT type from USER_CLASSROOM where uid = :userId AND cid = :classroomId"
+    "$GET_USER_MEMBERSHIP_BASE WHERE uid = :userId AND classroom_id = :classroomId"
 
 private const val GET_USERS_IN_ASSIGNMENT_QUERY =
-    "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_ASSIGNMENT where aid = :assignmentId) ORDER BY uid"
+    "$GET_USER_MEMBERSHIP_BASE WHERE assignment_id = :assignmentId ORDER BY uid"
 private const val GET_USERS_IN_ASSIGNMENT_COUNT =
     "SELECT COUNT(uid) as count FROM USER_ASSIGNMENT where aid IN " +
         "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
         "classroom_number = :classroomNumber AND number = :assignmentNumber)"
-
 private const val GET_USER_IN_ASSIGNMENT = "SELECT uid from USER_ASSIGNMENT where aid = :assignmentId"
+
+private const val ADD_USER_TO_ASSIGNMENT_QUERY =
+    "INSERT INTO USER_ASSIGNMENT VALUES(:userId, :assignmentId, :repoId) ON CONFLICT (uid, aid) DO UPDATE SET repo_id = :repoId"
+private const val DELETE_USER_FROM_ASSIGNMENT_QUERY = "DELETE FROM USER_ASSIGNMENT WHERE uid = :userId AND aid = :assignmentId"
 
 @Component
 class UsersDb(
@@ -113,13 +120,11 @@ class UsersDb(
         )
     }
 
-    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<User> {
-        //TODO: Use a view to get membership info
-
+    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<UserClassroomDto> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return jdbi.getList(
             GET_USERS_IN_CLASSROOM_QUERY,
-            User::class.java, page, perPage,
+            UserClassroomDto::class.java, page, perPage,
             mapOf("classroomId" to classroomId)
         )
     }
@@ -172,26 +177,29 @@ class UsersDb(
     fun getUserMembershipInClassroom(orgId: Int, classroomNumber: Int, userId: Int): UserClassroom {
         val classroom = classroomsDb.getClassroomByNumber(orgId, classroomNumber)
 
-        val userMembership = jdbi.tryGetOne(
+        val maybeUserClassroom = jdbi.tryGetOne(
             GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY,
-            String::class.java,
+            UserClassroomDto::class.java,
             mapOf(
                 "userId" to userId,
                 "classroomId" to classroom.cid
             )
         )
 
+        val userClassroom = if (maybeUserClassroom.isPresent) maybeUserClassroom.get() else null
+
         return UserClassroom(
-            role = if (userMembership.isEmpty) NOT_A_MEMBER else UserClassroomMembership.valueOf(userMembership.get().toUpperCase()),
-            classroom = classroom
+            role = if (userClassroom == null) NOT_A_MEMBER else UserClassroomMembership.valueOf(maybeUserClassroom.get().classroom_role.toUpperCase()),
+            classroom = classroom,
+            user = if (userClassroom == null) null else User(userClassroom.uid, userClassroom.name, userClassroom.gh_id, userClassroom.gh_token)
         )
     }
 
-    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, perPage: Int): List<User> {
+    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, perPage: Int): List<UserAssignment> {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
         return jdbi.getList(
             GET_USERS_IN_ASSIGNMENT_QUERY,
-            User::class.java, page, perPage,
+            UserAssignment::class.java, page, perPage,
             mapOf("assignmentId" to assignmentId)
         )
     }
@@ -201,6 +209,30 @@ class UsersDb(
             Int::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
+
+    fun addUserToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int, repoId: Int) {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+
+        jdbi.insert(
+            ADD_USER_TO_ASSIGNMENT_QUERY,
+            mapOf(
+                "userId" to userId,
+                "assignmentId" to assignmentId,
+                "repoId" to repoId
+            )
+        )
+    }
+    fun deleteUserFromAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int) {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+
+        jdbi.delete(
+            DELETE_USER_FROM_ASSIGNMENT_QUERY,
+            mapOf(
+                "userId" to userId,
+                "assignmentId" to assignmentId
+            )
+        )
+    }
 
 
     fun tryGetAssignmentOfUser(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int): Optional<Assignment> {

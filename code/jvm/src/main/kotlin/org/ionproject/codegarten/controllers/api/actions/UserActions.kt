@@ -3,6 +3,7 @@ package org.ionproject.codegarten.controllers.api.actions
 import org.ionproject.codegarten.Routes
 import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
+import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
@@ -57,6 +58,35 @@ object UserActions {
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
             SirenActionField(name = "classroomNumber", type = SirenFieldType.hidden, value = classroomNumber),
             SirenActionField(name = "userId", type = SirenFieldType.number)
+        )
+    )
+
+    fun getAddUserToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, isGroupAssignment: Boolean) = SirenAction(
+        name = "add-user-to-assignment",
+        title = "Add User To Assignment",
+        method = HttpMethod.PUT,
+        hrefTemplate = UriTemplate("${getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}").includeHost(),
+        type = Routes.INPUT_CONTENT_TYPE,
+        fields = listOfNotNull(
+            SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
+            SirenActionField(name = "classroomNumber", type = SirenFieldType.hidden, value = classroomNumber),
+            SirenActionField(name = "assignmentNumber", type = SirenFieldType.hidden, value = assignmentNumber),
+            SirenActionField(name = "userId", type = SirenFieldType.number),
+            if (isGroupAssignment) SirenActionField(name = "teamId", type = SirenFieldType.number) else null,
+        )
+    )
+
+    fun getRemoveUserFromAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int) = SirenAction(
+        name = "remove-user-from-assignment",
+        title = "Remove User From Assignment",
+        method = HttpMethod.DELETE,
+        hrefTemplate = UriTemplate("${getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}").includeHost(),
+        type = Routes.INPUT_CONTENT_TYPE,
+        fields = listOf(
+            SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
+            SirenActionField(name = "classroomNumber", type = SirenFieldType.hidden, value = classroomNumber),
+            SirenActionField(name = "assignmentNumber", type = SirenFieldType.hidden, value = assignmentNumber),
+            SirenActionField(name = "userId", type = SirenFieldType.number),
         )
     )
 }

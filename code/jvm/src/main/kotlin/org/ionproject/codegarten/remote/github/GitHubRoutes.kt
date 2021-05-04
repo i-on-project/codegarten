@@ -99,10 +99,13 @@ object GitHubRoutes {
     const val GITHUB_REPO_ID_URI = "$GITHUB_REPOS_ID_URI/{$REPO_ID_PARAM}"
     const val GITHUB_REPOS_NAME_URI = "$GITHUB_API_HOST/repos"
     const val GITHUB_REPO_NAME_URI = "$GITHUB_REPOS_NAME_URI/{$LOGIN_PARAM}/{$REPO_ID_PARAM}"
+    const val GITHUB_REPOS_OF_ORG_URI = "$GITHUB_ORG_URI/repos"
 
     val GITHUB_REPO_ID_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_URI)
     val GITHUB_REPO_NAME_URI_TEMPLATE = UriTemplate(GITHUB_REPO_NAME_URI)
+    val GITHUB_REPOS_OF_ORG_URI_TEMPLATE = UriTemplate(GITHUB_REPOS_OF_ORG_URI)
 
     fun getGitHubRepoByIdUri(repoId: Int) = GITHUB_REPO_ID_URI_TEMPLATE.expand(repoId)
     fun getGitHubRepoByNameUri(login: String, repoName: String) = GITHUB_REPO_NAME_URI_TEMPLATE.expand(login, repoName)
+    fun getGitHubReposOfOrgUri(orgId: Int) = GITHUB_REPOS_OF_ORG_URI_TEMPLATE.expand(orgId)
 }

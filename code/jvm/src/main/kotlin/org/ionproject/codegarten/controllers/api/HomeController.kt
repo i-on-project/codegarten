@@ -51,7 +51,8 @@ class HomeController {
             name = "i-on CodeGarten",
             description = "CodeGarten is a system to create and manage Git repos used by students while working on course assignments",
             time = OffsetDateTime.now(),
-            uptimeMs = runTimeBean.uptime
+            uptimeMs = runTimeBean.uptime,
+            authors = listOf("Diogo Sousa LEIC 20/21", "João Moura LEIC 20/21", "Tiago David LEIC 20/21")
         ).toSirenObject(
             links = listOf(
                 SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost()),

@@ -8,6 +8,7 @@ class HomeOutputModel(
     val description: String,
     val uptimeMs: Long,
     val time: OffsetDateTime,
+    val authors: List<String>
 ) : OutputModel() {
 
     override fun getSirenClasses() = listOf(SirenClass.home)

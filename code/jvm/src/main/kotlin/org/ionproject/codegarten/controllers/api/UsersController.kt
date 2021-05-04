@@ -12,28 +12,39 @@ import org.ionproject.codegarten.Routes.USER_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USER_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.createSirenLinkListForPagination
+import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
+import org.ionproject.codegarten.Routes.getClassroomByNumberUri
+import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.UserAddInputModel
+import org.ionproject.codegarten.controllers.models.UserAssignmentOutputModel
 import org.ionproject.codegarten.controllers.models.UserEditInputModel
-import org.ionproject.codegarten.controllers.models.UserItemOutputModel
+import org.ionproject.codegarten.controllers.models.UserClassroomOutputModel
 import org.ionproject.codegarten.controllers.models.UserOutputModel
 import org.ionproject.codegarten.controllers.models.UsersOutputModel
 import org.ionproject.codegarten.controllers.models.validRoleTypes
+import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
+import org.ionproject.codegarten.database.dto.Installation
+import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
+import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
+import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.GitHubRoutes
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubAvatarUri
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
@@ -156,15 +167,18 @@ class UsersController(
             pageSize = users.size
         ).toSirenObject(
             entities = users.map {
-                UserItemOutputModel(
+                UserClassroomOutputModel(
                     id = it.uid,
                     name = it.name,
-                    gitHubId = it.gh_id
+                    gitHubId = it.gh_id,
+                    role = it.classroom_role
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
-                        SirenLink(listOf("avatar"), getGitHubAvatarUri(it.gh_id)))
+                        SirenLink(listOf("avatar"), getGitHubAvatarUri(it.gh_id)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
                     )
             },
             actions = actions,
@@ -173,7 +187,9 @@ class UsersController(
                 pagination.page,
                 pagination.limit,
                 usersCount
-            )
+            ) + listOf(
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
         ).toResponseEntity(HttpStatus.OK)
     }
 
@@ -221,31 +237,107 @@ class UsersController(
     }
 
     // Users of Assignments Handlers
-    @RequiresUserAuth
+    // TODO: Check when Team
+    @RequiresUserInAssignment
     @GetMapping(USERS_OF_ASSIGNMENT_HREF)
     fun getUsersOfAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         pagination: Pagination,
-        user: User
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
     ): ResponseEntity<Response> {
-        TODO()
+        val users = usersDb.getUsersInAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
+        val usersCount = usersDb.getUsersInAssignmentCount(orgId, classroomNumber, assignmentNumber)
+
+        val actions =
+            if (userClassroom.role == TEACHER)
+                listOf(
+                    UserActions.getAddUserToAssignment(orgId, classroomNumber, assignmentNumber, false),
+                    UserActions.getRemoveUserFromAssignment(orgId, classroomNumber, assignmentNumber)
+                )
+            else
+                null
+
+        return UsersOutputModel(
+            collectionSize = usersCount,
+            pageIndex = pagination.page,
+            pageSize = users.size
+        ).toSirenObject(
+            entities = users.map {
+                UserAssignmentOutputModel(
+                    id = it.uid,
+                    name = it.name,
+                    gitHubId = it.gh_id,
+                    repoId = it.repo_id
+                ).toSirenObject(
+                    rel = listOf("item"),
+                    links = listOf(
+                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
+                        SirenLink(listOf("avatar"), getGitHubAvatarUri(it.gh_id)),
+                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                )
+            },
+            actions = actions,
+            links = createSirenLinkListForPagination(
+                getUsersOfClassroomUri(orgId, classroomNumber).includeHost(),
+                pagination.page,
+                pagination.limit,
+                usersCount
+            ) + listOf(
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+        ).toResponseEntity(HttpStatus.OK)
     }
 
-    @RequiresUserAuth
-    @PutMapping(USERS_OF_ASSIGNMENT_HREF)
+    @RequiresGhAppInstallation
+    @RequiresUserInAssignment
+    @PutMapping(USER_OF_ASSIGNMENT_HREF)
     fun addUserToAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = USER_PARAM) userId: Int,
         user: User,
-        @RequestBody input: UserAddInputModel
+        userClassroom: UserClassroom,
+        assignment: Assignment,
+        installation: Installation
     ): ResponseEntity<Response> {
-        TODO("Create repository if template exists")
+        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+
+        val userMembershipInClassroom = usersDb.getUserMembershipInClassroom(orgId, classroomNumber, userId)
+
+        if (userMembershipInClassroom.role == NOT_A_MEMBER) throw InvalidInputException("User is not in the classroom")
+        if (userMembershipInClassroom.role == TEACHER) throw InvalidInputException("Cannot add a teacher to an assignment")
+        val userToAdd = userMembershipInClassroom.user!!
+
+        val repoName = "CG${userClassroom.classroom.number}-${assignment.repo_prefix}-${userToAdd.name}"
+
+        val repo: GitHubRepoResponse
+        try {
+            repo = gitHub.createRepo(orgId, repoName, installation.accessToken)
+            val ghUser = gitHub.getUser(userToAdd.gh_id, user.gh_token)
+            gitHub.addUserToRepo(repo.id, ghUser.login, installation.accessToken)
+        } catch (ex: HttpRequestException) {
+            if (ex.status == HttpStatus.UNPROCESSABLE_ENTITY.value())
+                throw InvalidInputException("User is already in assignment")
+            else throw ex
+        }
+
+        usersDb.addUserToAssignment(orgId, classroomNumber, assignmentNumber, userId, repo.id)
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .header("Location", repo.html_url)
+            .body(null)
     }
 
-    @RequiresUserAuth
+    @RequiresUserInAssignment
     @DeleteMapping(USER_OF_ASSIGNMENT_HREF)
     fun removeUserFromAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
@@ -253,7 +345,14 @@ class UsersController(
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         @PathVariable(name = USER_PARAM) userId: Int,
         user: User,
+        userClassroom: UserClassroom,
     ): ResponseEntity<Response> {
-        TODO()
+        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+
+        usersDb.deleteUserFromAssignment(orgId, classroomNumber, assignmentNumber, userId)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(null)
     }
 }

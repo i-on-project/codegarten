@@ -38,8 +38,20 @@ SELECT
     gh_id,
     gh_token,
     
-    USER_CLASSROOM.type AS classroom_role
+    USER_CLASSROOM.type AS classroom_role,
+    USER_CLASSROOM.cid AS classroom_id
 FROM USERS JOIN USER_CLASSROOM ON (USERS.uid = USER_CLASSROOM.uid);
+
+CREATE VIEW V_USER_ASSIGNMENT AS
+SELECT
+    USERS.uid,
+    USERS.name AS name,
+    gh_id,
+    gh_token,
+    
+    USER_ASSIGNMENT.repo_id AS repo_id,
+    USER_ASSIGNMENT.aid AS assignment_id
+FROM USERS JOIN USER_ASSIGNMENT ON (USERS.uid = USER_ASSIGNMENT.uid);
 
 CREATE VIEW V_USER AS
 SELECT

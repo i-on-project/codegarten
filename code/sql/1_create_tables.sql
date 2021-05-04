@@ -1,7 +1,7 @@
 CREATE TABLE USERS
 (
     uid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name            VARCHAR(64) NOT NULL,
+    name            VARCHAR(64) NOT NULL UNIQUE,
     gh_id           INT NOT NULL UNIQUE,
     gh_token        VARCHAR(256) NOT NULL -- Encrypted GitHub access token
 );
@@ -62,7 +62,7 @@ CREATE TABLE USER_ASSIGNMENT
 (
     uid             INT REFERENCES USERS(uid) ON DELETE CASCADE NOT NULL,
     aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
-    repo_id         INT NOT NULL,
+    repo_id         INT NOT NULL
     PRIMARY KEY(uid, aid)
 );
 

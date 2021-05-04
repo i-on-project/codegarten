@@ -43,27 +43,30 @@ class InstallationInterceptor(
             throw NotFoundException("GitHub App is not installed in the organization")
         }
 
+        val encryptedToken = cryptoUtils.encrypt(tokenResponse.token)
+
         installationsDb.createInstallation(
             installationId = installation.id,
             orgId = orgId,
-            accessToken = cryptoUtils.encrypt(tokenResponse.token),
+            accessToken = encryptedToken,
             expirationDate = tokenResponse.expires_at
         )
 
-        return Installation(installation.id, orgId, tokenResponse.token, tokenResponse.expires_at)
+        return Installation(installation.id, orgId, encryptedToken, tokenResponse.expires_at)
     }
 
     private fun updateInstallationToken(installation: Installation): Installation {
         val tokenResponse = gitHub.getInstallationToken(installation.iid)
+        val encryptedToken = cryptoUtils.encrypt(tokenResponse.token)
 
         installationsDb.editInstallation(
             installationId = installation.iid,
             orgId = installation.org_id,
-            accessToken = cryptoUtils.encrypt(tokenResponse.token),
+            accessToken = encryptedToken,
             expirationDate = tokenResponse.expires_at
         )
 
-        return Installation(installation.iid, installation.org_id, tokenResponse.token, tokenResponse.expires_at)
+        return Installation(installation.iid, installation.org_id, encryptedToken, tokenResponse.expires_at)
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -90,7 +93,15 @@ class InstallationInterceptor(
             installation = updateInstallationToken(installation)
         }
 
-        request.setAttribute(INSTALLATION_ATTRIBUTE, installation)
+
+        request.setAttribute(
+            INSTALLATION_ATTRIBUTE,
+            Installation(
+                installation.iid,
+                installation.org_id,
+                cryptoUtils.decrypt(installation.accessToken),
+                installation.expiration_date)
+        )
 
         return true
     }

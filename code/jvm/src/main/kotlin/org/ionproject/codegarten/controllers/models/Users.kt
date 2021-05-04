@@ -12,10 +12,20 @@ class UserOutputModel(
     override fun getSirenClasses() = listOf(user)
 }
 
-class UserItemOutputModel(
+class UserClassroomOutputModel(
     val id: Int,
     val name: String,
-    val gitHubId: Int
+    val gitHubId: Int,
+    val role: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(user)
+}
+
+class UserAssignmentOutputModel(
+    val id: Int,
+    val name: String,
+    val gitHubId: Int,
+    val repoId: Int
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(user)
 }
