@@ -172,4 +172,5 @@ object Routes {
     }
 
     fun URI.includeHost() = URI(SCHEME.toLowerCase(), HOST, this.path, this.query, this.fragment)
+    fun UriTemplate.includeHost() = UriTemplate("${SCHEME.toLowerCase()}://${HOST}$this")
 }

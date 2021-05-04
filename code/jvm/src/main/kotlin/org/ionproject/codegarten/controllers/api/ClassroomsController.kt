@@ -57,11 +57,18 @@ class ClassroomsController(
     fun getUserClassrooms(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         pagination: Pagination,
-        user: User
+        user: User,
+        orgRole: GitHubUserOrgRole
     ): ResponseEntity<Response> {
         val classrooms = classroomsDb.getClassroomsOfUser(orgId, user.uid, pagination.page, pagination.limit)
         val classroomsCount = classroomsDb.getClassroomsOfUserCount(orgId, user.uid)
         val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        val actions =
+            if (orgRole == GitHubUserOrgRole.ADMIN)
+                listOf(getCreateClassroomAction(orgId))
+            else
+                null
 
         return ClassroomsOutputModel(
             collectionSize = classroomsCount,
@@ -86,9 +93,7 @@ class ClassroomsController(
                     )
                 )
             },
-            actions = listOf(
-                getCreateClassroomAction(orgId)
-            ),
+            actions = actions,
             links = createSirenLinkListForPagination(
                 getClassroomsUri(orgId).includeHost(),
                 pagination.page,
@@ -104,10 +109,20 @@ class ClassroomsController(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
+        orgRole: GitHubUserOrgRole,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
         val classroom = userClassroom.classroom
         val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        val actions =
+            if (orgRole == GitHubUserOrgRole.ADMIN)
+                listOf(
+                    getEditClassroomAction(orgId, classroom.number),
+                    getDeleteClassroomAction(orgId, classroom.number)
+                )
+            else
+                null
 
         return ClassroomOutputModel(
             id = classroom.cid,
@@ -116,10 +131,7 @@ class ClassroomsController(
             description = classroom.description,
             organization = org.login
         ).toSirenObject(
-            actions = listOf(
-                getEditClassroomAction(orgId, classroom.number),
-                getDeleteClassroomAction(orgId, classroom.number)
-            ),
+            actions = actions,
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroom.number).includeHost()),

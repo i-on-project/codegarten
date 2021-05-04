@@ -14,7 +14,8 @@ data class SirenAction(
     val name: String,
     val title: String,
     val method: HttpMethod,
-    val href: URI,
+    val href: URI? = null,
+    val hrefTemplate: String? = null,
     @JsonSerialize(using = ToStringSerializer::class)
     val type: MediaType? = null,
     var fields: List<SirenActionField>? = null

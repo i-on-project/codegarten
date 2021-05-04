@@ -10,6 +10,7 @@ object GitHubRoutes {
     val ACCEPT_CONTENT_TYPE = "application/vnd.github.baptiste-preview+json"
 
     const val GITHUB_HOST = "https://github.com"
+    const val GITHUB_AVATAR_HOST = "https://avatars.githubusercontent.com"
     const val GITHUB_API_HOST = "https://api.github.com"
 
     const val APP_PARAM = "appName"
@@ -45,10 +46,13 @@ object GitHubRoutes {
     // User
     const val GITHUB_USER_URI = "$GITHUB_API_HOST/user"
     const val GITHUB_USER_BY_ID_URI = "$GITHUB_USER_URI/{$USER_PARAM}"
+    const val GITHUB_AVATAR_URI = "$GITHUB_AVATAR_HOST/u/{$USER_PARAM}"
 
     val GITHUB_USER_BY_ID_URI_TEMPLATE = UriTemplate(GITHUB_USER_BY_ID_URI)
+    val GITHUB_AVATAR_URI_TEMPLATE = UriTemplate(GITHUB_AVATAR_URI)
 
     fun getGitHubUserByIdUri(userId: Int) = GITHUB_USER_BY_ID_URI_TEMPLATE.expand(userId)
+    fun getGitHubAvatarUri(userId: Int) = GITHUB_AVATAR_URI_TEMPLATE.expand(userId)
 
 
     // User Organizations

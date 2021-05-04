@@ -27,9 +27,17 @@ private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
     "$GET_USERS_BASE WHERE uid IN (SELECT uid from USER_CLASSROOM where cid = :classroomId) ORDER BY uid"
+private const val GET_USER_IN_CLASSROOM_QUERY =
+    "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
 private const val GET_USERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid IN " +
         "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
+
+private const val ADD_USER_TO_CLASSROOM_QUERY =
+    "INSERT INTO USER_CLASSROOM VALUES(:role, :userId, :classroomId)"
+private const val UPDATE_USER_IN_CLASSROOM_START = "UPDATE USER_CLASSROOM SET"
+private const val UPDATE_USER_IN_CLASSROOM_END = "WHERE uid = :userId"
+private const val DELETE_USER_FROM_CLASSROOM_QUERY = "DELETE FROM USER_CLASSROOM WHERE uid = :userId AND cid = :classroomId"
 
 private const val GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY =
     "SELECT type from USER_CLASSROOM where uid = :userId AND cid = :classroomId"
@@ -106,6 +114,8 @@ class UsersDb(
     }
 
     fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<User> {
+        //TODO: Use a view to get membership info
+
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return jdbi.getList(
             GET_USERS_IN_CLASSROOM_QUERY,
@@ -120,6 +130,44 @@ class UsersDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
         )
 
+    fun addOrEditUserInClassroom(orgId: Int, classroomNumber: Int, userId: Int, role: String) {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+
+        val maybeUserId = jdbi.tryGetOne(
+            GET_USER_IN_CLASSROOM_QUERY, Int::class.java,
+            mapOf("classroomId" to classroomId, "userId" to userId)
+        )
+
+        if (maybeUserId.isEmpty) {
+            jdbi.insert(
+                ADD_USER_TO_CLASSROOM_QUERY,
+                mapOf(
+                    "role" to role,
+                    "userId" to userId,
+                    "classroomId" to classroomId
+                )
+            )
+        } else {
+            jdbi.update(
+                UPDATE_USER_IN_CLASSROOM_START,
+                mapOf("type" to role),
+                UPDATE_USER_IN_CLASSROOM_END,
+                mapOf("userId" to userId)
+            )
+        }
+    }
+
+    fun deleteUserFromClassroom(orgId: Int, classroomNumber: Int, userId: Int) {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+
+        jdbi.delete(
+            DELETE_USER_FROM_CLASSROOM_QUERY,
+            mapOf(
+                "userId" to userId,
+                "classroomId" to classroomId
+            )
+        )
+    }
 
     fun getUserMembershipInClassroom(orgId: Int, classroomNumber: Int, userId: Int): UserClassroom {
         val classroom = classroomsDb.getClassroomByNumber(orgId, classroomNumber)

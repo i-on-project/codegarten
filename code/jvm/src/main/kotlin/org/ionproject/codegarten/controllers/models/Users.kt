@@ -12,6 +12,14 @@ class UserOutputModel(
     override fun getSirenClasses() = listOf(user)
 }
 
+class UserItemOutputModel(
+    val id: Int,
+    val name: String,
+    val gitHubId: Int
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(user)
+}
+
 class UsersOutputModel(
     val collectionSize: Int,
     val pageIndex: Int,
@@ -20,8 +28,10 @@ class UsersOutputModel(
     override fun getSirenClasses() = listOf(user, collection)
 }
 
+
+val validRoleTypes = listOf("student", "teacher")
 data class UserAddInputModel(
-    val id: Int?
+    val role: String?
 )
 
 data class UserEditInputModel(

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequest
 @RestController
 class ErrorController : ErrorController {
 
+    // Used to replace the default Spring whitelabel error page. This allows the errors to be returned as a problem JSON response.
     @GetMapping(ERROR_HREF)
     fun handleError(
         request: HttpServletRequest,
