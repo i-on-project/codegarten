@@ -2,19 +2,30 @@ package org.ionproject.codegarten.controllers.api
 
 import org.ionproject.codegarten.Routes.API_BASE_URI
 import org.ionproject.codegarten.Routes.ASSIGNMENTS_HREF
+import org.ionproject.codegarten.Routes.ASSIGNMENTS_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.ASSIGNMENT_BY_NUMBER_HREF
+import org.ionproject.codegarten.Routes.ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.CLASSROOMS_HREF
+import org.ionproject.codegarten.Routes.CLASSROOMS_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.CLASSROOM_BY_NUMBER_HREF
+import org.ionproject.codegarten.Routes.CLASSROOM_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERIES_HREF
+import org.ionproject.codegarten.Routes.DELIVERIES_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERIES_OF_USER_HREF
+import org.ionproject.codegarten.Routes.DELIVERIES_OF_USER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF
+import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.HOST
 import org.ionproject.codegarten.Routes.ORGS_HREF
 import org.ionproject.codegarten.Routes.ORG_BY_ID_HREF
+import org.ionproject.codegarten.Routes.ORG_BY_ID_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.SCHEME
 import org.ionproject.codegarten.Routes.USERS_OF_ASSIGNMENT_HREF
+import org.ionproject.codegarten.Routes.USERS_OF_ASSIGNMENT_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
+import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USER_BY_ID_HREF
+import org.ionproject.codegarten.Routes.USER_BY_ID_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.models.HomeOutputModel
@@ -36,8 +47,6 @@ class HomeController {
 
     @GetMapping(API_BASE_URI)
     fun getHome(): ResponseEntity<Response> {
-        val hostString = "${SCHEME.toLowerCase()}://${HOST}"
-
         return HomeOutputModel(
             name = "i-on CodeGarten",
             description = "CodeGarten is a system to create and manage Git repos used by students while working on course assignments",
@@ -47,17 +56,17 @@ class HomeController {
             links = listOf(
                 SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost()),
                 SirenLink(listOf("authenticatedUser"), URI(USER_HREF).includeHost()),
-                SirenLink(listOf("organization"), hrefTemplate = "${hostString}${ORG_BY_ID_HREF}"),
-                SirenLink(listOf("classrooms"), hrefTemplate = "${hostString}${CLASSROOMS_HREF}"),
-                SirenLink(listOf("classroom"), hrefTemplate = "${hostString}${CLASSROOM_BY_NUMBER_HREF}"),
-                SirenLink(listOf("classroomUsers"), hrefTemplate = "${hostString}${USERS_OF_CLASSROOM_HREF}"),
-                SirenLink(listOf("assignments"), hrefTemplate = "${hostString}${ASSIGNMENTS_HREF}"),
-                SirenLink(listOf("assignment"), hrefTemplate = "${hostString}${ASSIGNMENT_BY_NUMBER_HREF}"),
-                SirenLink(listOf("assignmentUsers"), hrefTemplate = "${hostString}${USERS_OF_ASSIGNMENT_HREF}"),
-                SirenLink(listOf("deliveries"), hrefTemplate = "${hostString}${DELIVERIES_HREF}"),
-                SirenLink(listOf("delivery"), hrefTemplate = "${hostString}${DELIVERY_BY_NUMBER_HREF}"),
-                SirenLink(listOf("user"), hrefTemplate = "${hostString}${USER_BY_ID_HREF}"),
-                SirenLink(listOf("userDeliveries"), hrefTemplate = "${hostString}${DELIVERIES_OF_USER_HREF}"),
+                SirenLink(listOf("organization"), hrefTemplate = ORG_BY_ID_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("classrooms"), hrefTemplate = CLASSROOMS_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("classroom"), hrefTemplate = CLASSROOM_BY_NUMBER_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("classroomUsers"), hrefTemplate = USERS_OF_CLASSROOM_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("assignments"), hrefTemplate = ASSIGNMENTS_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("assignment"), hrefTemplate = ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("assignmentUsers"), hrefTemplate = USERS_OF_ASSIGNMENT_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("deliveries"), hrefTemplate = DELIVERIES_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("delivery"), hrefTemplate = DELIVERY_BY_NUMBER_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("user"), hrefTemplate = USER_BY_ID_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("userDeliveries"), hrefTemplate = DELIVERIES_OF_USER_HREF_TEMPLATE.includeHost()),
             )
         ).toResponseEntity(HttpStatus.OK)
     }

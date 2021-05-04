@@ -37,7 +37,7 @@ object UserActions {
         name = "add-user-to-classroom",
         title = "Add User To Classroom",
         method = HttpMethod.PUT,
-        hrefTemplate = UriTemplate("${getClassroomByNumberUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost().toString(),
+        hrefTemplate = UriTemplate("${getClassroomByNumberUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost(),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -51,7 +51,7 @@ object UserActions {
         name = "remove-user-from-classroom",
         title = "Remove User From Classroom",
         method = HttpMethod.DELETE,
-        hrefTemplate = UriTemplate("${getClassroomByNumberUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost().toString(),
+        hrefTemplate = UriTemplate("${getClassroomByNumberUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost(),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),

@@ -74,10 +74,10 @@ object Routes {
     const val CLASSROOMS_HREF = "$ORG_BY_ID_HREF/classrooms"
     const val CLASSROOM_BY_NUMBER_HREF = "$CLASSROOMS_HREF/{$CLASSROOM_PARAM}"
 
-    val CLASSROOM_HREF_TEMPLATE = UriTemplate(CLASSROOMS_HREF)
+    val CLASSROOMS_HREF_TEMPLATE = UriTemplate(CLASSROOMS_HREF)
     val CLASSROOM_BY_NUMBER_HREF_TEMPLATE = UriTemplate(CLASSROOM_BY_NUMBER_HREF)
 
-    fun getClassroomsUri(orgId: Int) = CLASSROOM_HREF_TEMPLATE.expand(orgId)
+    fun getClassroomsUri(orgId: Int) = CLASSROOMS_HREF_TEMPLATE.expand(orgId)
     fun getClassroomByNumberUri(orgId: Int, classroomNumber: Int) =
         CLASSROOM_BY_NUMBER_HREF_TEMPLATE.expand(orgId, classroomNumber)
 
@@ -147,7 +147,7 @@ object Routes {
     fun createSirenLinkListForPagination(uri: URI, page: Int, limit: Int, collectionSize: Int = Int.MAX_VALUE, pageSize: Int = Int.MAX_VALUE): List<SirenLink> {
         val toReturn = mutableListOf(
             SirenLink(listOf(SELF_PARAM), UriTemplate("${uri}$PAGE_QUERY").expand(page, limit)),
-            SirenLink(listOf(PAGE_PARAM), hrefTemplate = "${uri}$PAGE_TEMPLATE_QUERY")
+            SirenLink(listOf(PAGE_PARAM), hrefTemplate = UriTemplate("${uri}$PAGE_TEMPLATE_QUERY"))
         )
 
         if (page > 0 && collectionSize > 0)
