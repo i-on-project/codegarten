@@ -29,7 +29,6 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
-import org.ionproject.codegarten.remote.github.responses.GitHubInvitationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse

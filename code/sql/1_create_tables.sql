@@ -62,7 +62,7 @@ CREATE TABLE USER_ASSIGNMENT
 (
     uid             INT REFERENCES USERS(uid) ON DELETE CASCADE NOT NULL,
     aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
-    repo_id         INT NOT NULL
+    repo_id         INT NOT NULL,
     PRIMARY KEY(uid, aid)
 );
 

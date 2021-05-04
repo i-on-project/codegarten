@@ -2,8 +2,8 @@ package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
-import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserAssignment
+import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomDto
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER

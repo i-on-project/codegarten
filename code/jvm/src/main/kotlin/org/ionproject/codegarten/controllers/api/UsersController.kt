@@ -21,15 +21,15 @@ import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.UserAddInputModel
 import org.ionproject.codegarten.controllers.models.UserAssignmentOutputModel
-import org.ionproject.codegarten.controllers.models.UserEditInputModel
 import org.ionproject.codegarten.controllers.models.UserClassroomOutputModel
+import org.ionproject.codegarten.controllers.models.UserEditInputModel
 import org.ionproject.codegarten.controllers.models.UserOutputModel
 import org.ionproject.codegarten.controllers.models.UsersOutputModel
 import org.ionproject.codegarten.controllers.models.validRoleTypes
 import org.ionproject.codegarten.database.dto.Assignment
+import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
-import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.UsersDb
