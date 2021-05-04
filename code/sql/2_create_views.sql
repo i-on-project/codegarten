@@ -52,31 +52,4 @@ SELECT
     USER_ASSIGNMENT.repo_id AS repo_id,
     USER_ASSIGNMENT.aid AS assignment_id
 FROM USERS JOIN USER_ASSIGNMENT ON (USERS.uid = USER_ASSIGNMENT.uid);
-
-CREATE VIEW V_USER AS
-SELECT
-    USERS.uid,
-    USERS.name AS name,
-    gh_id,
-    gh_token,
-    
-    CLASSROOM.cid AS cid,
-    CLASSROOM.org_id AS org_id,
-    CLASSROOM.number AS classroom_number,
-    CLASSROOM.name AS classroom_name,
-    CLASSROOM.description AS classroom_description,
-    USER_CLASSROOM.type AS classroom_role,
-    
-    ASSIGNMENT.aid AS aid,
-    ASSIGNMENT.number AS assignment_number,
-    ASSIGNMENT.name AS assignment_name,
-    ASSIGNMENT.description AS assignment_description,
-    
-    ASSIGNMENT.type AS assignment_type,
-    repo_prefix,
-    repo_template
-FROM USERS LEFT JOIN USER_CLASSROOM ON (USERS.uid = USER_CLASSROOM.uid)
-           LEFT JOIN USER_ASSIGNMENT ON (USERS.uid = USER_ASSIGNMENT.uid)          
-           LEFT JOIN CLASSROOM ON (USER_CLASSROOM.cid = CLASSROOM.cid)
-           LEFT JOIN ASSIGNMENT ON (USER_ASSIGNMENT.aid = ASSIGNMENT.aid);
           

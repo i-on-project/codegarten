@@ -24,6 +24,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstalla
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByNameUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoCollaboratorUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
@@ -182,7 +183,7 @@ class GitHubInterface(
 
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
-            .from("https://api.github.com/repositories/$repoId/collaborators/$username", clientName, installationToken)
+            .from(getGitHubRepoCollaboratorUri(repoId, username), clientName, installationToken)
             .put(FormBody.Builder().build())
             .build()
 

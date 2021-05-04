@@ -94,19 +94,19 @@ class AuthorizationInterceptor(
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         val routeHandler = handler as? HandlerMethod ?: return true
 
-        val requiresUserAuth = routeHandler.hasMethodAnnotation(RequiresUserAuth::class.java)
-        val requiresUserInOrg = routeHandler.hasMethodAnnotation(RequiresUserInOrg::class.java)
-        val requiresUserInClassroom = routeHandler.hasMethodAnnotation(RequiresUserInClassroom::class.java)
         val requiresUserInAssignment = routeHandler.hasMethodAnnotation(RequiresUserInAssignment::class.java)
+        val requiresUserInClassroom = routeHandler.hasMethodAnnotation(RequiresUserInClassroom::class.java) || requiresUserInAssignment
+        val requiresUserInOrg = routeHandler.hasMethodAnnotation(RequiresUserInOrg::class.java) || requiresUserInClassroom
+        val requiresUserAuth = routeHandler.hasMethodAnnotation(RequiresUserAuth::class.java) || requiresUserInOrg
 
-        if (requiresUserAuth || requiresUserInOrg || requiresUserInAssignment || requiresUserInClassroom) {
+        if (requiresUserAuth) {
             logger.info("PreHandle with handler ${handler.javaClass.name} requires authentication")
             val user = getAndVerifyUser(request.getHeader(AUTH_HEADER)?.trim())
 
             request.setAttribute(USER_ATTRIBUTE, user)
             logger.info("User with name '${user.name}' has a valid access_token")
 
-            if (requiresUserInOrg || requiresUserInAssignment || requiresUserInClassroom) {
+            if (requiresUserInOrg) {
                 // Get the path variables
                 val pathVars = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, String>
 
@@ -115,7 +115,7 @@ class AuthorizationInterceptor(
 
                 request.setAttribute(ORG_MEMBERSHIP_ATTRIBUTE, orgMembership)
 
-                if (requiresUserInClassroom || requiresUserInAssignment) {
+                if (requiresUserInClassroom) {
                     val classroomNumber = pathVars[CLASSROOM_PARAM]?.toIntOrNull() ?:
                         throw InvalidInputException("Invalid classroom number")
 
