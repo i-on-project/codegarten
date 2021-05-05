@@ -41,18 +41,23 @@ private const val UPDATE_USER_IN_CLASSROOM_START = "UPDATE USER_CLASSROOM SET"
 private const val UPDATE_USER_IN_CLASSROOM_END = "WHERE uid = :userId"
 private const val DELETE_USER_FROM_CLASSROOM_QUERY = "DELETE FROM USER_CLASSROOM WHERE uid = :userId AND cid = :classroomId"
 
-private const val GET_USER_MEMBERSHIP_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM"
+private const val GET_USER_CLASSROOM_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM"
+private const val GET_USER_ASSIGNMENT_BASE = "SELECT uid, name, gh_id, gh_token, repo_id, assignment_id FROM V_USER_ASSIGNMENT"
 
-private const val GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY =
-    "$GET_USER_MEMBERSHIP_BASE WHERE uid = :userId AND classroom_id = :classroomId"
+private const val GET_USER_CLASSROOM_QUERY =
+    "$GET_USER_CLASSROOM_BASE WHERE uid = :userId AND classroom_id = :classroomId"
 
 private const val GET_USERS_IN_ASSIGNMENT_QUERY =
-    "$GET_USER_MEMBERSHIP_BASE WHERE assignment_id = :assignmentId ORDER BY uid"
+    "$GET_USER_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId ORDER BY uid"
 private const val GET_USERS_IN_ASSIGNMENT_COUNT =
     "SELECT COUNT(uid) as count FROM USER_ASSIGNMENT where aid IN " +
         "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
         "classroom_number = :classroomNumber AND number = :assignmentNumber)"
-private const val GET_USER_IN_ASSIGNMENT = "SELECT uid from USER_ASSIGNMENT where aid = :assignmentId"
+
+private const val GET_USER_ASSIGNMENT_QUERY =
+    "$GET_USER_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND uid = :userId"
+
+private const val GET_USER_ID_IN_ASSIGNMENT = "SELECT uid from USER_ASSIGNMENT where aid = :assignmentId"
 
 private const val ADD_USER_TO_ASSIGNMENT_QUERY =
     "INSERT INTO USER_ASSIGNMENT VALUES(:userId, :assignmentId, :repoId) ON CONFLICT (uid, aid) DO UPDATE SET repo_id = :repoId"
@@ -178,7 +183,7 @@ class UsersDb(
         val classroom = classroomsDb.getClassroomByNumber(orgId, classroomNumber)
 
         val maybeUserClassroom = jdbi.tryGetOne(
-            GET_USER_MEMBERSHIP_IN_CLASSROOM_QUERY,
+            GET_USER_CLASSROOM_QUERY,
             UserClassroomDto::class.java,
             mapOf(
                 "userId" to userId,
@@ -203,6 +208,17 @@ class UsersDb(
             mapOf("assignmentId" to assignmentId)
         )
     }
+
+    fun getUserAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int): UserAssignment {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+
+        return jdbi.getOne(
+            GET_USER_ASSIGNMENT_QUERY,
+            UserAssignment::class.java,
+            mapOf("userId" to userId, "assignmentId" to assignmentId)
+        )
+    }
+
     fun getUsersInAssignmentCount(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
         jdbi.getOne(
             GET_USERS_IN_ASSIGNMENT_COUNT,
@@ -239,7 +255,7 @@ class UsersDb(
         val assignment = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
 
         val userMembership = jdbi.tryGetOne(
-            GET_USER_IN_ASSIGNMENT,
+            GET_USER_ID_IN_ASSIGNMENT,
             String::class.java,
             mapOf(
                 "assignmentId" to assignment.aid,

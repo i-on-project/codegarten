@@ -6,15 +6,19 @@ import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.DELIVERIES_HREF
 import org.ionproject.codegarten.Routes.DELIVERIES_OF_USER_HREF
 import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF
+import org.ionproject.codegarten.Routes.DELIVERY_OF_USER_HREF
 import org.ionproject.codegarten.Routes.DELIVERY_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
+import org.ionproject.codegarten.Routes.getDeliveriesOfUserUri
 import org.ionproject.codegarten.Routes.getDeliveriesUri
 import org.ionproject.codegarten.Routes.getDeliveryByNumberUri
+import org.ionproject.codegarten.Routes.getDeliveryOfUserUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
+import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getCreateDeliveryAction
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getDeleteDeliveryAction
@@ -23,15 +27,17 @@ import org.ionproject.codegarten.controllers.models.DeliveriesOutputModel
 import org.ionproject.codegarten.controllers.models.DeliveryCreateInputModel
 import org.ionproject.codegarten.controllers.models.DeliveryEditInputModel
 import org.ionproject.codegarten.controllers.models.DeliveryOutputModel
+import org.ionproject.codegarten.controllers.models.UserDeliveryItemOutputModel
+import org.ionproject.codegarten.controllers.models.UserDeliveryOutputModel
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.DeliveriesDb
+import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
-import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.responses.Response
@@ -52,6 +58,7 @@ import java.time.format.DateTimeParseException
 @RestController
 class DeliveriesController(
     val deliveriesDb: DeliveriesDb,
+    val usersDb: UsersDb,
     val gitHub: GitHubInterface
 ) {
 
@@ -93,7 +100,7 @@ class DeliveriesController(
                     rel = listOf("item"),
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, it.number).includeHost()),
-                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, it.number).includeHost()),
+                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
@@ -147,7 +154,7 @@ class DeliveriesController(
             actions = actions,
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, delivery.number).includeHost()),
-                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, delivery.number).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
@@ -155,7 +162,7 @@ class DeliveriesController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
-    @RequiresUserAuth
+    @RequiresUserInAssignment
     @GetMapping(DELIVERIES_OF_USER_HREF)
     fun getAllUserDeliveries(
         @PathVariable(name = ORG_PARAM) orgId: Int,
@@ -163,9 +170,101 @@ class DeliveriesController(
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         @PathVariable(name = USER_PARAM) userId: Int,
         pagination: Pagination,
-        user: User
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
     ): ResponseEntity<Response> {
-        TODO()
+        if (userClassroom.role != TEACHER && user.uid != userId) throw AuthorizationException("Not enough permission to see deliveries")
+
+        val userAssignment = usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, userId)
+        val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
+        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
+
+        val ghTags = gitHub.getAllTagsFromRepo(userAssignment.repo_id, user.gh_token)
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        return DeliveriesOutputModel(
+            collectionSize = deliveriesCount,
+            pageIndex = pagination.page,
+            pageSize = deliveries.size
+        ).toSirenObject(
+            entities = deliveries.map {
+                UserDeliveryItemOutputModel(
+                    id = it.did,
+                    tag = it.tag,
+                    dueDate = it.due_date,
+                    isDelivered = ghTags.any { tag -> tag.name == it.tag },
+                    assignment = it.assignment_name,
+                    classroom = it.classroom_name,
+                    organization = org.login
+                ).toSirenObject(
+                    rel = listOf("item"),
+                    links = listOf(
+                        SirenLink(listOf(SELF_PARAM), getDeliveryOfUserUri(orgId, classroomNumber, assignmentNumber, userId, it.number).includeHost()),
+                        SirenLink(listOf("user-deliveries"), getDeliveriesOfUserUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
+                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("user"), getUserByIdUri(userId).includeHost())
+                    )
+                )
+            },
+            links = Routes.createSirenLinkListForPagination(
+                Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
+                pagination.page,
+                pagination.limit,
+                deliveriesCount
+            ) + listOf(
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("user"), getUserByIdUri(userId).includeHost())
+            )
+        ).toResponseEntity(HttpStatus.OK)
+    }
+
+    @RequiresUserInAssignment
+    @GetMapping(DELIVERY_OF_USER_HREF)
+    fun getUserDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = USER_PARAM) userId: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Response> {
+        if (userClassroom.role != TEACHER && user.uid != userId) throw AuthorizationException("Not enough permission to see deliveries")
+
+        val userAssignment = usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, userId)
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+
+        val tag = gitHub.tryGetTagFromRepo(userAssignment.repo_id, delivery.tag, user.gh_token)
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        return UserDeliveryOutputModel(
+            id = delivery.did,
+            tag = delivery.tag,
+            dueDate = delivery.due_date,
+            isDelivered = tag.isPresent,
+            deliverDate = if (tag.isEmpty) null else tag.get().date,
+            assignment = delivery.assignment_name,
+            classroom = delivery.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getDeliveryOfUserUri(orgId, classroomNumber, assignmentNumber, userId, deliveryNumber).includeHost()),
+                SirenLink(listOf("user-deliveries"), getDeliveriesOfUserUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("user"), getUserByIdUri(userId).includeHost())
+            )
+        ).toResponseEntity(HttpStatus.OK)
     }
 
     @RequiresUserInAssignment

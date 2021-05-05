@@ -15,6 +15,31 @@ class DeliveryOutputModel(
     override fun getSirenClasses() = listOf(delivery)
 }
 
+class UserDeliveryItemOutputModel(
+    val id: Int,
+    val tag: String,
+    val dueDate: OffsetDateTime?,
+    val isDelivered: Boolean,
+    val assignment: String,
+    val classroom: String,
+    val organization: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(delivery)
+}
+
+class UserDeliveryOutputModel(
+    val id: Int,
+    val tag: String,
+    val dueDate: OffsetDateTime?,
+    val isDelivered: Boolean,
+    val deliverDate: OffsetDateTime?,
+    val assignment: String,
+    val classroom: String,
+    val organization: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(delivery)
+}
+
 class DeliveriesOutputModel(
     val collectionSize: Int,
     val pageIndex: Int,

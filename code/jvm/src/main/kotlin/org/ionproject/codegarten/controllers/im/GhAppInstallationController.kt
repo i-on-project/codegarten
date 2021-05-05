@@ -32,6 +32,8 @@ class GhAppInstallationController(
     fun orgInstallationCallback(
         @RequestParam(name = INSTALLATION_ID_PARAM) installationId: Int?
     ) : ResponseEntity<Any> {
+        val status: String
+
         if (installationId != null) {
             val installationOrg = gitHub.getInstallationOrg(installationId)
             if (installationOrg.account.type == ORGANIZATION) {
@@ -40,12 +42,16 @@ class GhAppInstallationController(
                     installationId, installationOrg.account.id,
                     cryptoUtils.encrypt(installationToken.token), installationToken.expires_at
                 )
+                status = "successful"
+            } else {
+                status = "ignored, since the account is not an organization"
             }
+        } else {
+            status = "requested"
         }
 
-        // TODO: Make a better response
         return ResponseEntity
             .status(200)
-            .body("Installation successful/requested/ignored. You can close this tab...")
+            .body("Installation has been $status. You can now close this page <script> window.close() </script>")
     }
 }

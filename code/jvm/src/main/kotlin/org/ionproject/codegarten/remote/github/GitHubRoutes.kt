@@ -19,10 +19,9 @@ object GitHubRoutes {
     const val STATE_PARAM = "state"
     const val USER_PARAM = "userId"
     const val ORG_PARAM = "orgId"
-    const val USERNAME_PARAM = "username"
     const val LOGIN_PARAM = "login"
     const val REPO_ID_PARAM = "repoId"
-    const val REPO_NAME_PARAM = "repoName"
+    const val TAG_PARAM = "tag"
 
 
     // OAuth
@@ -97,6 +96,7 @@ object GitHubRoutes {
     // Repositories
     const val GITHUB_REPOS_ID_URI = "$GITHUB_API_HOST/repositories"
     const val GITHUB_REPO_ID_URI = "$GITHUB_REPOS_ID_URI/{$REPO_ID_PARAM}"
+    const val GITHUB_REPO_ID_GENERATE_URI = "$GITHUB_REPO_ID_URI/generate"
     const val GITHUB_REPO_COLLABORATORS_URI = "$GITHUB_REPO_ID_URI/collaborators"
     const val GITHUB_REPO_COLLABORATOR_URI = "$GITHUB_REPO_COLLABORATORS_URI/{$LOGIN_PARAM}"
     const val GITHUB_REPOS_NAME_URI = "$GITHUB_API_HOST/repos"
@@ -105,12 +105,33 @@ object GitHubRoutes {
 
 
     val GITHUB_REPO_ID_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_URI)
+    val GITHUB_REPO_ID_GENERATE_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_GENERATE_URI)
     val GITHUB_REPO_NAME_URI_TEMPLATE = UriTemplate(GITHUB_REPO_NAME_URI)
     val GITHUB_REPOS_OF_ORG_URI_TEMPLATE = UriTemplate(GITHUB_REPOS_OF_ORG_URI)
     val GITHUB_REPO_COLLABORATOR_URI_TEMPLATE = UriTemplate(GITHUB_REPO_COLLABORATOR_URI)
 
     fun getGitHubRepoByIdUri(repoId: Int) = GITHUB_REPO_ID_URI_TEMPLATE.expand(repoId)
+    fun getGitHubRepoGenerateByIdUri(repoId: Int) = GITHUB_REPO_ID_GENERATE_URI_TEMPLATE.expand(repoId)
     fun getGitHubRepoByNameUri(login: String, repoName: String) = GITHUB_REPO_NAME_URI_TEMPLATE.expand(login, repoName)
     fun getGitHubReposOfOrgUri(orgId: Int) = GITHUB_REPOS_OF_ORG_URI_TEMPLATE.expand(orgId)
     fun getGitHubRepoCollaboratorUri(repoId: Int, login: String) = GITHUB_REPO_COLLABORATOR_URI_TEMPLATE.expand(repoId, login)
+
+
+    // Refs/Tags
+    const val GITHUB_REF_TAG_PREFIX = "refs/tags/"
+    const val GITHUB_REFS_TAGS_URI = "$GITHUB_REPO_ID_URI/git/refs/tags"
+    const val GITHUB_REF_TAG_URI = "$GITHUB_REPO_ID_URI/git/refs/tags/{$TAG_PARAM}"
+
+    val GITHUB_REFS_TAGS_URI_TEMPLATE = UriTemplate(GITHUB_REFS_TAGS_URI)
+    val GITHUB_REF_TAG_URI_TEMPLATE = UriTemplate(GITHUB_REF_TAG_URI)
+
+    fun getGitHubRefsTagsUri(repoId: Int) = GITHUB_REFS_TAGS_URI_TEMPLATE.expand(repoId)
+    fun getGitHubRefTagUri(repoId: Int, tag: String) = GITHUB_REF_TAG_URI_TEMPLATE.expand(repoId, tag)
+
+
+    // Aux functions
+    fun getGitHubTagNameFromRef(ref: String) = ref.replaceFirst(GITHUB_REF_TAG_PREFIX, "")
+
+    fun generateCodeGartenRepoName(classroomNumber: Int, prefix: String, username: String) =
+        "CG$classroomNumber-$prefix-$username"
 }

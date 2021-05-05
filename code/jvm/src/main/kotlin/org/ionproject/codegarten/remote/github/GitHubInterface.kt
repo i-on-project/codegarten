@@ -22,22 +22,32 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallatio
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubMembershipUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstallationUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRefTagUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRefsTagsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByNameUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoCollaboratorUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoGenerateByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTagNameFromRef
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
+import org.ionproject.codegarten.remote.github.responses.GitHubCommitResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubRefResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubTag
+import org.ionproject.codegarten.remote.github.responses.GitHubTagResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole.NOT_A_MEMBER
+import org.springframework.http.HttpStatus
 import java.security.Key
 import java.time.Instant
+import java.util.*
 
 class GitHubInterface(
     val appId: Int,
@@ -181,6 +191,21 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
     }
 
+    fun createRepoFromTemplate(orgName: String, repoName: String, repoTemplateId: Int, installationToken: String): GitHubRepoResponse {
+        val json = mapper.createObjectNode()
+        json.put("name", repoName)
+        json.put("private", true)
+        json.put("owner", orgName)
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubRepoGenerateByIdUri(repoTemplateId), clientName, installationToken)
+            .post(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+    }
+
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
             .from(getGitHubRepoCollaboratorUri(repoId, username), clientName, installationToken)
@@ -188,5 +213,64 @@ class GitHubInterface(
             .build()
 
         httpClient.call(req)
+    }
+
+    fun getAllTagsFromRepo(repoId: Int, ghToken: String): List<GitHubTag> {
+        val req = Request.Builder()
+            .from(getGitHubRefsTagsUri(repoId), clientName, ghToken)
+            .build()
+
+        return try {
+            val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java)
+            refs.map { GitHubTag(name = getGitHubTagNameFromRef(it.ref)) }
+        } catch (ex: HttpRequestException) {
+            if (ex.status != HttpStatus.NOT_FOUND.value()) {
+                throw ex
+            }
+
+            listOf()
+        }
+    }
+
+    fun tryGetTagFromRepo(repoId: Int, tag: String, ghToken: String): Optional<GitHubTag> {
+        var req = Request.Builder()
+            .from(getGitHubRefTagUri(repoId, tag), clientName, ghToken)
+            .build()
+
+        return try {
+            val ref = httpClient.callAndMap(req, mapper, GitHubRefResponse::class.java)
+
+            val commitUri =
+                if (ref.obj.type == "tag") {
+                    // If ref is a tag, get the tag's last commit
+                    req = Request.Builder()
+                        .from(ref.obj.url, clientName, ghToken)
+                        .build()
+
+                    val ghTag = httpClient.callAndMap(req, mapper, GitHubTagResponse::class.java)
+                    ghTag.obj.url
+                } else {
+                    // If ref is not tag, it's a commit
+                    ref.obj.url
+                }
+
+            req = Request.Builder()
+                .from(commitUri, clientName, ghToken)
+                .build()
+            val commit = httpClient.callAndMap(req, mapper, GitHubCommitResponse::class.java)
+
+            Optional.of(
+                GitHubTag(
+                    name = tag,
+                    date = commit.author.date
+                )
+            )
+        } catch (ex: HttpRequestException) {
+            if (ex.status != HttpStatus.NOT_FOUND.value()) {
+                throw ex
+            }
+
+            Optional.empty()
+        }
     }
 }

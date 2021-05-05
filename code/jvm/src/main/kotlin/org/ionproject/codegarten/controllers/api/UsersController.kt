@@ -14,6 +14,7 @@ import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.createSirenLinkListForPagination
 import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
+import org.ionproject.codegarten.Routes.getDeliveriesOfUserUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
@@ -43,6 +44,7 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.GitHubRoutes
+import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenRepoName
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubAvatarUri
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.responses.Response
@@ -274,9 +276,13 @@ class UsersController(
                     repoId = it.repo_id
                 ).toSirenObject(
                     rel = listOf("item"),
-                    links = listOf(
+                    links = listOfNotNull(
                         SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
                         SirenLink(listOf("avatar"), getGitHubAvatarUri(it.gh_id)),
+                        if (userClassroom.role == TEACHER || it.uid == user.uid)
+                            SirenLink(listOf("deliveries"), getDeliveriesOfUserUri(orgId, classroomNumber, assignmentNumber, it.uid).includeHost())
+                        else
+                            null,
                         SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
@@ -315,12 +321,17 @@ class UsersController(
         if (userMembershipInClassroom.role == NOT_A_MEMBER) throw InvalidInputException("User is not in the classroom")
         if (userMembershipInClassroom.role == TEACHER) throw InvalidInputException("Cannot add a teacher to an assignment")
         val userToAdd = userMembershipInClassroom.user!!
+        val org = gitHub.getOrgById(orgId, user.gh_token)
 
-        val repoName = "CG${userClassroom.classroom.number}-${assignment.repo_prefix}-${userToAdd.name}"
+        val repoName =
+            generateCodeGartenRepoName(userClassroom.classroom.number, assignment.repo_prefix, userToAdd.name)
 
         val repo: GitHubRepoResponse
         try {
-            repo = gitHub.createRepo(orgId, repoName, installation.accessToken)
+            repo =
+                if (assignment.repo_template == null) gitHub.createRepo(orgId, repoName, installation.accessToken)
+                else gitHub.createRepoFromTemplate(org.login, repoName, assignment.repo_template, installation.accessToken)
+
             val ghUser = gitHub.getUser(userToAdd.gh_id, user.gh_token)
             gitHub.addUserToRepo(repo.id, ghUser.login, installation.accessToken)
         } catch (ex: HttpRequestException) {

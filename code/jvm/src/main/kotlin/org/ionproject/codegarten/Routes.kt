@@ -136,11 +136,15 @@ object Routes {
 
     // User Deliveries
     const val DELIVERIES_OF_USER_HREF = "$USER_OF_ASSIGNMENT_HREF/deliveries"
+    const val DELIVERY_OF_USER_HREF = "$DELIVERIES_OF_USER_HREF/{$DELIVERY_PARAM}"
 
     val DELIVERIES_OF_USER_HREF_TEMPLATE = UriTemplate(DELIVERIES_OF_USER_HREF)
+    val DELIVERY_OF_USER_HREF_TEMPLATE = UriTemplate(DELIVERY_OF_USER_HREF)
 
     fun getDeliveriesOfUserUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int) =
         DELIVERIES_OF_USER_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, userId)
+    fun getDeliveryOfUserUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int, deliveryNumber: Int) =
+        DELIVERY_OF_USER_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, userId, deliveryNumber)
 
 
     // Helpers

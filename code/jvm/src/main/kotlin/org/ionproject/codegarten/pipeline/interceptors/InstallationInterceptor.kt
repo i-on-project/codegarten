@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse
 annotation class RequiresGhAppInstallation
 
 const val INSTALLATION_ATTRIBUTE = "installation-attribute"
+private const val INSTALLATION_TOKEN_THRESHOLD_MINUTES = 1L
 
 @Component
 class InstallationInterceptor(
@@ -87,7 +88,10 @@ class InstallationInterceptor(
                 getNewInstallationToken(orgId)
             }
 
-        val isExpired = installation.expiration_date.isBefore(OffsetDateTime.now())
+        val isExpired = installation.expiration_date.isBefore(
+            OffsetDateTime.now().plusMinutes(INSTALLATION_TOKEN_THRESHOLD_MINUTES)
+        )
+
         if (isExpired) {
             // If the token is expired, we need to update it
             installation = updateInstallationToken(installation)
