@@ -30,6 +30,8 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoCollabo
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoGenerateByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTagNameFromRef
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamByIdUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
 import org.ionproject.codegarten.remote.github.responses.GitHubCommitResponse
@@ -42,6 +44,7 @@ import org.ionproject.codegarten.remote.github.responses.GitHubRefResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubTag
 import org.ionproject.codegarten.remote.github.responses.GitHubTagResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubTeamResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole.NOT_A_MEMBER
 import org.springframework.http.HttpStatus
@@ -272,5 +275,27 @@ class GitHubInterface(
 
             Optional.empty()
         }
+    }
+
+    fun getTeam(orgId: Int, teamId: Int, installationToken: String): GitHubTeamResponse {
+        val req = Request.Builder()
+            .from(getGitHubTeamByIdUri(orgId, teamId), clientName, installationToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
+    }
+
+    fun createTeam(orgId: Int, name: String, installationToken: String): GitHubTeamResponse {
+        val json = mapper.createObjectNode()
+        json.put("name", name)
+        json.put("privacy", "secret")
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubTeamsUri(orgId), clientName, installationToken)
+            .post(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
     }
 }

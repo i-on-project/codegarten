@@ -10,6 +10,7 @@ import org.ionproject.codegarten.Routes.getAssignmentsUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomsUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
+import org.ionproject.codegarten.Routes.getTeamsUri
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.ClassroomActions.getCreateClassroomAction
@@ -87,9 +88,10 @@ class ClassroomsController(
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, it.number).includeHost()),
                         SirenLink(listOf("assignments"), getAssignmentsUri(orgId, it.number).includeHost()),
+                        SirenLink(listOf("teams"), getTeamsUri(orgId, it.number).includeHost()),
                         SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, it.number).includeHost()),
                         SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
                     )
                 )
             },
@@ -135,9 +137,10 @@ class ClassroomsController(
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroom.number).includeHost()),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -149,11 +152,13 @@ class ClassroomsController(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         user: User,
         orgMembership: GitHubUserOrgRole,
-        @RequestBody input: ClassroomCreateInputModel
+        @RequestBody input: ClassroomCreateInputModel?
     ): ResponseEntity<Any> {
         if (orgMembership != GitHubUserOrgRole.ADMIN) throw AuthorizationException("User is not an organization admin")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
+
         val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description)
         usersDb.addUserToClassroom(createdClassroom.cid, user.uid, UserClassroomMembership.TEACHER)
         return ResponseEntity
@@ -169,10 +174,11 @@ class ClassroomsController(
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: ClassroomEditInputModel
+        @RequestBody input: ClassroomEditInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
 
         classroomsDb.editClassroom(orgId, classroomNumber, input.name, input.description)

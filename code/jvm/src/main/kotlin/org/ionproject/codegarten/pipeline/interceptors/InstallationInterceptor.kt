@@ -11,6 +11,7 @@ import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAcces
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
@@ -56,18 +57,25 @@ class InstallationInterceptor(
         return Installation(installation.id, orgId, encryptedToken, tokenResponse.expires_at)
     }
 
-    private fun updateInstallationToken(installation: Installation): Installation {
-        val tokenResponse = gitHub.getInstallationToken(installation.iid)
-        val encryptedToken = cryptoUtils.encrypt(tokenResponse.token)
+    private fun updateInstallationToken(orgId: Int, installation: Installation): Installation {
+        try {
+            val tokenResponse = gitHub.getInstallationToken(installation.iid)
+            val encryptedToken = cryptoUtils.encrypt(tokenResponse.token)
 
-        installationsDb.editInstallation(
-            installationId = installation.iid,
-            orgId = installation.org_id,
-            accessToken = encryptedToken,
-            expirationDate = tokenResponse.expires_at
-        )
+            installationsDb.editInstallation(
+                installationId = installation.iid,
+                orgId = installation.org_id,
+                accessToken = encryptedToken,
+                expirationDate = tokenResponse.expires_at
+            )
 
-        return Installation(installation.iid, installation.org_id, encryptedToken, tokenResponse.expires_at)
+            return Installation(installation.iid, installation.org_id, encryptedToken, tokenResponse.expires_at)
+        } catch (ex: HttpRequestException) {
+            if (ex.status != HttpStatus.NOT_FOUND.value()) throw ex
+            // This happens when the installation token is invalid
+
+            return getNewInstallationToken(orgId)
+        }
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -94,7 +102,7 @@ class InstallationInterceptor(
 
         if (isExpired) {
             // If the token is expired, we need to update it
-            installation = updateInstallationToken(installation)
+            installation = updateInstallationToken(orgId, installation)
         }
 
 

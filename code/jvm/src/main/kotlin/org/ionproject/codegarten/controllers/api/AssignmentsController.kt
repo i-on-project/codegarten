@@ -128,7 +128,6 @@ class AssignmentsController(
     }
 
     @RequiresUserInAssignment
-    @RequiresUserAuth
     @GetMapping(ASSIGNMENT_BY_NUMBER_HREF)
     fun getAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
@@ -191,10 +190,11 @@ class AssignmentsController(
         user: User,
         userClassroom: UserClassroom,
         installation: Installation,
-        @RequestBody input: AssignmentCreateInputModel
+        @RequestBody input: AssignmentCreateInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
         if (input.type == null) throw InvalidInputException("Missing type")
         if (!validAssignmentTypes.contains(input.type)) throw InvalidInputException("Invalid type. Must be one of: $validAssignmentTypes")
@@ -231,11 +231,13 @@ class AssignmentsController(
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: AssignmentEditInputModel
+        @RequestBody input: AssignmentEditInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
+
         assignmentsDb.editAssignment(orgId, classroomNumber, assignmentNumber, input.name, input.description)
         return ResponseEntity
             .status(HttpStatus.OK)

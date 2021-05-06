@@ -1,10 +1,10 @@
 CREATE TRIGGER trig_create_installation_seq
-BEFORE INSERT ON INSTALLATION
+AFTER INSERT ON INSTALLATION
 FOR EACH ROW 
 EXECUTE PROCEDURE func_create_installation_seq();
 
 CREATE TRIGGER trig_cleanup_installation_seq
-BEFORE DELETE ON INSTALLATION
+AFTER DELETE ON INSTALLATION
 FOR EACH ROW 
 EXECUTE PROCEDURE func_cleanup_installation_seq();
 
@@ -27,6 +27,11 @@ CREATE TRIGGER trig_cleanup_assignment_seq
 BEFORE DELETE ON ASSIGNMENT
 FOR EACH ROW 
 EXECUTE PROCEDURE func_cleanup_assignment_seq();
+
+CREATE TRIGGER trig_get_team_number
+BEFORE INSERT ON TEAM
+FOR EACH ROW 
+EXECUTE PROCEDURE func_get_team_number();
 
 CREATE TRIGGER trig_get_delivery_number
 BEFORE INSERT ON DELIVERY

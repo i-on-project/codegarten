@@ -34,6 +34,8 @@ object UserActions {
         href = URI(USER_HREF).includeHost()
     )
 
+    // Classrooms
+
     fun getAddUserToClassroom(orgId: Int, classroomNumber: Int) = SirenAction(
         name = "add-user-to-classroom",
         title = "Add User To Classroom",
@@ -60,6 +62,8 @@ object UserActions {
             SirenActionField(name = "userId", type = SirenFieldType.number)
         )
     )
+
+    // Assignments
 
     fun getAddUserToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, isGroupAssignment: Boolean) = SirenAction(
         name = "add-user-to-assignment",
@@ -89,4 +93,5 @@ object UserActions {
             SirenActionField(name = "userId", type = SirenFieldType.number),
         )
     )
+
 }

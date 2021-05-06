@@ -20,6 +20,7 @@ object Routes {
 
     const val ORG_PARAM = "orgId"
     const val CLASSROOM_PARAM = "classroomNumber"
+    const val TEAM_PARAM = "teamNumber"
     const val ASSIGNMENT_PARAM = "assignmentNumber"
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
@@ -80,6 +81,17 @@ object Routes {
     fun getClassroomsUri(orgId: Int) = CLASSROOMS_HREF_TEMPLATE.expand(orgId)
     fun getClassroomByNumberUri(orgId: Int, classroomNumber: Int) =
         CLASSROOM_BY_NUMBER_HREF_TEMPLATE.expand(orgId, classroomNumber)
+
+    // Teams
+    const val TEAMS_HREF = "$CLASSROOM_BY_NUMBER_HREF/teams"
+    const val TEAM_BY_NUMBER_HREF = "$TEAMS_HREF/{$TEAM_PARAM}"
+
+    val TEAMS_HREF_TEMPLATE = UriTemplate(TEAMS_HREF)
+    val TEAM_BY_NUMBER_HREF_TEMPLATE = UriTemplate(TEAM_BY_NUMBER_HREF)
+
+    fun getTeamsUri(orgId: Int, classroomNumber: Int) = TEAMS_HREF_TEMPLATE.expand(orgId, classroomNumber)
+    fun getTeamByNumberUri(orgId: Int, classroomNumber: Int, teamNumber: Int) =
+        TEAM_BY_NUMBER_HREF_TEMPLATE.expand(orgId, classroomNumber, teamNumber)
 
 
     // Assignments

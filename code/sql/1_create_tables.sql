@@ -50,6 +50,24 @@ CREATE TABLE DELIVERY
     UNIQUE(aid, number)
 );
 
+CREATE TABLE TEAM
+(
+    tid              INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    cid              INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL,
+    number           INT NOT NULL,
+    name             VARCHAR(64) NOT NULL,
+    gh_id            INT UNIQUE NOT NULL,
+    UNIQUE(cid, number),
+    UNIQUE(cid, name)
+);
+
+CREATE TABLE USER_TEAM
+(
+    uid             INT REFERENCES USERS(uid) ON DELETE CASCADE NOT NULL,
+    tid             INT REFERENCES TEAM(tid) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY(uid, tid)
+);
+
 CREATE TABLE USER_CLASSROOM
 (
     type            VARCHAR(16) NOT NULL CHECK (type IN ('teacher', 'student')),
@@ -64,6 +82,14 @@ CREATE TABLE USER_ASSIGNMENT
     aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
     repo_id         INT NOT NULL,
     PRIMARY KEY(uid, aid)
+);
+
+CREATE TABLE TEAM_ASSIGNMENT
+(
+    tid             INT REFERENCES TEAM(tid) ON DELETE CASCADE NOT NULL,
+    aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE NOT NULL,
+    repo_id         INT NOT NULL,
+    PRIMARY KEY(tid, aid)    
 );
 
 CREATE TABLE CLIENT

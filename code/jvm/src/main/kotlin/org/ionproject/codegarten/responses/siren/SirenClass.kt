@@ -7,6 +7,6 @@ enum class SirenClass {
     assignment,
     delivery,
     user,
-    author,
+    team,
     collection,
 }

@@ -118,8 +118,9 @@ class UsersController(
     @PutMapping(USER_HREF)
     fun editUser(
         user: User,
-        @RequestBody input: UserEditInputModel
+        @RequestBody input: UserEditInputModel?
     ): ResponseEntity<Any> {
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
         usersDb.editUser(user.uid, input.name)
@@ -142,6 +143,7 @@ class UsersController(
     }
 
     // Users of Classrooms Handlers
+
     @RequiresUserInClassroom
     @GetMapping(USERS_OF_CLASSROOM_HREF)
     fun getUsersOfClassroom(
@@ -203,13 +205,14 @@ class UsersController(
         @PathVariable(name = USER_PARAM) userId: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: UserAddInputModel
+        @RequestBody input: UserAddInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
 
         // User cannot add itself into the classroom, so it's safe to assume it's an edit request
         if (user.uid == userId) throw InvalidInputException("Cannot edit user with id '$userId' while authenticated as itself")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.role == null) throw InvalidInputException("Missing role")
         if (!validRoleTypes.contains(input.role)) throw InvalidInputException("Invalid role. Must be one of: $validRoleTypes")
 
@@ -239,6 +242,7 @@ class UsersController(
     }
 
     // Users of Assignments Handlers
+
     // TODO: Check when Team
     @RequiresUserInAssignment
     @GetMapping(USERS_OF_ASSIGNMENT_HREF)

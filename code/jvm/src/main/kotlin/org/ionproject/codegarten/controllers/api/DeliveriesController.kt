@@ -275,10 +275,11 @@ class DeliveriesController(
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: DeliveryCreateInputModel
+        @RequestBody input: DeliveryCreateInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
 
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.tag == null) throw InvalidInputException("Missing tag")
 
         val dueDate = try {
@@ -305,9 +306,11 @@ class DeliveriesController(
         @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: DeliveryEditInputModel
+        @RequestBody input: DeliveryEditInputModel?
     ): ResponseEntity<Any> {
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+
+        if (input == null) throw InvalidInputException("Missing body")
 
         val dueDate = try {
             OffsetDateTime.parse(input.dueDate)

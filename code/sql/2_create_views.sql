@@ -14,6 +14,19 @@ SELECT
     CLASSROOM.name AS classroom_name
 FROM ASSIGNMENT JOIN CLASSROOM ON (ASSIGNMENT.cid = CLASSROOM.cid);
 
+CREATE VIEW V_TEAM AS
+SELECT
+    tid,
+    TEAM.number,            
+    TEAM.name,             
+    gh_id,
+    
+    CLASSROOM.org_id AS org_id,
+    CLASSROOM.cid AS classroom_id,
+    CLASSROOM.number AS classroom_number,
+    CLASSROOM.name AS classroom_name
+FROM TEAM JOIN CLASSROOM ON (TEAM.cid = CLASSROOM.cid);
+
 CREATE VIEW V_DELIVERY AS
 SELECT
     did,
@@ -52,4 +65,12 @@ SELECT
     USER_ASSIGNMENT.repo_id AS repo_id,
     USER_ASSIGNMENT.aid AS assignment_id
 FROM USERS JOIN USER_ASSIGNMENT ON (USERS.uid = USER_ASSIGNMENT.uid);
+
+CREATE VIEW V_TEAM_USER_ASSIGNMENT AS
+SELECT
+    USER_TEAM.uid,
+    USER_TEAM.tid,
+    TEAM_ASSIGNMENT.aid
+FROM USER_TEAM JOIN TEAM_ASSIGNMENT ON (USER_TEAM.tid = TEAM_ASSIGNMENT.tid);
+
           

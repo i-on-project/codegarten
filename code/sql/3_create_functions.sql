@@ -24,6 +24,7 @@ $$
     BEGIN  
         NEW.number = nextval('classroom_number_seq_' || NEW.org_id);
         EXECUTE format('CREATE sequence assignment_number_seq_%s', NEW.cid);
+        EXECUTE format('CREATE sequence team_number_seq_%s', NEW.cid);
         RETURN NEW;
     END
 $$
@@ -34,6 +35,7 @@ RETURNS TRIGGER AS
 $$
     BEGIN
         EXECUTE format('DROP sequence assignment_number_seq_%s', OLD.cid);
+        EXECUTE format('DROP sequence team_number_seq_%s', OLD.cid);
         RETURN OLD;
     END
 $$
@@ -56,6 +58,16 @@ $$
     BEGIN
         EXECUTE format('DROP sequence delivery_number_seq_%s', OLD.aid);
         RETURN OLD;
+    END
+$$
+LANGUAGE 'plpgsql';
+
+CREATE FUNCTION func_get_team_number()
+RETURNS TRIGGER AS
+$$
+    BEGIN
+        NEW.number = nextval('team_number_seq_' || NEW.cid);
+        RETURN NEW;
     END
 $$
 LANGUAGE 'plpgsql';

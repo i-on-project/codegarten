@@ -22,6 +22,7 @@ object GitHubRoutes {
     const val LOGIN_PARAM = "login"
     const val REPO_ID_PARAM = "repoId"
     const val TAG_PARAM = "tag"
+    const val TEAM_PARAM = "teamId"
 
 
     // OAuth
@@ -128,10 +129,25 @@ object GitHubRoutes {
     fun getGitHubRefsTagsUri(repoId: Int) = GITHUB_REFS_TAGS_URI_TEMPLATE.expand(repoId)
     fun getGitHubRefTagUri(repoId: Int, tag: String) = GITHUB_REF_TAG_URI_TEMPLATE.expand(repoId, tag)
 
+    // Teams
+    const val GITHUB_TEAMS_URI = "$GITHUB_ORG_URI/teams"
+    const val GITHUB_TEAMS_ID_URI = "$GITHUB_ORG_URI/team"
+    const val GITHUB_TEAM_ID_URI = "$GITHUB_TEAMS_ID_URI/{$TEAM_PARAM}"
+
+    val GITHUB_TEAMS_URI_TEMPLATE = UriTemplate(GITHUB_TEAMS_URI)
+    val GITHUB_TEAMS_ID_URI_TEMPLATE = UriTemplate(GITHUB_TEAMS_ID_URI)
+    val GITHUB_TEAM_ID_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_ID_URI)
+
+    fun getGitHubTeamsUri(orgId: Int) = GITHUB_TEAMS_URI_TEMPLATE.expand(orgId)
+    fun getGitHubTeamsByIdUri(orgId: Int) = GITHUB_TEAMS_ID_URI_TEMPLATE.expand(orgId)
+    fun getGitHubTeamByIdUri(orgId: Int, teamId: Int) = GITHUB_TEAM_ID_URI_TEMPLATE.expand(orgId, teamId)
 
     // Aux functions
     fun getGitHubTagNameFromRef(ref: String) = ref.replaceFirst(GITHUB_REF_TAG_PREFIX, "")
 
     fun generateCodeGartenRepoName(classroomNumber: Int, prefix: String, username: String) =
         "CG$classroomNumber-$prefix-$username"
+
+    fun generateCodeGartenTeamName(classroomNumber: Int, teamName: String) =
+        "CG$classroomNumber-$teamName"
 }

@@ -34,8 +34,9 @@ class AuthController(
 
     @PostMapping(AUTH_TOKEN_HREF)
     fun getAccessToken(
-        input: AuthorizationInputModel
+        input: AuthorizationInputModel?
     ) : ResponseEntity<Response> {
+        if (input == null) throw InvalidInputException("Missing body")
         if (input.client_id == null) throw InvalidInputException("Missing client_id")
         if (input.client_secret == null) throw InvalidInputException("Missing client_secret")
         if (input.code == null) throw InvalidInputException("Missing code")
