@@ -17,6 +17,7 @@ import kotlin.random.Random
 
 private const val AUTH_CODE_LENGTH = 20
 private const val ACCESS_TOKEN_LENGTH = 32
+private const val INVITE_CODE_LENGTH = 16
 
 private const val CIPHER_ALGORITHM = "AES"
 private const val CIPHER_TRANSFORMATION = "$CIPHER_ALGORITHM/CBC/PKCS5PADDING"
@@ -56,6 +57,7 @@ class CryptoUtils(cipherKeyPath: String) {
 
     fun generateAuthCode() = generateRandomCode(AUTH_CODE_LENGTH, OffsetDateTime.now().plusMinutes(1))
     fun generateAccessToken() = generateRandomCode(ACCESS_TOKEN_LENGTH, OffsetDateTime.now().plusWeeks(2))
+    fun generateInviteCode() = generateRandomCode(INVITE_CODE_LENGTH)
 
     fun validateClientSecret(toValidate: String, secretHash: String) = secretHash == hash(toValidate)
 
@@ -67,12 +69,16 @@ class CryptoUtils(cipherKeyPath: String) {
         exp: OffsetDateTime
     ) =
         CodeWrapper(
-            code = (1..length)
-                .map { Random.nextInt(0, validChars.size) }
-                .map(validChars::get)
-                .joinToString(""),
+            code = generateRandomCode(length),
             expirationDate = exp
         )
+
+    private fun generateRandomCode(
+        length: Int
+    ) = (1..length)
+        .map { Random.nextInt(0, validChars.size) }
+        .map(validChars::get)
+        .joinToString("")
 
     fun encrypt(toEncrypt: String): String {
         val cipher = Cipher.getInstance(CIPHER_TRANSFORMATION)

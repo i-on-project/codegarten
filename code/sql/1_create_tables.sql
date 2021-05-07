@@ -18,6 +18,7 @@ CREATE TABLE CLASSROOM
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     org_id          INT REFERENCES INSTALLATION(org_id) ON DELETE CASCADE NOT NULL,
+    inv_code        VARCHAR(32) UNIQUE NOT NULL,
     number          INT NOT NULL,  -- Number in relation to the organization
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
@@ -29,6 +30,7 @@ CREATE TABLE ASSIGNMENT
 (
     aid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     cid             INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL,
+    inv_code        VARCHAR(32) UNIQUE NOT NULL,
     number          INT NOT NULL,  -- Number in relation to the classroom
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),

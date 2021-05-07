@@ -5,6 +5,7 @@ import org.ionproject.codegarten.responses.siren.SirenClass.collection
 
 class AssignmentOutputModel(
     val id: Int,
+    val inviteCode: String?,
     val name: String,
     val description: String?,
     val type: String,
@@ -18,6 +19,7 @@ class AssignmentOutputModel(
 
 class AssignmentItemOutputModel(
     val id: Int,
+    val inviteCode: String?,
     val name: String,
     val description: String?,
     val type: String,

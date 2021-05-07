@@ -29,10 +29,16 @@ private const val DELETE_TEAM_QUERY = "DELETE FROM TEAM WHERE tid = :teamId"
 
 // Assignments
 
+private const val GET_TEAMS_IN_ASSIGNMENT_BASE =
+    "SELECT tid, number, name, gh_id, repo_id, assignment_id FROM V_TEAM_ASSIGNMENT"
+
 private const val GET_TEAMS_IN_ASSIGNMENT_QUERY =
-    "SELECT tid, number, name, gh_id, repo_id, assignment_id FROM V_TEAM_ASSIGNMENT WHERE assignment_id = :assignmentId ORDER BY number"
+    "$GET_TEAMS_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId ORDER BY number"
 private const val GET_TEAMS_IN_ASSIGNMENT_COUNT =
     "SELECT COUNT(tid) as count FROM TEAM_ASSIGNMENT WHERE aid = :assignmentId"
+
+private const val GET_TEAM_IN_ASSIGNMENT_QUERY =
+    "$GET_TEAMS_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND tid = :teamId"
 
 private const val ADD_TEAM_TO_ASSIGNMENT =
     "INSERT INTO TEAM_ASSIGNMENT(tid, aid, repo_id) VALUES(:teamId, :assignmentId, :repoId)"
@@ -209,6 +215,22 @@ class TeamsDb(
             GET_TEAMS_IN_ASSIGNMENT_COUNT,
             Int::class.java,
             mapOf("assignmentId" to assignmentId)
+        )
+
+    fun getTeamAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, teamNumber: Int): TeamAssignment {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        val teamId = getTeam(orgId, classroomNumber, teamNumber).tid
+        return getTeamAssignment(assignmentId, teamId)
+    }
+
+    fun getTeamAssignment(assignmentId: Int, teamId: Int) =
+        jdbi.getOne(
+            GET_TEAM_IN_ASSIGNMENT_QUERY,
+            TeamAssignment::class.java,
+            mapOf(
+                "assignmentId" to assignmentId,
+                "teamId" to teamId
+            )
         )
 
     fun addTeamToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, teamNumber: Int, repoId: Int) {

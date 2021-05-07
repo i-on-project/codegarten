@@ -21,6 +21,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallatio
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubInstallationUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubMembershipUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubNewInstallationUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgInvitationsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRefTagUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRefsTagsUri
@@ -339,5 +340,18 @@ class GitHubInterface(
             .build()
 
         httpClient.call(req)
+    }
+
+    fun inviteUserToOrg(orgId: Int, userId: Int, installationToken: String) {
+        val json = mapper.createObjectNode()
+        json.put("invitee_id", userId)
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubOrgInvitationsUri(orgId), clientName, installationToken)
+            .post(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        return httpClient.call(req)
     }
 }

@@ -36,6 +36,7 @@ import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -50,7 +51,8 @@ import org.springframework.web.bind.annotation.RestController
 class ClassroomsController(
     val classroomsDb: ClassroomsDb,
     val usersDb: UsersDb,
-    val gitHub: GitHubInterface
+    val gitHub: GitHubInterface,
+    val cryptoUtils: CryptoUtils
 ) {
 
     @RequiresUserInOrg
@@ -65,8 +67,10 @@ class ClassroomsController(
         val classroomsCount = classroomsDb.getClassroomsOfUserCount(orgId, user.uid)
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
+        val isOrgAdmin = orgRole == GitHubUserOrgRole.ADMIN
+
         val actions =
-            if (orgRole == GitHubUserOrgRole.ADMIN)
+            if (isOrgAdmin)
                 listOf(getCreateClassroomAction(orgId))
             else
                 null
@@ -79,6 +83,7 @@ class ClassroomsController(
             entities = classrooms.map {
                 ClassroomOutputModel(
                     id = it.cid,
+                    inviteCode = if (isOrgAdmin) it.inv_code else null,
                     number = it.number,
                     name = it.name,
                     description = it.description,
@@ -117,8 +122,10 @@ class ClassroomsController(
         val classroom = userClassroom.classroom
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
+        val isOrgAdmin = orgRole == GitHubUserOrgRole.ADMIN
+
         val actions =
-            if (orgRole == GitHubUserOrgRole.ADMIN)
+            if (isOrgAdmin)
                 listOf(
                     getEditClassroomAction(orgId, classroom.number),
                     getDeleteClassroomAction(orgId, classroom.number)
@@ -128,6 +135,7 @@ class ClassroomsController(
 
         return ClassroomOutputModel(
             id = classroom.cid,
+            if (isOrgAdmin) classroom.inv_code else null,
             number = classroom.number,
             name = classroom.name,
             description = classroom.description,
@@ -159,7 +167,12 @@ class ClassroomsController(
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
-        val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description)
+        var inviteCode: String
+        do {
+            inviteCode = cryptoUtils.generateInviteCode()
+        } while (classroomsDb.tryGetClassroomByInviteCode(inviteCode).isPresent)
+
+        val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description, inviteCode)
         usersDb.addUserToClassroom(createdClassroom.cid, user.uid, UserClassroomMembership.TEACHER)
         return ResponseEntity
             .status(HttpStatus.CREATED)

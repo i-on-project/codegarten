@@ -25,6 +25,7 @@ object Routes {
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
     const val PARTICIPANT_PARAM = "participantId"
+    const val INVITE_CODE_PARAM = "inviteCode"
     const val CLIENT_ID_PARAM = "client_id"
     const val INSTALLATION_ID_PARAM = "installation_id"
     const val STATE_PARAM = "state"
@@ -56,11 +57,23 @@ object Routes {
 
     // Users
     const val USER_HREF = "$API_BASE_URI/user"
+    const val USER_ASSIGNMENTS_HREF = "$USER_HREF/assignments"
+    const val USER_CLASSROOMS_HREF = "$USER_HREF/classrooms"
+    const val USER_ASSIGNMENT_HREF = "$USER_ASSIGNMENTS_HREF/{$INVITE_CODE_PARAM}"
+    const val USER_CLASSROOM_HREF = "$USER_CLASSROOMS_HREF/{$INVITE_CODE_PARAM}"
     const val USER_BY_ID_HREF = "$API_BASE_URI/users/{$USER_PARAM}"
 
     val USER_BY_ID_HREF_TEMPLATE = UriTemplate(USER_BY_ID_HREF)
+    val USER_ASSIGNMENTS_HREF_TEMPLATE = UriTemplate(USER_ASSIGNMENTS_HREF)
+    val USER_ASSIGNMENT_HREF_TEMPLATE = UriTemplate(USER_ASSIGNMENT_HREF)
+    val USER_CLASSROOMS_HREF_TEMPLATE = UriTemplate(USER_CLASSROOMS_HREF)
+    val USER_CLASSROOM_HREF_TEMPLATE = UriTemplate(USER_CLASSROOM_HREF)
 
     fun getUserByIdUri(userId: Int) = USER_BY_ID_HREF_TEMPLATE.expand(userId)
+    fun getUserAssignmentsUri(userId: Int) = USER_ASSIGNMENTS_HREF_TEMPLATE.expand(userId)
+    fun getUserAssignmentUri(userId: Int, inviteCode: String) = USER_ASSIGNMENT_HREF_TEMPLATE.expand(userId, inviteCode)
+    fun getUserClassroomsUri(userId: Int) = USER_CLASSROOMS_HREF_TEMPLATE.expand(userId)
+    fun getUserClassroomUri(userId: Int, inviteCode: String) = USER_CLASSROOM_HREF_TEMPLATE.expand(userId, inviteCode)
 
 
     // Organizations

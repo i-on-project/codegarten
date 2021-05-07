@@ -3,6 +3,7 @@ package org.ionproject.codegarten.database.dto
 data class Assignment(
     val aid: Int,
     val number: Int,
+    val inv_code: String,
     val name: String,
     val description: String?,
     val type: String,

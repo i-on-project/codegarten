@@ -42,6 +42,7 @@ import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -57,6 +58,7 @@ import java.net.URI
 class AssignmentsController(
     val assignmentsDb: AssignmentsDb,
     val gitHub: GitHubInterface,
+    val cryptoUtils: CryptoUtils
 ) {
 
     @RequiresUserInClassroom
@@ -96,6 +98,7 @@ class AssignmentsController(
             entities = assignments.map {
                 AssignmentItemOutputModel(
                     id = it.aid,
+                    inviteCode = if (userClassroom.role == UserClassroomMembership.TEACHER) it.inv_code else null,
                     name = it.name,
                     description = it.description,
                     type = it.type,
@@ -167,6 +170,7 @@ class AssignmentsController(
 
         return AssignmentOutputModel(
             id = assignment.aid,
+            inviteCode = if (userClassroom.role == UserClassroomMembership.TEACHER) assignment.inv_code else null,
             name = assignment.name,
             description = assignment.description,
             type = assignment.type,
@@ -212,7 +216,13 @@ class AssignmentsController(
             repoId = repo.id
         }
 
-        val createdAssignment = assignmentsDb.createAssignment(orgId, classroomNumber,
+        // Generate unique invite code
+        var inviteCode: String
+        do {
+            inviteCode = cryptoUtils.generateInviteCode()
+        } while (assignmentsDb.tryGetAssignmentByInviteCode(inviteCode).isPresent)
+
+        val createdAssignment = assignmentsDb.createAssignment(orgId, classroomNumber, inviteCode,
             input.name, input.description, input.type, input.repoPrefix, repoId
         )
 

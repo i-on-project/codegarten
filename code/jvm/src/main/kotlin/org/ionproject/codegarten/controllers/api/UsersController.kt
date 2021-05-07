@@ -2,6 +2,7 @@ package org.ionproject.codegarten.controllers.api
 
 import org.ionproject.codegarten.Routes.ASSIGNMENT_PARAM
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
+import org.ionproject.codegarten.Routes.INVITE_CODE_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.TEAM_PARAM
@@ -12,6 +13,7 @@ import org.ionproject.codegarten.Routes.USER_BY_ID_HREF
 import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.PARTICIPANT_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.PARTICIPANT_PARAM
+import org.ionproject.codegarten.Routes.USER_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_OF_TEAM_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
@@ -46,11 +48,14 @@ import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMB
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.dto.isIndividualAssignment
+import org.ionproject.codegarten.database.helpers.AssignmentsDb
+import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
@@ -62,6 +67,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenRe
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamAvatarUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserAvatarUri
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.Siren
 import org.ionproject.codegarten.responses.siren.SirenAction
@@ -82,6 +88,8 @@ import java.net.URI
 class UsersController(
     val usersDb: UsersDb,
     val teamsDb: TeamsDb,
+    val classroomsDb: ClassroomsDb,
+    val assignmentsDb: AssignmentsDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils,
 ) {
@@ -213,12 +221,14 @@ class UsersController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
+    @RequiresGhAppInstallation
     @RequiresUserInClassroom
     @PutMapping(USER_OF_CLASSROOM_HREF)
     fun addUserToClassroom(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = USER_PARAM) userId: Int,
+        installation: Installation,
         user: User,
         userClassroom: UserClassroom,
         @RequestBody input: UserAddInputModel?
@@ -231,6 +241,12 @@ class UsersController(
         if (input == null) throw InvalidInputException("Missing body")
         if (input.role == null) throw InvalidInputException("Missing role")
         if (!validRoleTypes.contains(input.role)) throw InvalidInputException("Invalid role. Must be one of: $validRoleTypes")
+
+        val userToAdd = usersDb.getUserById(userId)
+
+        if (gitHub.getUserOrgMembership(orgId, userToAdd.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
+            gitHub.inviteUserToOrg(orgId, userToAdd.gh_id, installation.accessToken)
+        }
 
         usersDb.addOrEditUserInClassroom(orgId, classroomNumber, userId, input.role)
 
@@ -602,6 +618,31 @@ class UsersController(
 
         return ResponseEntity
             .status(HttpStatus.OK)
+            .body(null)
+    }
+
+    @RequiresUserAuth
+    @PutMapping(USER_CLASSROOM_HREF)
+    fun addAuthUserToClassroom(
+        @PathVariable(name = INVITE_CODE_PARAM) inviteCode: String,
+        user: User
+    ): ResponseEntity<Any> {
+        // TODO: Need a way to get Installation token
+        val maybeClassroom = classroomsDb.tryGetClassroomByInviteCode(inviteCode)
+        if (maybeClassroom.isEmpty) throw NotFoundException("Invite code does not exist")
+        val classroom = maybeClassroom.get()
+
+        /*
+        if (gitHub.getUserOrgMembership(classroom.org_id, user.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
+            gitHub.inviteUserToOrg(classroom.org_id, user.gh_id, installation.accessToken)
+        }
+        */
+
+        // TODO: Don't hardcode this
+        usersDb.addOrEditUserInClassroom(classroom.org_id, classroom.number, user.uid, "student")
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
             .body(null)
     }
 }

@@ -61,7 +61,8 @@ class UsersOutputModel(
 
 val validRoleTypes = listOf("student", "teacher")
 data class UserAddInputModel(
-    val role: String?
+    val role: String?,
+    val inviteCode: String?
 )
 
 data class UserEditInputModel(

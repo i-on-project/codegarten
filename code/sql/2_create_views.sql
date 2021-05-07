@@ -1,6 +1,7 @@
 CREATE VIEW V_ASSIGNMENT AS
 SELECT 
     aid,
+    ASSIGNMENT.inv_code AS inv_code,
     ASSIGNMENT.number AS number,
     ASSIGNMENT.name AS name,
     ASSIGNMENT.description AS description,

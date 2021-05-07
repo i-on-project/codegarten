@@ -5,11 +5,13 @@ import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private const val GET_ASSIGNMENTS_BASE =
-    "SELECT aid, number, name, description, type, repo_prefix, repo_template, org_id, classroom_id, classroom_number, classroom_name FROM V_ASSIGNMENT"
+    "SELECT aid, number, inv_code, name, description, type, repo_prefix, repo_template, org_id, classroom_id, classroom_number, classroom_name FROM V_ASSIGNMENT"
 private const val GET_ASSIGNMENT_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND number = :number"
 private const val GET_ASSIGNMENT_BY_ID_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE aid = :assignmentId"
+private const val GET_ASSIGNMENT_BY_INVCODE_QUERY =
+    "$GET_ASSIGNMENTS_BASE WHERE inv_code = :inviteCode"
 
 private const val GET_ASSIGNMENTS_OF_CLASSROOM_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber ORDER BY number"
@@ -24,8 +26,8 @@ private const val GET_ASSIGNMENTS_OF_USER_COUNT =
     "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId)"
 
 private const val CREATE_ASSIGNMENT_QUERY =
-    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template) VALUES" +
-    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplateId)"
+    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template, inv_code) VALUES" +
+    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplateId, :inviteCode)"
 
 private const val UPDATE_ASSIGNMENT_START = "UPDATE ASSIGNMENT SET"
 private const val UPDATE_ASSIGNMENT_END = "WHERE aid = :assignmentId"
@@ -43,6 +45,13 @@ class AssignmentsDb(
             GET_ASSIGNMENT_QUERY,
             Assignment::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "number" to assignmentNumber)
+        )
+
+    fun tryGetAssignmentByInviteCode(inviteCode: String) =
+        jdbi.tryGetOne(
+            GET_ASSIGNMENT_BY_INVCODE_QUERY,
+            Assignment::class.java,
+            mapOf("inviteCode" to inviteCode)
         )
 
     fun getAllAssignments(orgId: Int, classroomNumber: Int, page: Int, limit: Int): List<Assignment> {
@@ -75,7 +84,7 @@ class AssignmentsDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "userId" to userId)
         )
 
-    fun createAssignment(orgId: Int, classroomNumber: Int, name: String, description: String? = null,
+    fun createAssignment(orgId: Int, classroomNumber: Int, inviteCode: String, name: String, description: String? = null,
                          type: String, repoPrefix: String, repoTemplateId: Int? = null): Assignment {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
 
@@ -84,6 +93,7 @@ class AssignmentsDb(
             GET_ASSIGNMENT_BY_ID_QUERY, Assignment::class.java,
             mapOf(
                 "classroomId" to classroomId,
+                "inviteCode" to inviteCode,
                 "name" to name,
                 "description" to description,
                 "type" to type,
