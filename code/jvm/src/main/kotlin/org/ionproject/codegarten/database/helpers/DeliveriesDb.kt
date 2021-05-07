@@ -46,10 +46,10 @@ class DeliveriesDb(
             )
         )
 
-    fun getDeliveriesOfAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, perPage: Int) =
+    fun getDeliveriesOfAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int) =
         jdbi.getList(
             GET_DELIVERIES_OF_ASSIGNMENT_QUERY,
-            Delivery::class.java, page, perPage,
+            Delivery::class.java, page, limit,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
 

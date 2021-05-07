@@ -24,6 +24,7 @@ object Routes {
     const val ASSIGNMENT_PARAM = "assignmentNumber"
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
+    const val PARTICIPANT_PARAM = "participantId"
     const val CLIENT_ID_PARAM = "client_id"
     const val INSTALLATION_ID_PARAM = "installation_id"
     const val STATE_PARAM = "state"
@@ -134,30 +135,41 @@ object Routes {
 
 
     // User Assignment
-    const val USERS_OF_ASSIGNMENT_HREF = "$ASSIGNMENT_BY_NUMBER_HREF/users"
-    const val USER_OF_ASSIGNMENT_HREF = "$USERS_OF_ASSIGNMENT_HREF/{$USER_PARAM}"
+    const val PARTICIPANTS_OF_ASSIGNMENT_HREF = "$ASSIGNMENT_BY_NUMBER_HREF/participants"
+    const val PARTICIPANT_OF_ASSIGNMENT_HREF = "$PARTICIPANTS_OF_ASSIGNMENT_HREF/{$PARTICIPANT_PARAM}"
 
-    val USERS_OF_ASSIGNMENT_HREF_TEMPLATE = UriTemplate(USERS_OF_ASSIGNMENT_HREF)
-    val USER_OF_ASSIGNMENT_HREF_TEMPLATE = UriTemplate(USER_OF_ASSIGNMENT_HREF)
+    val PARTICIPANTS_OF_ASSIGNMENT_HREF_TEMPLATE = UriTemplate(PARTICIPANTS_OF_ASSIGNMENT_HREF)
+    val PARTICIPANT_OF_ASSIGNMENT_HREF_TEMPLATE = UriTemplate(PARTICIPANT_OF_ASSIGNMENT_HREF)
 
-    fun getUsersOfAssignmentUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
-        USERS_OF_ASSIGNMENT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber)
-    fun getUserOfAssignmentUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int) =
-        USER_OF_ASSIGNMENT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, userId)
+    fun getParticipantsOfAssignmentUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
+        PARTICIPANTS_OF_ASSIGNMENT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber)
+    fun getParticipantOfAssignmentUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, participantId: Int) =
+        PARTICIPANT_OF_ASSIGNMENT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, participantId)
 
 
     // User Deliveries
-    const val DELIVERIES_OF_USER_HREF = "$USER_OF_ASSIGNMENT_HREF/deliveries"
-    const val DELIVERY_OF_USER_HREF = "$DELIVERIES_OF_USER_HREF/{$DELIVERY_PARAM}"
+    const val DELIVERIES_OF_PARTICIPANT_HREF = "$PARTICIPANT_OF_ASSIGNMENT_HREF/deliveries"
+    const val DELIVERY_OF_PARTICIPANT_HREF = "$DELIVERIES_OF_PARTICIPANT_HREF/{$DELIVERY_PARAM}"
 
-    val DELIVERIES_OF_USER_HREF_TEMPLATE = UriTemplate(DELIVERIES_OF_USER_HREF)
-    val DELIVERY_OF_USER_HREF_TEMPLATE = UriTemplate(DELIVERY_OF_USER_HREF)
+    val DELIVERIES_OF_PARTICIPANT_HREF_TEMPLATE = UriTemplate(DELIVERIES_OF_PARTICIPANT_HREF)
+    val DELIVERY_OF_PARTICIPANT_HREF_TEMPLATE = UriTemplate(DELIVERY_OF_PARTICIPANT_HREF)
 
-    fun getDeliveriesOfUserUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int) =
-        DELIVERIES_OF_USER_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, userId)
-    fun getDeliveryOfUserUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int, deliveryNumber: Int) =
-        DELIVERY_OF_USER_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, userId, deliveryNumber)
+    fun getDeliveriesOfParticipantUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, participantId: Int) =
+        DELIVERIES_OF_PARTICIPANT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, participantId)
+    fun getDeliveryOfParticipantUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int, participantId: Int, deliveryNumber: Int) =
+        DELIVERY_OF_PARTICIPANT_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber)
 
+    // User Team
+    const val USERS_OF_TEAM_HREF = "$TEAM_BY_NUMBER_HREF/users"
+    const val USER_OF_TEAM_HREF = "$USERS_OF_TEAM_HREF/{$USER_PARAM}"
+
+    val USERS_OF_TEAM_HREF_TEMPLATE = UriTemplate(USERS_OF_TEAM_HREF)
+    val USER_OF_TEAM_HREF_TEMPLATE = UriTemplate(USER_OF_TEAM_HREF)
+
+    fun getUsersOfTeamUri(orgId: Int, classroomNumber: Int, teamNumber: Int) =
+        USERS_OF_TEAM_HREF_TEMPLATE.expand(orgId, classroomNumber, teamNumber)
+    fun getUserOfTeamUri(orgId: Int, classroomNumber: Int, teamNumber: Int, userId: Int) =
+        USER_OF_TEAM_HREF_TEMPLATE.expand(orgId, classroomNumber, teamNumber, userId)
 
     // Helpers
     fun createSirenLinkListForPagination(uri: URI, page: Int, limit: Int, collectionSize: Int = Int.MAX_VALUE, pageSize: Int = Int.MAX_VALUE): List<SirenLink> {

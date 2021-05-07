@@ -67,9 +67,11 @@ private const val ADD_USER_TO_ASSIGNMENT_QUERY =
 private const val DELETE_USER_FROM_ASSIGNMENT_QUERY = "DELETE FROM USER_ASSIGNMENT WHERE uid = :userId AND aid = :assignmentId"
 
 // Teams
+private const val GET_USERS_OF_TEAM_QUERY = "$GET_USERS_BASE WHERE uid IN (SELECT uid FROM USER_TEAM WHERE tid = :teamId)"
+private const val GET_USERS_OF_TEAM_COUNT = "SELECT COUNT(uid) as count FROM USER_TEAM WHERE tid = :teamId"
 
 private const val ADD_USER_TO_TEAM_QUERY = "INSERT INTO USER_TEAM(tid, uid) VALUES(:teamId, :userId)"
-private const val DELETE_USER_TO_TEAM_QUERY = "DELETE FROM USER_TEAM WHERE tid = :teamId AND uid = :userId)"
+private const val DELETE_USER_FROM_TEAM_QUERY = "DELETE FROM USER_TEAM WHERE tid = :teamId AND uid = :userId"
 
 @Component
 class UsersDb(
@@ -136,11 +138,11 @@ class UsersDb(
 
     // Classrooms
 
-    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, perPage: Int): List<UserClassroomDto> {
+    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, limit: Int): List<UserClassroomDto> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return jdbi.getList(
             GET_USERS_IN_CLASSROOM_QUERY,
-            UserClassroomDto::class.java, page, perPage,
+            UserClassroomDto::class.java, page, limit,
             mapOf("classroomId" to classroomId)
         )
     }
@@ -232,11 +234,11 @@ class UsersDb(
 
     // Assignments
 
-    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, perPage: Int): List<UserAssignment> {
+    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): List<UserAssignment> {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
         return jdbi.getList(
             GET_USERS_IN_ASSIGNMENT_QUERY,
-            UserAssignment::class.java, page, perPage,
+            UserAssignment::class.java, page, limit,
             mapOf("assignmentId" to assignmentId)
         )
     }
@@ -301,6 +303,39 @@ class UsersDb(
 
     // Teams
 
+    fun getUsersInTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, page: Int, limit: Int): List<User> {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        return getUsersInTeam(classroomId, teamNumber, page, limit)
+    }
+
+    fun getUsersInTeamCount(orgId: Int, classroomNumber: Int, teamNumber: Int): Int {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        return getUsersInTeamCount(classroomId, teamNumber)
+    }
+
+    fun getUsersInTeam(classroomId: Int, teamNumber: Int, page: Int, limit: Int): List<User> {
+        val teamId = teamsDb.getTeam(classroomId, teamNumber).tid
+        return getUsersInTeam(teamId, page, limit)
+    }
+
+    fun getUsersInTeamCount(classroomId: Int, teamNumber: Int): Int {
+        val teamId = teamsDb.getTeam(classroomId, teamNumber).tid
+        return getUsersInTeamCount(teamId)
+    }
+
+    fun getUsersInTeam(teamId: Int, page: Int, limit: Int) =
+        jdbi.getList(
+            GET_USERS_OF_TEAM_QUERY, User::class.java,
+            page, limit,
+            mapOf("teamId" to teamId)
+        )
+
+    fun getUsersInTeamCount(teamId: Int) =
+        jdbi.getOne(
+            GET_USERS_OF_TEAM_COUNT, Int::class.java,
+            mapOf("teamId" to teamId)
+        )
+
     fun addUserToTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, userId: Int) {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         addUserToTeam(classroomId, teamNumber, userId)
@@ -332,7 +367,7 @@ class UsersDb(
 
     fun deleteUserFromTeam(teamId: Int, userId: Int) =
         jdbi.delete(
-            DELETE_USER_TO_TEAM_QUERY,
+            DELETE_USER_FROM_TEAM_QUERY,
             mapOf(
                 "teamId" to teamId,
                 "userId" to userId

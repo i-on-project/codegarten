@@ -6,11 +6,12 @@ import org.ionproject.codegarten.Routes.ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.CLASSROOMS_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.CLASSROOM_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERIES_HREF_TEMPLATE
-import org.ionproject.codegarten.Routes.DELIVERIES_OF_USER_HREF_TEMPLATE
+import org.ionproject.codegarten.Routes.DELIVERIES_OF_PARTICIPANT_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.ORGS_HREF
 import org.ionproject.codegarten.Routes.ORG_BY_ID_HREF_TEMPLATE
-import org.ionproject.codegarten.Routes.USERS_OF_ASSIGNMENT_HREF_TEMPLATE
+import org.ionproject.codegarten.Routes.PARTICIPANTS_OF_ASSIGNMENT_HREF_TEMPLATE
+import org.ionproject.codegarten.Routes.TEAMS_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USER_BY_ID_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.USER_HREF
@@ -48,13 +49,14 @@ class HomeController {
                 SirenLink(listOf("classrooms"), hrefTemplate = CLASSROOMS_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("classroom"), hrefTemplate = CLASSROOM_BY_NUMBER_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("classroomUsers"), hrefTemplate = USERS_OF_CLASSROOM_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("classroomTeams"), hrefTemplate = TEAMS_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("assignments"), hrefTemplate = ASSIGNMENTS_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("assignment"), hrefTemplate = ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE.includeHost()),
-                SirenLink(listOf("assignmentUsers"), hrefTemplate = USERS_OF_ASSIGNMENT_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("assignmentParticipants"), hrefTemplate = PARTICIPANTS_OF_ASSIGNMENT_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("deliveries"), hrefTemplate = DELIVERIES_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("delivery"), hrefTemplate = DELIVERY_BY_NUMBER_HREF_TEMPLATE.includeHost()),
                 SirenLink(listOf("user"), hrefTemplate = USER_BY_ID_HREF_TEMPLATE.includeHost()),
-                SirenLink(listOf("userDeliveries"), hrefTemplate = DELIVERIES_OF_USER_HREF_TEMPLATE.includeHost()),
+                SirenLink(listOf("userDeliveries"), hrefTemplate = DELIVERIES_OF_PARTICIPANT_HREF_TEMPLATE.includeHost()),
             )
         ).toResponseEntity(HttpStatus.OK)
     }

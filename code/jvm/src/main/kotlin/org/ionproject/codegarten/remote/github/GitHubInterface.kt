@@ -31,6 +31,8 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoGenerat
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTagNameFromRef
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamByIdUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamRepoUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamUserMembershipUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
@@ -297,5 +299,45 @@ class GitHubInterface(
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
+    }
+
+    fun deleteTeam(orgId: Int, teamId: Int, installationToken: String) {
+        val req = Request.Builder()
+            .from(getGitHubTeamByIdUri(orgId, teamId), clientName, installationToken)
+            .delete()
+            .build()
+
+        httpClient.call(req)
+    }
+
+    fun addUserToTeam(orgId: Int, teamId: Int, username: String, installationToken: String) {
+        val req = Request.Builder()
+            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), clientName, installationToken)
+            .put(FormBody.Builder().build())
+            .build()
+
+        httpClient.call(req)
+    }
+
+    fun removeUserFromTeam(orgId: Int, teamId: Int, username: String, installationToken: String) {
+        val req = Request.Builder()
+            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), clientName, installationToken)
+            .delete()
+            .build()
+
+        httpClient.call(req)
+    }
+
+    fun addTeamToRepo(orgId: Int, orgName: String, repoName: String, teamId: Int, installationToken: String) {
+        val json = mapper.createObjectNode()
+        json.put("permission", "push")
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubTeamRepoUri(orgId, teamId, orgName, repoName), clientName, installationToken)
+            .put(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        httpClient.call(req)
     }
 }

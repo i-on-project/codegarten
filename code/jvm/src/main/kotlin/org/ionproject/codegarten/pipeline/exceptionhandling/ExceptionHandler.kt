@@ -6,6 +6,7 @@ import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
@@ -44,6 +45,20 @@ fun handleExceptionResponse(
 
 @RestControllerAdvice
 class ExceptionHandler {
+
+    @ExceptionHandler(value = [HttpRequestException::class])
+    private fun handleHttpRequestException(
+        ex: HttpRequestException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> {
+        return handleExceptionResponse(
+            URI("/problems/github-api-error").includeHost(),
+            "Error While Processing GitHub API Response",
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            ex.localizedMessage,
+            request.requestURI
+        )
+    }
 
     @ExceptionHandler(value = [NotFoundException::class])
     private fun handleNotFoundException(

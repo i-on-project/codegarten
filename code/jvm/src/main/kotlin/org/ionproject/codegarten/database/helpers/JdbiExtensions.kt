@@ -6,11 +6,11 @@ import java.util.*
 
 private const val GET_PAGINATED_SUFFIX = "LIMIT :limit OFFSET :offset"
 
-fun <T> Jdbi.getList(query: String, mapTo: Class<T>, page: Int, perPage: Int, binds: Map<String, Any?>? = null): List<T> =
+fun <T> Jdbi.getList(query: String, mapTo: Class<T>, page: Int, limit: Int, binds: Map<String, Any?>? = null): List<T> =
     this.withHandle<List<T>, Exception> {
         val handle = it.createQuery("$query $GET_PAGINATED_SUFFIX")
-            .bind("limit", perPage)
-            .bind("offset", page * perPage)
+            .bind("limit", limit)
+            .bind("offset", page * limit)
         binds?.forEach { entry -> handle.bind(entry.key, entry.value) }
 
         handle

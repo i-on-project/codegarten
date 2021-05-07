@@ -1,16 +1,24 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Team
+import org.ionproject.codegarten.database.dto.TeamAssignment
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
 private const val GET_TEAMS_BASE =
     "SELECT tid, number, name, gh_id, org_id, classroom_id, classroom_number, classroom_name FROM V_TEAM"
-private const val GET_TEAMS_BY_CLASSROOM_ID_QUERY = "$GET_TEAMS_BASE WHERE classroom_id = :classroomId"
+private const val GET_TEAMS_BY_CLASSROOM_ID_QUERY = "$GET_TEAMS_BASE WHERE classroom_id = :classroomId ORDER BY number"
 private const val GET_TEAMS_BY_CLASSROOM_ID_COUNT = "SELECT COUNT(tid) FROM TEAM WHERE cid = :classroomId"
+
+private const val GET_TEAMS_BY_CLASSROOM_AND_USER_ID_QUERY =
+    "$GET_TEAMS_BASE WHERE classroom_id = :classroomId AND tid IN (SELECT tid FROM USER_TEAM WHERE uid = :userId) ORDER BY number"
+private const val GET_TEAMS_BY_CLASSROOM_AND_USER_ID_COUNT =
+    "SELECT COUNT(tid) FROM TEAM WHERE cid = :classroomId AND tid IN (SELECT tid FROM USER_TEAM WHERE uid = :userId)"
 
 private const val GET_TEAM_BY_ID_QUERY = "$GET_TEAMS_BASE WHERE tid = :teamId"
 private const val GET_TEAM_BY_NUMBER_QUERY = "$GET_TEAMS_BASE WHERE classroom_id = :classroomId AND number = :teamNumber"
+
+private const val GET_USER_ID_OF_TEAM_QUERY = "SELECT uid FROM USER_TEAM WHERE tid = :teamId AND uid = :userId"
 
 private const val CREATE_TEAM_QUERY = "INSERT INTO TEAM(cid, name, gh_id) VALUES(:classroomId, :name, :gitHubId)"
 
@@ -20,6 +28,11 @@ private const val UPDATE_TEAM_END = "WHERE tid = :teamId"
 private const val DELETE_TEAM_QUERY = "DELETE FROM TEAM WHERE tid = :teamId"
 
 // Assignments
+
+private const val GET_TEAMS_IN_ASSIGNMENT_QUERY =
+    "SELECT tid, number, name, gh_id, repo_id, assignment_id FROM V_TEAM_ASSIGNMENT WHERE assignment_id = :assignmentId ORDER BY number"
+private const val GET_TEAMS_IN_ASSIGNMENT_COUNT =
+    "SELECT COUNT(tid) as count FROM TEAM_ASSIGNMENT WHERE aid = :assignmentId"
 
 private const val ADD_TEAM_TO_ASSIGNMENT =
     "INSERT INTO TEAM_ASSIGNMENT(tid, aid, repo_id) VALUES(:teamId, :assignmentId, :repoId)"
@@ -44,6 +57,16 @@ class TeamsDb(
         return getTeamsOfClassroomCount(classroomId)
     }
 
+    fun getTeamsOfClassroomOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, limit: Int): List<Team> {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        return getTeamsOfClassroomOfUser(classroomId, page, limit, userId)
+    }
+
+    fun getTeamsOfClassroomOfUserCount(orgId: Int, classroomNumber: Int, userId: Int): Int {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        return getTeamsOfClassroomOfUserCount(classroomId, userId)
+    }
+
     fun getTeamsOfClassroom(classroomId: Int, page: Int, limit: Int): List<Team> =
         jdbi.getList(
             GET_TEAMS_BY_CLASSROOM_ID_QUERY, Team::class.java,
@@ -56,6 +79,26 @@ class TeamsDb(
             GET_TEAMS_BY_CLASSROOM_ID_COUNT,
             Int::class.java,
             mapOf("classroomId" to classroomId)
+        )
+
+    fun getTeamsOfClassroomOfUser(classroomId: Int, userId: Int, page: Int, limit: Int): List<Team> =
+        jdbi.getList(
+            GET_TEAMS_BY_CLASSROOM_AND_USER_ID_QUERY, Team::class.java,
+            page, limit,
+            mapOf(
+                "classroomId" to classroomId,
+                "userId" to userId
+            )
+        )
+
+    fun getTeamsOfClassroomOfUserCount(classroomId: Int, userId: Int): Int =
+        jdbi.getOne(
+            GET_TEAMS_BY_CLASSROOM_AND_USER_ID_COUNT,
+            Int::class.java,
+            mapOf(
+                "classroomId" to classroomId,
+                "userId" to userId
+            )
         )
 
     fun getTeam(orgId: Int, classroomNumber: Int, teamNumber: Int): Team {
@@ -99,6 +142,15 @@ class TeamsDb(
             "teamId"
         )
 
+    fun isUserInTeam(teamId: Int, userId: Int) =
+        jdbi.tryGetOne(
+            GET_USER_ID_OF_TEAM_QUERY, Int::class.java,
+            mapOf(
+                "teamId" to teamId,
+                "userId" to userId
+            )
+        ).isPresent
+
     fun editTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, name: String) {
         val teamId = getTeam(orgId, classroomNumber, teamNumber).tid
         editTeam(teamId, name)
@@ -134,6 +186,30 @@ class TeamsDb(
         )
 
     // Assignments
+
+    fun getTeamsFromAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): List<TeamAssignment> {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        return getTeamsFromAssignment(assignmentId, page, limit)
+    }
+
+    fun getTeamsFromAssignment(assignmentId: Int, page: Int, limit: Int) =
+        jdbi.getList(
+            GET_TEAMS_IN_ASSIGNMENT_QUERY,
+            TeamAssignment::class.java, page, limit,
+            mapOf("assignmentId" to assignmentId)
+        )
+
+    fun getTeamsFromAssignmentCount(orgId: Int, classroomNumber: Int, assignmentNumber: Int): Int {
+        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        return getTeamsFromAssignmentCount(assignmentId)
+    }
+
+    fun getTeamsFromAssignmentCount(assignmentId: Int) =
+        jdbi.getOne(
+            GET_TEAMS_IN_ASSIGNMENT_COUNT,
+            Int::class.java,
+            mapOf("assignmentId" to assignmentId)
+        )
 
     fun addTeamToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, teamNumber: Int, repoId: Int) {
         val teamId = getTeam(orgId, classroomNumber, teamNumber).tid

@@ -73,4 +73,13 @@ SELECT
     TEAM_ASSIGNMENT.aid
 FROM USER_TEAM JOIN TEAM_ASSIGNMENT ON (USER_TEAM.tid = TEAM_ASSIGNMENT.tid);
 
-          
+CREATE VIEW V_TEAM_ASSIGNMENT AS
+SELECT
+    TEAM.tid,
+    TEAM.number,
+    TEAM.name AS name,
+    gh_id,
+    
+    TEAM_ASSIGNMENT.repo_id AS repo_id,
+    TEAM_ASSIGNMENT.aid AS assignment_id
+FROM TEAM JOIN TEAM_ASSIGNMENT ON (TEAM.tid = TEAM_ASSIGNMENT.tid);

@@ -21,6 +21,7 @@ object GitHubRoutes {
     const val ORG_PARAM = "orgId"
     const val LOGIN_PARAM = "login"
     const val REPO_ID_PARAM = "repoId"
+    const val REPO_NAME_PARAM = "repoName"
     const val TAG_PARAM = "tag"
     const val TEAM_PARAM = "teamId"
 
@@ -46,13 +47,16 @@ object GitHubRoutes {
     // User
     const val GITHUB_USER_URI = "$GITHUB_API_HOST/user"
     const val GITHUB_USER_BY_ID_URI = "$GITHUB_USER_URI/{$USER_PARAM}"
-    const val GITHUB_AVATAR_URI = "$GITHUB_AVATAR_HOST/u/{$USER_PARAM}"
+    const val GITHUB_USER_AVATAR_URI = "$GITHUB_AVATAR_HOST/u/{$USER_PARAM}"
+    const val GITHUB_TEAM_AVATAR_URI = "$GITHUB_AVATAR_HOST/t/{$USER_PARAM}"
 
     val GITHUB_USER_BY_ID_URI_TEMPLATE = UriTemplate(GITHUB_USER_BY_ID_URI)
-    val GITHUB_AVATAR_URI_TEMPLATE = UriTemplate(GITHUB_AVATAR_URI)
+    val GITHUB_USER_AVATAR_URI_TEMPLATE = UriTemplate(GITHUB_USER_AVATAR_URI)
+    val GITHUB_TEAM_AVATAR_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_AVATAR_URI)
 
     fun getGitHubUserByIdUri(userId: Int) = GITHUB_USER_BY_ID_URI_TEMPLATE.expand(userId)
-    fun getGitHubAvatarUri(userId: Int) = GITHUB_AVATAR_URI_TEMPLATE.expand(userId)
+    fun getGitHubUserAvatarUri(userId: Int) = GITHUB_USER_AVATAR_URI_TEMPLATE.expand(userId)
+    fun getGitHubTeamAvatarUri(teamId: Int) = GITHUB_TEAM_AVATAR_URI_TEMPLATE.expand(teamId)
 
 
     // User Organizations
@@ -133,14 +137,27 @@ object GitHubRoutes {
     const val GITHUB_TEAMS_URI = "$GITHUB_ORG_URI/teams"
     const val GITHUB_TEAMS_ID_URI = "$GITHUB_ORG_URI/team"
     const val GITHUB_TEAM_ID_URI = "$GITHUB_TEAMS_ID_URI/{$TEAM_PARAM}"
+    const val GITHUB_TEAM_MEMBERSHIPS_URI = "$GITHUB_TEAM_ID_URI/memberships"
+    const val GITHUB_TEAM_USER_MEMBERSHIP_URI = "$GITHUB_TEAM_MEMBERSHIPS_URI/{$LOGIN_PARAM}"
+    const val GITHUB_TEAM_REPOS_URI = "$GITHUB_TEAM_ID_URI/repos"
+    const val GITHUB_TEAM_REPO_URI = "$GITHUB_TEAM_REPOS_URI/{$LOGIN_PARAM}/{$REPO_NAME_PARAM}"
 
     val GITHUB_TEAMS_URI_TEMPLATE = UriTemplate(GITHUB_TEAMS_URI)
     val GITHUB_TEAMS_ID_URI_TEMPLATE = UriTemplate(GITHUB_TEAMS_ID_URI)
     val GITHUB_TEAM_ID_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_ID_URI)
+    val GITHUB_TEAM_MEMBERSHIPS_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_MEMBERSHIPS_URI)
+    val GITHUB_TEAM_USER_MEMBERSHIP_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_USER_MEMBERSHIP_URI)
+    val GITHUB_TEAM_REPOS_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_REPOS_URI)
+    val GITHUB_TEAM_REPO_URI_TEMPLATE = UriTemplate(GITHUB_TEAM_REPO_URI)
 
     fun getGitHubTeamsUri(orgId: Int) = GITHUB_TEAMS_URI_TEMPLATE.expand(orgId)
     fun getGitHubTeamsByIdUri(orgId: Int) = GITHUB_TEAMS_ID_URI_TEMPLATE.expand(orgId)
     fun getGitHubTeamByIdUri(orgId: Int, teamId: Int) = GITHUB_TEAM_ID_URI_TEMPLATE.expand(orgId, teamId)
+    fun getGitHubTeamMembershipUri(orgId: Int, teamId: Int) = GITHUB_TEAM_MEMBERSHIPS_URI_TEMPLATE.expand(orgId, teamId)
+    fun getGitHubTeamUserMembershipUri(orgId: Int, teamId: Int, login: String) = GITHUB_TEAM_USER_MEMBERSHIP_URI_TEMPLATE.expand(orgId, teamId, login)
+    fun getGitHubTeamReposUri(orgId: Int, teamId: Int) = GITHUB_TEAM_REPOS_URI_TEMPLATE.expand(orgId, teamId)
+    fun getGitHubTeamRepoUri(orgId: Int, teamId: Int, orgName: String, repoName: String) =
+        GITHUB_TEAM_REPO_URI_TEMPLATE.expand(orgId, teamId, orgName, repoName)
 
     // Aux functions
     fun getGitHubTagNameFromRef(ref: String) = ref.replaceFirst(GITHUB_REF_TAG_PREFIX, "")

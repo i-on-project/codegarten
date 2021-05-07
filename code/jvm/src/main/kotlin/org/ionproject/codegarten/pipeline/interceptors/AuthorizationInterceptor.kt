@@ -116,6 +116,7 @@ class AuthorizationInterceptor(
                 request.setAttribute(ORG_MEMBERSHIP_ATTRIBUTE, orgMembership)
 
                 if (requiresUserInClassroom) {
+                    //TODO: Check invite code here
                     val classroomNumber = pathVars[CLASSROOM_PARAM]?.toIntOrNull() ?:
                         throw InvalidInputException("Invalid classroom number")
 

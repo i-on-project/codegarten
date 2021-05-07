@@ -14,3 +14,6 @@ data class Assignment(
     val classroom_number: Int,
     val classroom_name: String,
 )
+
+fun Assignment.isGroupAssignment() = this.type == "group"
+fun Assignment.isIndividualAssignment() = this.type == "individual"

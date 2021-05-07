@@ -37,7 +37,8 @@ fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: C
 }
 
 fun OkHttpClient.call(request: Request) {
-    this.newCall(request).execute()
+    val res = this.newCall(request).execute()
+    if (res.code in 400 until 600) throw HttpRequestException(res.code, res.body?.string())
 }
 
 fun <T> OkHttpClient.callAndMapList(request: Request, mapper: ObjectMapper, mapTo: Class<T>): List<T> {

@@ -12,7 +12,7 @@ import org.ionproject.codegarten.Routes.getAssignmentsUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getDeliveriesUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
-import org.ionproject.codegarten.Routes.getUsersOfAssignmentUri
+import org.ionproject.codegarten.Routes.getParticipantsOfAssignmentUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions.getDeleteAssignmentAction
@@ -34,7 +34,6 @@ import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
-import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -107,7 +106,7 @@ class AssignmentsController(
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, it.number).includeHost()),
                         SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, it.number).includeHost()),
-                        SirenLink(listOf("users"), getUsersOfAssignmentUri(orgId, classroomNumber, it.number).includeHost()),
+                        SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, it.number).includeHost()),
                         SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
@@ -151,7 +150,7 @@ class AssignmentsController(
         val sirenLinks = mutableListOf(
             SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number).includeHost()),
             SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignment.number).includeHost()),
-            SirenLink(listOf("users"), getUsersOfAssignmentUri(orgId, classroomNumber, assignment.number).includeHost()),
+            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, assignment.number).includeHost()),
             SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
             SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
             SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),

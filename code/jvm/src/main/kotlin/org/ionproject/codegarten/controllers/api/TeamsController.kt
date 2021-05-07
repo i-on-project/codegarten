@@ -11,21 +11,18 @@ import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getTeamsUri
+import org.ionproject.codegarten.Routes.getUsersOfTeamUri
 import org.ionproject.codegarten.Routes.includeHost
-import org.ionproject.codegarten.controllers.api.actions.TeamActions
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getCreateTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getDeleteTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getEditTeamAction
-import org.ionproject.codegarten.controllers.models.ClassroomOutputModel
 import org.ionproject.codegarten.controllers.models.ClassroomsOutputModel
 import org.ionproject.codegarten.controllers.models.TeamCreateInputModel
 import org.ionproject.codegarten.controllers.models.TeamEditInputModel
 import org.ionproject.codegarten.controllers.models.TeamOutputModel
-import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
-import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
@@ -34,8 +31,9 @@ import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
-import org.ionproject.codegarten.remote.github.GitHubRoutes
 import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenTeamName
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamAvatarUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserAvatarUri
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
@@ -65,8 +63,16 @@ class TeamsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        val teams = teamsDb.getTeamsOfClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
-        val teamsCount = teamsDb.getTeamsOfClassroomCount(orgId, classroomNumber)
+        val teamsCount: Int
+        val teams =
+            if (userClassroom.role == TEACHER) {
+                teamsCount = teamsDb.getTeamsOfClassroomCount(orgId, classroomNumber)
+                teamsDb.getTeamsOfClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
+            } else {
+                teamsCount = teamsDb.getTeamsOfClassroomOfUserCount(orgId, classroomNumber, user.uid)
+                teamsDb.getTeamsOfClassroomOfUser(orgId, classroomNumber, user.uid, pagination.page, pagination.limit)
+            }
+
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val actions =
@@ -91,6 +97,8 @@ class TeamsController(
                     rel = listOf("item"),
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, it.number).includeHost()),
+                        SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(it.gh_id)),
+                        SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, it.number).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
                     )
@@ -118,8 +126,10 @@ class TeamsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        // TODO: Check if user is in team
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
+        if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
+            throw AuthorizationException("User is not in team")
+
         val ghTeam = gitHub.getTeam(orgId, team.gh_id, user.gh_token)
 
         val actions =
@@ -142,6 +152,8 @@ class TeamsController(
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, team.number).includeHost()),
                 SirenLink(listOf("github"), URI(ghTeam.html_url)),
+                SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(team.gh_id)),
+                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, team.number).includeHost()),
                 SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
@@ -198,18 +210,23 @@ class TeamsController(
             .body(null)
     }
 
+    @RequiresGhAppInstallation
     @RequiresUserInClassroom
     @DeleteMapping(TEAM_BY_NUMBER_HREF)
     fun deleteTeam(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = TEAM_PARAM) teamNumber: Int,
+        installation: Installation,
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
 
-        teamsDb.deleteTeam(userClassroom.classroom.cid, teamNumber)
+        val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
+
+        gitHub.deleteTeam(orgId, team.gh_id, installation.accessToken)
+        teamsDb.deleteTeam(team.tid)
 
         return ResponseEntity
             .status(HttpStatus.OK)

@@ -4,19 +4,19 @@ import org.ionproject.codegarten.Routes
 import org.ionproject.codegarten.Routes.ASSIGNMENT_PARAM
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.DELIVERIES_HREF
-import org.ionproject.codegarten.Routes.DELIVERIES_OF_USER_HREF
+import org.ionproject.codegarten.Routes.DELIVERIES_OF_PARTICIPANT_HREF
 import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF
-import org.ionproject.codegarten.Routes.DELIVERY_OF_USER_HREF
+import org.ionproject.codegarten.Routes.DELIVERY_OF_PARTICIPANT_HREF
 import org.ionproject.codegarten.Routes.DELIVERY_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
-import org.ionproject.codegarten.Routes.getDeliveriesOfUserUri
+import org.ionproject.codegarten.Routes.getDeliveriesOfParticipantUri
 import org.ionproject.codegarten.Routes.getDeliveriesUri
 import org.ionproject.codegarten.Routes.getDeliveryByNumberUri
-import org.ionproject.codegarten.Routes.getDeliveryOfUserUri
+import org.ionproject.codegarten.Routes.getDeliveryOfParticipantUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.includeHost
@@ -163,7 +163,7 @@ class DeliveriesController(
     }
 
     @RequiresUserInAssignment
-    @GetMapping(DELIVERIES_OF_USER_HREF)
+    @GetMapping(DELIVERIES_OF_PARTICIPANT_HREF)
     fun getAllUserDeliveries(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
@@ -200,8 +200,8 @@ class DeliveriesController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getDeliveryOfUserUri(orgId, classroomNumber, assignmentNumber, userId, it.number).includeHost()),
-                        SirenLink(listOf("user-deliveries"), getDeliveriesOfUserUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, userId, it.number).includeHost()),
+                        SirenLink(listOf("user-deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
                         SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
@@ -226,7 +226,7 @@ class DeliveriesController(
     }
 
     @RequiresUserInAssignment
-    @GetMapping(DELIVERY_OF_USER_HREF)
+    @GetMapping(DELIVERY_OF_PARTICIPANT_HREF)
     fun getUserDelivery(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
@@ -256,8 +256,8 @@ class DeliveriesController(
             organization = org.login
         ).toSirenObject(
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getDeliveryOfUserUri(orgId, classroomNumber, assignmentNumber, userId, deliveryNumber).includeHost()),
-                SirenLink(listOf("user-deliveries"), getDeliveriesOfUserUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, userId, deliveryNumber).includeHost()),
+                SirenLink(listOf("user-deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, userId).includeHost()),
                 SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
