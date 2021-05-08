@@ -24,6 +24,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.ClassroomsDb
+import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -50,6 +51,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ClassroomsController(
     val classroomsDb: ClassroomsDb,
+    val inviteCodesDb: InviteCodesDb,
     val usersDb: UsersDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils
@@ -167,12 +169,9 @@ class ClassroomsController(
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
-        var inviteCode: String
-        do {
-            inviteCode = cryptoUtils.generateInviteCode()
-        } while (classroomsDb.tryGetClassroomByInviteCode(inviteCode).isPresent)
+        val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description)
+        inviteCodesDb.generateAndCreateUniqueInviteCode(createdClassroom.cid)
 
-        val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description, inviteCode)
         usersDb.addUserToClassroom(createdClassroom.cid, user.uid, UserClassroomMembership.TEACHER)
         return ResponseEntity
             .status(HttpStatus.CREATED)

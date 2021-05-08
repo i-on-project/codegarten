@@ -1,8 +1,10 @@
 package org.ionproject.codegarten.pipeline.interceptors
 
-import org.ionproject.codegarten.Routes
+import org.ionproject.codegarten.Routes.INVITE_CODE_PARAM
+import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.helpers.InstallationsDb
+import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
@@ -24,11 +26,14 @@ import javax.servlet.http.HttpServletResponse
 annotation class RequiresGhAppInstallation
 
 const val INSTALLATION_ATTRIBUTE = "installation-attribute"
+const val INVITE_CODE_ATTRIBUTE = "invite-code-attribute"
+
 private const val INSTALLATION_TOKEN_THRESHOLD_MINUTES = 1L
 
 @Component
 class InstallationInterceptor(
     val installationsDb: InstallationsDb,
+    val inviteCodesDb: InviteCodesDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils,
 ) : HandlerInterceptor {
@@ -87,7 +92,17 @@ class InstallationInterceptor(
         logger.info("PreHandle with handler ${handler.javaClass.name} requires GitHub App Installation")
 
         val pathVars = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE) as Map<String, String>
-        val orgId = pathVars[Routes.ORG_PARAM]?.toIntOrNull() ?: throw InvalidInputException("Invalid organization id")
+        val invCodePath = pathVars[INVITE_CODE_PARAM]
+
+        val orgId =
+            if (invCodePath != null) {
+                // Check if invite code was provided
+                val invCode = inviteCodesDb.getInviteCode(invCodePath)
+                request.setAttribute(INVITE_CODE_ATTRIBUTE, invCode)
+                invCode.org_id
+            } else {
+                pathVars[ORG_PARAM]?.toIntOrNull() ?: throw InvalidInputException("Invalid organization id")
+            }
 
         var installation = installationsDb
             .tryGetInstallationByOrgId(orgId)

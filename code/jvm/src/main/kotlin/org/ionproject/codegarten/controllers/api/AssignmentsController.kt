@@ -29,6 +29,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
+import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -57,6 +58,7 @@ import java.net.URI
 @RestController
 class AssignmentsController(
     val assignmentsDb: AssignmentsDb,
+    val inviteCodesDb: InviteCodesDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils
 ) {
@@ -216,15 +218,11 @@ class AssignmentsController(
             repoId = repo.id
         }
 
-        // Generate unique invite code
-        var inviteCode: String
-        do {
-            inviteCode = cryptoUtils.generateInviteCode()
-        } while (assignmentsDb.tryGetAssignmentByInviteCode(inviteCode).isPresent)
-
-        val createdAssignment = assignmentsDb.createAssignment(orgId, classroomNumber, inviteCode,
-            input.name, input.description, input.type, input.repoPrefix, repoId
+        val createdAssignment = assignmentsDb.createAssignment(
+            orgId, classroomNumber, input.name,
+            input.description, input.type, input.repoPrefix, repoId
         )
+        inviteCodesDb.generateAndCreateUniqueInviteCode(createdAssignment.classroom_id, createdAssignment.aid)
 
         return ResponseEntity
             .status(HttpStatus.CREATED)

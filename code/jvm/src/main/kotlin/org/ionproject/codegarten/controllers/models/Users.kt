@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.controllers.models
 
-import org.ionproject.codegarten.responses.siren.SirenClass
 import org.ionproject.codegarten.responses.siren.SirenClass.collection
 import org.ionproject.codegarten.responses.siren.SirenClass.participant
 import org.ionproject.codegarten.responses.siren.SirenClass.user
@@ -61,10 +60,13 @@ class UsersOutputModel(
 
 val validRoleTypes = listOf("student", "teacher")
 data class UserAddInputModel(
-    val role: String?,
-    val inviteCode: String?
+    val role: String?
 )
 
 data class UserEditInputModel(
     val name: String?
+)
+
+data class UserInvitationInputModel(
+    val teamId: Int?,
 )

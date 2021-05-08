@@ -1,11 +1,21 @@
+CREATE VIEW V_CLASSROOM AS
+SELECT
+    CLASSROOM.cid,
+    inv_code,
+    org_id,
+    number,
+    name,
+    description
+FROM CLASSROOM JOIN INVITECODE ON (CLASSROOM.cid = INVITECODE.cid AND type = 'classroom');
+
 CREATE VIEW V_ASSIGNMENT AS
 SELECT 
-    aid,
-    ASSIGNMENT.inv_code AS inv_code,
+    ASSIGNMENT.aid,
+    inv_code,
     ASSIGNMENT.number AS number,
     ASSIGNMENT.name AS name,
     ASSIGNMENT.description AS description,
-    type,
+    ASSIGNMENT.type,
     repo_prefix,
     repo_template,
     
@@ -13,7 +23,7 @@ SELECT
     CLASSROOM.cid AS classroom_id,
     CLASSROOM.number AS classroom_number,
     CLASSROOM.name AS classroom_name
-FROM ASSIGNMENT JOIN CLASSROOM ON (ASSIGNMENT.cid = CLASSROOM.cid);
+FROM ASSIGNMENT JOIN CLASSROOM ON (ASSIGNMENT.cid = CLASSROOM.cid) JOIN INVITECODE ON (ASSIGNMENT.aid = INVITECODE.aid);
 
 CREATE VIEW V_TEAM AS
 SELECT
@@ -84,3 +94,13 @@ SELECT
     TEAM_ASSIGNMENT.repo_id AS repo_id,
     TEAM_ASSIGNMENT.aid AS assignment_id
 FROM TEAM JOIN TEAM_ASSIGNMENT ON (TEAM.tid = TEAM_ASSIGNMENT.tid);
+
+CREATE VIEW V_INVITECODE AS
+SELECT
+    inv_code,
+    type,
+    
+    aid AS assignment_id,
+    CLASSROOM.cid AS classroom_id,
+    org_id
+FROM INVITECODE JOIN CLASSROOM ON (INVITECODE.cid = CLASSROOM.cid);

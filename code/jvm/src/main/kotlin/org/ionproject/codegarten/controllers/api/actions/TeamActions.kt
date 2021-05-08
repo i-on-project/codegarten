@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.controllers.api.actions
 
-import org.ionproject.codegarten.Routes
 import org.ionproject.codegarten.Routes.INPUT_CONTENT_TYPE
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getTeamsUri
@@ -8,7 +7,6 @@ import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
-import org.ionproject.codegarten.responses.siren.SirenOneOf
 import org.springframework.http.HttpMethod
 
 object TeamActions {

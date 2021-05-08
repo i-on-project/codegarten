@@ -26,8 +26,8 @@ private const val GET_ASSIGNMENTS_OF_USER_COUNT =
     "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId)"
 
 private const val CREATE_ASSIGNMENT_QUERY =
-    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template, inv_code) VALUES" +
-    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplateId, :inviteCode)"
+    "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template) VALUES" +
+    "(:classroomId, :name, :description, :type, :repoPrefix, :repoTemplateId)"
 
 private const val UPDATE_ASSIGNMENT_START = "UPDATE ASSIGNMENT SET"
 private const val UPDATE_ASSIGNMENT_END = "WHERE aid = :assignmentId"
@@ -45,6 +45,13 @@ class AssignmentsDb(
             GET_ASSIGNMENT_QUERY,
             Assignment::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "number" to assignmentNumber)
+        )
+
+    fun getAssignmentById(assignmentId: Int) =
+        jdbi.getOne(
+            GET_ASSIGNMENT_BY_ID_QUERY,
+            Assignment::class.java,
+            mapOf("assignmentId" to assignmentId)
         )
 
     fun tryGetAssignmentByInviteCode(inviteCode: String) =
@@ -84,8 +91,11 @@ class AssignmentsDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "userId" to userId)
         )
 
-    fun createAssignment(orgId: Int, classroomNumber: Int, inviteCode: String, name: String, description: String? = null,
-                         type: String, repoPrefix: String, repoTemplateId: Int? = null): Assignment {
+    fun createAssignment(
+        orgId: Int, classroomNumber: Int, name: String, description: String? = null, type: String,
+        repoPrefix: String, repoTemplateId: Int? = null
+    ): Assignment {
+
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
 
         return jdbi.insertAndGet(
@@ -93,7 +103,6 @@ class AssignmentsDb(
             GET_ASSIGNMENT_BY_ID_QUERY, Assignment::class.java,
             mapOf(
                 "classroomId" to classroomId,
-                "inviteCode" to inviteCode,
                 "name" to name,
                 "description" to description,
                 "type" to type,

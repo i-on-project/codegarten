@@ -18,28 +18,26 @@ CREATE TABLE CLASSROOM
 (
     cid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     org_id          INT REFERENCES INSTALLATION(org_id) ON DELETE CASCADE NOT NULL,
-    inv_code        VARCHAR(32) UNIQUE NOT NULL,
     number          INT NOT NULL,  -- Number in relation to the organization
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
-    UNIQUE(org_id, number),
-    UNIQUE(org_id, name)
+    UNIQUE(org_id, number), -- Number is unique per org
+    UNIQUE(org_id, name) -- Name is unique per org
 );
 
 CREATE TABLE ASSIGNMENT
 (
     aid             INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     cid             INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL,
-    inv_code        VARCHAR(32) UNIQUE NOT NULL,
     number          INT NOT NULL,  -- Number in relation to the classroom
     name            VARCHAR(64) NOT NULL,
     description     VARCHAR(256),
     type            VARCHAR(16) NOT NULL CHECK (type IN ('individual', 'group')),
     repo_prefix     VARCHAR(64) NOT NULL,
     repo_template   INT, -- Id of the template repository
-    UNIQUE(cid, number),
-    UNIQUE(cid, name),
-    UNIQUE(cid, repo_prefix)
+    UNIQUE(cid, number),  -- Number is unique per classroom
+    UNIQUE(cid, name),  -- Name is unique per classroom
+    UNIQUE(cid, repo_prefix)  -- prefix is unique per classroom
 );
 
 CREATE TABLE DELIVERY
@@ -49,7 +47,7 @@ CREATE TABLE DELIVERY
     number          INT NOT NULL,  -- Number in relation to the assignment
     tag             VARCHAR(64),
     due_date        TIMESTAMP,
-    UNIQUE(aid, number)
+    UNIQUE(aid, number) -- Number is unique per assignment
 );
 
 CREATE TABLE TEAM
@@ -59,8 +57,8 @@ CREATE TABLE TEAM
     number           INT NOT NULL,
     name             VARCHAR(64) NOT NULL,
     gh_id            INT UNIQUE NOT NULL,
-    UNIQUE(cid, number),
-    UNIQUE(cid, name)
+    UNIQUE(cid, number), -- Number is unique per classroom
+    UNIQUE(cid, name) -- Name is unique per classroom
 );
 
 CREATE TABLE USER_TEAM
@@ -116,4 +114,12 @@ CREATE TABLE ACCESSTOKEN
     expiration_date TIMESTAMP NOT NULL,
     user_id         INT NOT NULL REFERENCES USERS(uid) ON DELETE CASCADE NOT NULL,
     client_id       INT NOT NULL REFERENCES CLIENT(cid) ON DELETE CASCADE NOT NULL
+);
+
+CREATE TABLE INVITECODE
+(
+    inv_code        VARCHAR(32) PRIMARY KEY NOT NULL,
+    type            VARCHAR(16) NOT NULL CHECK (TYPE IN ('classroom', 'assignment')),
+    aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE, -- Assignment may be null when the invite code is for the classroom
+    cid             INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL
 );

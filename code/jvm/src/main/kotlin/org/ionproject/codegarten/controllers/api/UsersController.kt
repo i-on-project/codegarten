@@ -4,16 +4,16 @@ import org.ionproject.codegarten.Routes.ASSIGNMENT_PARAM
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.INVITE_CODE_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
+import org.ionproject.codegarten.Routes.PARTICIPANTS_OF_ASSIGNMENT_HREF
+import org.ionproject.codegarten.Routes.PARTICIPANT_OF_ASSIGNMENT_HREF
+import org.ionproject.codegarten.Routes.PARTICIPANT_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.TEAM_PARAM
-import org.ionproject.codegarten.Routes.PARTICIPANTS_OF_ASSIGNMENT_HREF
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USERS_OF_TEAM_HREF
 import org.ionproject.codegarten.Routes.USER_BY_ID_HREF
 import org.ionproject.codegarten.Routes.USER_HREF
-import org.ionproject.codegarten.Routes.PARTICIPANT_OF_ASSIGNMENT_HREF
-import org.ionproject.codegarten.Routes.PARTICIPANT_PARAM
-import org.ionproject.codegarten.Routes.USER_CLASSROOM_HREF
+import org.ionproject.codegarten.Routes.USER_INVITE_HREF
 import org.ionproject.codegarten.Routes.USER_OF_CLASSROOM_HREF
 import org.ionproject.codegarten.Routes.USER_OF_TEAM_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
@@ -30,24 +30,31 @@ import org.ionproject.codegarten.Routes.getUsersOfTeamUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.OutputModel
-import org.ionproject.codegarten.controllers.models.UserAddInputModel
 import org.ionproject.codegarten.controllers.models.ParticipantOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantTypes
 import org.ionproject.codegarten.controllers.models.ParticipantsOutputModel
+import org.ionproject.codegarten.controllers.models.UserAddInputModel
 import org.ionproject.codegarten.controllers.models.UserClassroomOutputModel
 import org.ionproject.codegarten.controllers.models.UserEditInputModel
+import org.ionproject.codegarten.controllers.models.UserInvitationInputModel
 import org.ionproject.codegarten.controllers.models.UserItemOutputModel
 import org.ionproject.codegarten.controllers.models.UserOutputModel
 import org.ionproject.codegarten.controllers.models.UsersOutputModel
 import org.ionproject.codegarten.controllers.models.validRoleTypes
+import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.Installation
+import org.ionproject.codegarten.database.dto.InviteCode
+import org.ionproject.codegarten.database.dto.Team
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
+import org.ionproject.codegarten.database.dto.UserClassroomMembership.STUDENT
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
+import org.ionproject.codegarten.database.dto.isFromAssignment
 import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.dto.isIndividualAssignment
+import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
@@ -55,7 +62,6 @@ import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
@@ -74,6 +80,7 @@ import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
 import org.ionproject.codegarten.utils.CryptoUtils
+import org.jdbi.v3.core.JdbiException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -245,7 +252,7 @@ class UsersController(
         val userToAdd = usersDb.getUserById(userId)
 
         if (gitHub.getUserOrgMembership(orgId, userToAdd.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
-            gitHub.inviteUserToOrg(orgId, userToAdd.gh_id, installation.accessToken)
+            gitHub.inviteUserToOrg(orgId, userToAdd.gh_id, installationToken = installation.accessToken)
         }
 
         usersDb.addOrEditUserInClassroom(orgId, classroomNumber, userId, input.role)
@@ -421,9 +428,16 @@ class UsersController(
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
         val repo =
             if (assignment.isIndividualAssignment()) {
-                addUserToAssignment(orgId, assignment, participantId, installation.accessToken, user.gh_token)
+                val userMembershipInClassroom = usersDb.getUserMembershipInClassroom(orgId, assignment.classroom_number, participantId)
+
+                if (userMembershipInClassroom.role == NOT_A_MEMBER) throw InvalidInputException("User is not in the classroom")
+                if (userMembershipInClassroom.role == TEACHER) throw InvalidInputException("Cannot add a teacher to an assignment")
+                val userToAdd = userMembershipInClassroom.user!!
+
+                addUserToAssignment(orgId, assignment, userToAdd, installation.accessToken, user.gh_token)
             } else {
-                addTeamToAssignment(orgId, assignment, participantId, installation.accessToken, user.gh_token)
+                val team = teamsDb.getTeam(assignment.classroom_id, participantId)
+                addTeamToAssignment(orgId, assignment, team, installation.accessToken, user.gh_token)
             }
 
         return ResponseEntity
@@ -433,29 +447,25 @@ class UsersController(
     }
 
     private fun addUserToAssignment(
-        orgId: Int, assignment: Assignment, userId: Int,
+        orgId: Int, assignment: Assignment, user: User,
         installationToken: String, userGhToken: String
     ): GitHubRepoResponse {
-        val userMembershipInClassroom = usersDb.getUserMembershipInClassroom(orgId, assignment.classroom_number, userId)
-
-        if (userMembershipInClassroom.role == NOT_A_MEMBER) throw InvalidInputException("User is not in the classroom")
-        if (userMembershipInClassroom.role == TEACHER) throw InvalidInputException("Cannot add a teacher to an assignment")
-        val userToAdd = userMembershipInClassroom.user!!
+        // TODO: Check if user is already in assignment
 
         val org = gitHub.getOrgById(orgId, userGhToken)
 
         val repoName =
-            generateCodeGartenRepoName(assignment.classroom_number, assignment.repo_prefix, userToAdd.name)
+            generateCodeGartenRepoName(assignment.classroom_number, assignment.repo_prefix, user.name)
 
         try {
             val repo =
                 if (assignment.repo_template == null) gitHub.createRepo(orgId, repoName, installationToken)
                 else gitHub.createRepoFromTemplate(org.login, repoName, assignment.repo_template, installationToken)
 
-            val ghUser = gitHub.getUser(userToAdd.gh_id, userGhToken)
+            val ghUser = gitHub.getUser(user.gh_id, userGhToken)
             gitHub.addUserToRepo(repo.id, ghUser.login, installationToken)
 
-            usersDb.addUserToAssignment(orgId, assignment.classroom_number, assignment.number, userId, repo.id)
+            usersDb.addUserToAssignment(orgId, assignment.classroom_number, assignment.number, user.uid, repo.id)
             return repo
         } catch (ex: HttpRequestException) {
             if (ex.status == HttpStatus.UNPROCESSABLE_ENTITY.value())
@@ -465,10 +475,10 @@ class UsersController(
     }
 
     private fun addTeamToAssignment(
-        orgId: Int, assignment: Assignment, teamNumber: Int,
+        orgId: Int, assignment: Assignment, team: Team,
         installationToken: String, userGhToken: String
     ): GitHubRepoResponse {
-        val team = teamsDb.getTeam(assignment.classroom_id, teamNumber)
+        // TODO: Check if team is already in assignment
         val org = gitHub.getOrgById(orgId, userGhToken)
         val repoName =
             generateCodeGartenRepoName(assignment.classroom_number, assignment.repo_prefix, team.name)
@@ -621,25 +631,57 @@ class UsersController(
             .body(null)
     }
 
+    @RequiresGhAppInstallation
     @RequiresUserAuth
-    @PutMapping(USER_CLASSROOM_HREF)
-    fun addAuthUserToClassroom(
-        @PathVariable(name = INVITE_CODE_PARAM) inviteCode: String,
-        user: User
+    @PutMapping(USER_INVITE_HREF)
+    fun addAuthUserThroughInvite(
+        @PathVariable(name = INVITE_CODE_PARAM) inviteCodePath: String,
+        installation: Installation,
+        inviteCode: InviteCode,
+        user: User,
+        @RequestBody input: UserInvitationInputModel?
     ): ResponseEntity<Any> {
-        // TODO: Need a way to get Installation token
-        val maybeClassroom = classroomsDb.tryGetClassroomByInviteCode(inviteCode)
-        if (maybeClassroom.isEmpty) throw NotFoundException("Invite code does not exist")
-        val classroom = maybeClassroom.get()
+        val isUserInClassroom = usersDb.getUserMembershipInClassroom(inviteCode.classroom_id, user.uid).role != NOT_A_MEMBER
+        val ghUser = gitHub.getUser(user.gh_id, user.gh_token)
 
-        /*
-        if (gitHub.getUserOrgMembership(classroom.org_id, user.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
-            gitHub.inviteUserToOrg(classroom.org_id, user.gh_id, installation.accessToken)
+        val team =
+            if (input?.teamId != null) {
+                val maybeTeam = teamsDb.tryGetTeam(input.teamId)
+                if (maybeTeam.isEmpty) throw InvalidInputException("Team does not exist")
+
+                maybeTeam.get()
+            } else {
+                null
+            }
+
+        // Invite user to organization if needed
+        if (gitHub.getUserOrgMembership(inviteCode.org_id, user.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
+            gitHub.inviteUserToOrg(inviteCode.org_id, user.gh_id, team?.gh_id, installation.accessToken)
         }
-        */
 
-        // TODO: Don't hardcode this
-        usersDb.addOrEditUserInClassroom(classroom.org_id, classroom.number, user.uid, "student")
+        if (!isUserInClassroom) {
+            usersDb.addOrEditUserInClassroom(inviteCode.classroom_id, user.uid, STUDENT.name.toLowerCase())
+        }
+
+        if (team != null) {
+            try {
+                usersDb.addUserToTeam(team.tid, user.uid)
+                gitHub.addUserToTeam(inviteCode.org_id, team.gh_id, ghUser.login, installation.accessToken)
+            } catch (ex: JdbiException) {
+                if (ex.getPsqlErrorCode() != PsqlErrorCode.UniqueViolation) throw ex
+                // Ignore exception because user is already in team
+            }
+        }
+
+        if (inviteCode.isFromAssignment()) {
+            val assignment = assignmentsDb.getAssignmentById(inviteCode.assignment_id)
+            if (assignment.isIndividualAssignment()) {
+                addUserToAssignment(inviteCode.org_id, assignment, user, installation.accessToken, user.gh_token)
+            } else if (assignment.isGroupAssignment()) {
+                if (team == null) throw InvalidInputException("Missing teamId")
+                addTeamToAssignment(inviteCode.org_id, assignment, team, installation.accessToken, user.gh_token)
+            }
+        }
 
         return ResponseEntity
             .status(HttpStatus.CREATED)

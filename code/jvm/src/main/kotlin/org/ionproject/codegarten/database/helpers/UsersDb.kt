@@ -1,6 +1,7 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Assignment
+import org.ionproject.codegarten.database.dto.Classroom
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserAssignment
 import org.ionproject.codegarten.database.dto.UserClassroom
@@ -153,9 +154,14 @@ class UsersDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
         )
 
+
     fun addOrEditUserInClassroom(orgId: Int, classroomNumber: Int, userId: Int, role: String) {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
 
+        addOrEditUserInClassroom(classroomId, userId, role)
+    }
+
+    fun addOrEditUserInClassroom(classroomId: Int, userId: Int, role: String) {
         val maybeUserId = jdbi.tryGetOne(
             GET_USER_IN_CLASSROOM_QUERY, Int::class.java,
             mapOf("classroomId" to classroomId, "userId" to userId)
@@ -194,7 +200,15 @@ class UsersDb(
 
     fun getUserMembershipInClassroom(orgId: Int, classroomNumber: Int, userId: Int): UserClassroom {
         val classroom = classroomsDb.getClassroomByNumber(orgId, classroomNumber)
+        return getUserMembershipInClassroom(classroom, userId)
+    }
 
+    fun getUserMembershipInClassroom(classroomId: Int, userId: Int): UserClassroom {
+        val classroom = classroomsDb.getClassroomById(classroomId)
+        return getUserMembershipInClassroom(classroom, userId)
+    }
+
+    fun getUserMembershipInClassroom(classroom: Classroom, userId: Int): UserClassroom {
         val maybeUserClassroom = jdbi.tryGetOne(
             GET_USER_CLASSROOM_QUERY,
             UserClassroomDto::class.java,

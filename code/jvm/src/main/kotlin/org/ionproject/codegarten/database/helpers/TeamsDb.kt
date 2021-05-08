@@ -122,8 +122,17 @@ class TeamsDb(
             )
         )
 
-    fun getTeam(teamId: Int): Team =
+    fun getTeam(teamId: Int) =
         jdbi.getOne(
+            GET_TEAM_BY_ID_QUERY,
+            Team::class.java,
+            mapOf(
+                "teamId" to teamId
+            )
+        )
+
+    fun tryGetTeam(teamId: Int) =
+        jdbi.tryGetOne(
             GET_TEAM_BY_ID_QUERY,
             Team::class.java,
             mapOf(

@@ -3,6 +3,7 @@ package org.ionproject.codegarten
 import org.ionproject.codegarten.pipeline.argumentresolvers.AssignmentResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.GitHubUserOrgRoleResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.InstallationResolver
+import org.ionproject.codegarten.pipeline.argumentresolvers.InviteCodeResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.PaginationResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserClassroomResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
@@ -66,6 +67,7 @@ class MvcConfig(
 		resolvers.add(UserClassroomResolver())
 		resolvers.add(AssignmentResolver())
 		resolvers.add(InstallationResolver())
+		resolvers.add(InviteCodeResolver())
 	}
 }
 

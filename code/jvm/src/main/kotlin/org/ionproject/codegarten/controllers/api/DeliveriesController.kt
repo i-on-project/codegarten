@@ -11,7 +11,6 @@ import org.ionproject.codegarten.Routes.DELIVERY_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.Routes.PARTICIPANT_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
-import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getDeliveriesOfParticipantUri

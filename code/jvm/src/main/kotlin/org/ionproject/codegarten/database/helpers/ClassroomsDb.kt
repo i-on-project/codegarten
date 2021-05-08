@@ -4,9 +4,8 @@ import org.ionproject.codegarten.database.dto.Classroom
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
-private const val GET_CLASSROOMS_BASE = "SELECT cid, number, inv_code, org_id, name, description FROM CLASSROOM"
+private const val GET_CLASSROOMS_BASE = "SELECT cid, number, inv_code, org_id, name, description FROM V_CLASSROOM"
 private const val GET_CLASSROOM_QUERY = "$GET_CLASSROOMS_BASE WHERE org_id = :orgId AND number = :classroomNumber ORDER BY number"
-private const val GET_CLASSROOM_BY_INVCODE_QUERY = "$GET_CLASSROOMS_BASE WHERE inv_code = :inviteCode"
 
 private const val GET_CLASSROOM_BY_ID_QUERY = "$GET_CLASSROOMS_BASE WHERE cid = :classroomId"
 
@@ -15,7 +14,7 @@ private const val GET_CLASSROOMS_OF_USER_QUERY =
 private const val GET_CLASSROOMS_OF_USER_COUNT =
     "SELECT COUNT(cid) as count FROM CLASSROOM WHERE org_id = :orgId AND cid IN (SELECT cid from USER_CLASSROOM where uid = :userId)"
 
-private const val CREATE_CLASSROOM_QUERY = "INSERT INTO CLASSROOM(org_id, name, description, inv_code) VALUES(:orgId, :name, :description, :inviteCode)"
+private const val CREATE_CLASSROOM_QUERY = "INSERT INTO CLASSROOM(org_id, name, description) VALUES(:orgId, :name, :description)"
 
 private const val UPDATE_CLASSROOM_START = "UPDATE CLASSROOM SET"
 private const val UPDATE_CLASSROOM_END = "WHERE number = :classroomNumber AND org_id = :orgId"
@@ -32,11 +31,11 @@ class ClassroomsDb(val jdbi: Jdbi) {
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
         )
 
-    fun tryGetClassroomByInviteCode(inviteCode: String) =
-        jdbi.tryGetOne(
-            GET_CLASSROOM_BY_INVCODE_QUERY,
+    fun getClassroomById(classroomId: Int) =
+        jdbi.getOne(
+            GET_CLASSROOM_BY_ID_QUERY,
             Classroom::class.java,
-            mapOf("inviteCode" to inviteCode)
+            mapOf("classroomId" to classroomId)
         )
 
     fun getClassroomsOfUser(orgId: Int, userId: Int, page: Int, limit: Int) =
@@ -60,7 +59,7 @@ class ClassroomsDb(val jdbi: Jdbi) {
             )
         )
 
-    fun createClassroom(orgId: Int, name: String, description: String?, inviteCode: String) =
+    fun createClassroom(orgId: Int, name: String, description: String?) =
         jdbi.insertAndGet(
             CREATE_CLASSROOM_QUERY, Int::class.java,
             GET_CLASSROOM_BY_ID_QUERY, Classroom::class.java,

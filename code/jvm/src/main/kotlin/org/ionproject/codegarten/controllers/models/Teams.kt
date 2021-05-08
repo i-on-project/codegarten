@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.controllers.models
 
-import org.ionproject.codegarten.responses.siren.SirenClass
 import org.ionproject.codegarten.responses.siren.SirenClass.collection
 import org.ionproject.codegarten.responses.siren.SirenClass.team
 

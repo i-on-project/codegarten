@@ -1,5 +1,6 @@
 package org.ionproject.codegarten.remote.github
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -342,9 +343,12 @@ class GitHubInterface(
         httpClient.call(req)
     }
 
-    fun inviteUserToOrg(orgId: Int, userId: Int, installationToken: String) {
+    fun inviteUserToOrg(orgId: Int, userId: Int, teamId: Int? = null, installationToken: String) {
         val json = mapper.createObjectNode()
         json.put("invitee_id", userId)
+        if (teamId != null) {
+            json.set<JsonNode>("team_ids", mapper.createArrayNode().add(teamId))
+        }
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()

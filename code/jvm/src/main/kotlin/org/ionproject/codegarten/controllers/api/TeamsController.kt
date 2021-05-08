@@ -33,7 +33,6 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenTeamName
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamAvatarUri
-import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserAvatarUri
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
