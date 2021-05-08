@@ -8,8 +8,11 @@ import org.ionproject.codegarten.auth.AuthHeaderValidator.AUTH_HEADER
 import org.ionproject.codegarten.database.dto.AccessToken
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
+import org.ionproject.codegarten.database.dto.isGroupAssignment
+import org.ionproject.codegarten.database.dto.isIndividualAssignment
 import org.ionproject.codegarten.database.helpers.AccessTokensDb
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
+import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -47,6 +50,7 @@ const val ASSIGNMENT_ATTRIBUTE = "assignment-attribute"
 class AuthorizationInterceptor(
     val tokensDb: AccessTokensDb,
     val assignmentsDb: AssignmentsDb,
+    val teamsDb: TeamsDb,
     val usersDb: UsersDb,
     val gitHubInterface: GitHubInterface,
     val cryptoUtils: CryptoUtils
@@ -116,7 +120,6 @@ class AuthorizationInterceptor(
                 request.setAttribute(ORG_MEMBERSHIP_ATTRIBUTE, orgMembership)
 
                 if (requiresUserInClassroom) {
-                    //TODO: Check invite code here
                     val classroomNumber = pathVars[CLASSROOM_PARAM]?.toIntOrNull() ?:
                         throw InvalidInputException("Invalid classroom number")
 
@@ -132,17 +135,12 @@ class AuthorizationInterceptor(
                         val assignmentNumber = pathVars[ASSIGNMENT_PARAM]?.toIntOrNull() ?:
                             throw InvalidInputException("Invalid assignment number")
 
-                        val assignment = when (userClassroom.role) {
-                            UserClassroomMembership.TEACHER -> {
-                                assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
-                            }
-                            UserClassroomMembership.STUDENT -> {
-                                val assignment =
-                                    usersDb.tryGetAssignmentOfUser(orgId, classroomNumber, assignmentNumber, user.uid)
-                                if (assignment.isEmpty) throw AuthorizationException("User is not in assignment")
-                                assignment.get()
-                            }
-                            else -> throw AuthorizationException("User is not in classroom")
+                        val assignment = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
+                        if (userClassroom.role == UserClassroomMembership.STUDENT) {
+                            if (
+                                assignment.isIndividualAssignment() && !usersDb.isUserInAssignment(assignment.aid, user.uid)
+                                || assignment.isGroupAssignment() && !teamsDb.isUserTeamInAssignment(assignment.aid, user.uid)
+                            ) throw AuthorizationException("User is not in assignment")
                         }
 
                         request.setAttribute(ASSIGNMENT_ATTRIBUTE, assignment)

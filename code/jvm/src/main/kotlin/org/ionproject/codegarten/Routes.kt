@@ -20,8 +20,10 @@ object Routes {
 
     const val ORG_PARAM = "orgId"
     const val CLASSROOM_PARAM = "classroomNumber"
+    const val CLASSROOM_ID_PARAM = "classroomId"
     const val TEAM_PARAM = "teamNumber"
     const val ASSIGNMENT_PARAM = "assignmentNumber"
+    const val ASSIGNMENT_ID_PARAM = "assignmentId"
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
     const val PARTICIPANT_PARAM = "participantId"
@@ -59,13 +61,19 @@ object Routes {
     const val USER_HREF = "$API_BASE_URI/user"
     const val USER_INVITES_HREF = "$USER_HREF/invites"
     const val USER_INVITE_HREF = "$USER_INVITES_HREF/{$INVITE_CODE_PARAM}"
+    const val USER_INVITE_CLASSROOM_HREF = "$USER_INVITE_HREF/classroom"
+    const val USER_INVITE_CLASSROOM_TEAMS_HREF = "$USER_INVITE_CLASSROOM_HREF/teams"
     const val USER_BY_ID_HREF = "$API_BASE_URI/users/{$USER_PARAM}"
 
     val USER_BY_ID_HREF_TEMPLATE = UriTemplate(USER_BY_ID_HREF)
     val USER_INVITE_HREF_TEMPLATE = UriTemplate(USER_INVITE_HREF)
+    val USER_INVITE_CLASSROOM_TEMPLATE = UriTemplate(USER_INVITE_CLASSROOM_HREF)
+    val USER_INVITE_CLASSROOM_TEAMS_TEMPLATE = UriTemplate(USER_INVITE_CLASSROOM_TEAMS_HREF)
 
     fun getUserByIdUri(userId: Int) = USER_BY_ID_HREF_TEMPLATE.expand(userId)
     fun getUserInviteUri(invCode: String) = USER_INVITE_HREF_TEMPLATE.expand(invCode)
+    fun getUserInviteClassroomUri(invCode: String) = USER_INVITE_CLASSROOM_TEMPLATE.expand(invCode)
+    fun getUserInviteClassroomTeamsUri(invCode: String) = USER_INVITE_CLASSROOM_TEAMS_TEMPLATE.expand(invCode)
 
 
     // Organizations
@@ -103,14 +111,31 @@ object Routes {
     // Assignments
     const val ASSIGNMENTS_HREF = "$CLASSROOM_BY_NUMBER_HREF/assignments"
     const val ASSIGNMENT_BY_NUMBER_HREF = "$ASSIGNMENTS_HREF/{$ASSIGNMENT_PARAM}"
+    const val CLASSROOMS_OF_USER_HREF = "$USER_HREF/classrooms"
+    const val CLASSROOM_OF_USER_HREF = "$CLASSROOMS_OF_USER_HREF/{$CLASSROOM_ID_PARAM}"
+    const val PARTICIPATION_IN_CLASSROOM_OF_USER_HREF = "$CLASSROOM_OF_USER_HREF/participation"
     const val ASSIGNMENTS_OF_USER_HREF = "$USER_HREF/assignments"
+    const val ASSIGNMENT_OF_USER_HREF = "$ASSIGNMENTS_OF_USER_HREF/{$ASSIGNMENT_ID_PARAM}"
+    const val PARTICIPATION_IN_ASSIGNMENT_OF_USER_HREF = "$ASSIGNMENT_OF_USER_HREF/participation"
 
     val ASSIGNMENTS_HREF_TEMPLATE = UriTemplate(ASSIGNMENTS_HREF)
     val ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE = UriTemplate(ASSIGNMENT_BY_NUMBER_HREF)
+    val CLASSROOM_OF_USER_HREF_TEMPLATE = UriTemplate(CLASSROOM_OF_USER_HREF)
+    val PARTICIPATION_IN_CLASSROOM_OF_USER_TEMPLATE = UriTemplate(PARTICIPATION_IN_CLASSROOM_OF_USER_HREF)
+    val ASSIGNMENT_OF_USER_HREF_TEMPLATE = UriTemplate(ASSIGNMENT_OF_USER_HREF)
+    val PARTICIPATION_IN_ASSIGNMENT_OF_USER_TEMPLATE = UriTemplate(PARTICIPATION_IN_ASSIGNMENT_OF_USER_HREF)
 
     fun getAssignmentsUri(orgId: Int, classroomNumber: Int) = ASSIGNMENTS_HREF_TEMPLATE.expand(orgId, classroomNumber)
     fun getAssignmentByNumberUri(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
         ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE.expand(orgId, classroomNumber, assignmentNumber)
+    fun getClassroomOfUserUri(classroomId: Int) =
+        CLASSROOM_OF_USER_HREF_TEMPLATE.expand(classroomId)
+    fun getParticipationInClassroomOfUserUri(classroomId: Int) =
+        PARTICIPATION_IN_CLASSROOM_OF_USER_TEMPLATE.expand(classroomId)
+    fun getAssignmentOfUserUri(assignmentId: Int) =
+        ASSIGNMENT_OF_USER_HREF_TEMPLATE.expand(assignmentId)
+    fun getParticipationInAssignmentOfUserUri(assignmentId: Int) =
+        PARTICIPATION_IN_ASSIGNMENT_OF_USER_TEMPLATE.expand(assignmentId)
 
 
     // Deliveries

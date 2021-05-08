@@ -1,7 +1,6 @@
 package org.ionproject.codegarten.controllers.models
 
 import org.ionproject.codegarten.responses.siren.SirenClass.collection
-import org.ionproject.codegarten.responses.siren.SirenClass.participant
 import org.ionproject.codegarten.responses.siren.SirenClass.user
 
 class UserOutputModel(
@@ -28,27 +27,6 @@ class UserClassroomOutputModel(
     override fun getSirenClasses() = listOf(user)
 }
 
-class ParticipantOutputModel(
-    val id: Int,
-    val name: String
-) : OutputModel() {
-    override fun getSirenClasses() = listOf(participant)
-}
-
-enum class ParticipantTypes(val type: String) {
-    USER("user"),
-    TEAM("team")
-}
-
-class ParticipantsOutputModel(
-    val participantsType: String,
-    val collectionSize: Int,
-    val pageIndex: Int,
-    val pageSize: Int,
-) : OutputModel() {
-    override fun getSirenClasses() = listOf(participant, collection)
-}
-
 class UsersOutputModel(
     val collectionSize: Int,
     val pageIndex: Int,
@@ -65,8 +43,4 @@ data class UserAddInputModel(
 
 data class UserEditInputModel(
     val name: String?
-)
-
-data class UserInvitationInputModel(
-    val teamId: Int?,
 )

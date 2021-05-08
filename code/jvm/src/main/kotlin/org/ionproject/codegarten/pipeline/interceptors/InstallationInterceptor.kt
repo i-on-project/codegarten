@@ -52,7 +52,7 @@ class InstallationInterceptor(
 
         val encryptedToken = cryptoUtils.encrypt(tokenResponse.token)
 
-        installationsDb.createInstallation(
+        installationsDb.createOrUpdateInstallation(
             installationId = installation.id,
             orgId = orgId,
             accessToken = encryptedToken,

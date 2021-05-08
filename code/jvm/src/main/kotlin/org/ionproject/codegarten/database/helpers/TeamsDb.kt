@@ -28,7 +28,6 @@ private const val UPDATE_TEAM_END = "WHERE tid = :teamId"
 private const val DELETE_TEAM_QUERY = "DELETE FROM TEAM WHERE tid = :teamId"
 
 // Assignments
-
 private const val GET_TEAMS_IN_ASSIGNMENT_BASE =
     "SELECT tid, number, name, gh_id, repo_id, assignment_id FROM V_TEAM_ASSIGNMENT"
 
@@ -39,6 +38,12 @@ private const val GET_TEAMS_IN_ASSIGNMENT_COUNT =
 
 private const val GET_TEAM_IN_ASSIGNMENT_QUERY =
     "$GET_TEAMS_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND tid = :teamId"
+
+private const val GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY =
+    "SELECT tid FROM V_TEAM_USER_ASSIGNMENT WHERE aid = :assignmentId AND uid = :userId"
+
+private const val GET_TEAM_FROM_USER_IN_ASSIGNMENT_QUERY =
+    "$GET_TEAMS_BASE WHERE tid IN ($GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY)"
 
 private const val ADD_TEAM_TO_ASSIGNMENT =
     "INSERT INTO TEAM_ASSIGNMENT(tid, aid, repo_id) VALUES(:teamId, :assignmentId, :repoId)"
@@ -166,6 +171,26 @@ class TeamsDb(
             )
         ).isPresent
 
+    fun isUserTeamInAssignment(assignmentId: Int, userId: Int) =
+        jdbi.tryGetOne(
+            GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY,
+            Int::class.java,
+            mapOf(
+                "assignmentId" to assignmentId,
+                "userId" to userId,
+            )
+        ).isPresent
+
+    fun getUserTeamInAssignment(assignmentId: Int, userId: Int) =
+        jdbi.getOne(
+            GET_TEAM_FROM_USER_IN_ASSIGNMENT_QUERY,
+            Team::class.java,
+            mapOf(
+                "assignmentId" to assignmentId,
+                "userId" to userId,
+            )
+        )
+
     fun editTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, name: String) {
         val teamId = getTeam(orgId, classroomNumber, teamNumber).tid
         editTeam(teamId, name)
@@ -234,6 +259,16 @@ class TeamsDb(
 
     fun getTeamAssignment(assignmentId: Int, teamId: Int) =
         jdbi.getOne(
+            GET_TEAM_IN_ASSIGNMENT_QUERY,
+            TeamAssignment::class.java,
+            mapOf(
+                "assignmentId" to assignmentId,
+                "teamId" to teamId
+            )
+        )
+
+    fun tryGetTeamAssignment(assignmentId: Int, teamId: Int) =
+        jdbi.tryGetOne(
             GET_TEAM_IN_ASSIGNMENT_QUERY,
             TeamAssignment::class.java,
             mapOf(

@@ -231,7 +231,7 @@ class GitHubInterface(
             val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java)
             refs.map { GitHubTag(name = getGitHubTagNameFromRef(it.ref)) }
         } catch (ex: HttpRequestException) {
-            if (ex.status != HttpStatus.NOT_FOUND.value()) {
+            if (ex.status != HttpStatus.NOT_FOUND.value() && ex.status != HttpStatus.CONFLICT.value()) {
                 throw ex
             }
 

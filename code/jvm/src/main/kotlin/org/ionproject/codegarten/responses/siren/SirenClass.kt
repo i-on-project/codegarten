@@ -10,4 +10,6 @@ enum class SirenClass {
     participant,
     team,
     collection,
+    assignmentInvitation,
+    classroomInvitation,
 }

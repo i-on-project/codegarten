@@ -16,10 +16,10 @@ import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getCreateTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getDeleteTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getEditTeamAction
-import org.ionproject.codegarten.controllers.models.ClassroomsOutputModel
 import org.ionproject.codegarten.controllers.models.TeamCreateInputModel
 import org.ionproject.codegarten.controllers.models.TeamEditInputModel
 import org.ionproject.codegarten.controllers.models.TeamOutputModel
+import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
@@ -80,7 +80,7 @@ class TeamsController(
             else
                 null
 
-        return ClassroomsOutputModel(
+        return TeamsOutputModel(
             collectionSize = teamsCount,
             pageIndex = pagination.page,
             pageSize = teams.size,

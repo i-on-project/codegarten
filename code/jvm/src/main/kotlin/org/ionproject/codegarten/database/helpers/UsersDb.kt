@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.database.helpers
 
-import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.Classroom
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserAssignment
@@ -11,7 +10,6 @@ import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMB
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
-import java.util.*
 
 private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS"
 private const val GET_USER_QUERY = "$GET_USERS_BASE WHERE uid = :userId"
@@ -259,13 +257,15 @@ class UsersDb(
 
     fun getUserAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int): UserAssignment {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        return getUserAssignment(assignmentId, userId)
+    }
 
-        return jdbi.getOne(
+    fun getUserAssignment(assignmentId: Int, userId: Int) =
+        jdbi.getOne(
             GET_USER_ASSIGNMENT_QUERY,
             UserAssignment::class.java,
             mapOf("userId" to userId, "assignmentId" to assignmentId)
         )
-    }
 
     fun getUsersInAssignmentCount(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
         jdbi.getOne(
@@ -299,24 +299,20 @@ class UsersDb(
         )
     }
 
-    fun tryGetAssignmentOfUser(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int): Optional<Assignment> {
-        val assignment = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
-
+    fun isUserInAssignment(assignmentId: Int, userId: Int): Boolean {
         val userMembership = jdbi.tryGetOne(
             GET_USER_ID_IN_ASSIGNMENT,
             Int::class.java,
             mapOf(
-                "assignmentId" to assignment.aid,
+                "assignmentId" to assignmentId,
                 "userId" to userId,
             )
         )
 
-        if (userMembership.isPresent) return Optional.of(assignment)
-        return Optional.empty()
+        return userMembership.isPresent
     }
 
     // Teams
-
     fun getUsersInTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, page: Int, limit: Int): List<User> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return getUsersInTeam(classroomId, teamNumber, page, limit)

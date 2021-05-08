@@ -25,21 +25,7 @@ class InstallationsDb(val jdbi: Jdbi) {
     fun tryGetInstallationByOrgId(orgId: Int) =
         jdbi.tryGetOne(GET_INSTALLATION_BY_ORG_ID_QUERY, Installation::class.java, mapOf("orgId" to orgId))
 
-    fun createOrUpdateInstallation(
-        installationId: Int,
-        orgId: Int,
-        accessToken: String,
-        expirationDate: OffsetDateTime
-    ) {
-        val maybeInstallation = tryGetInstallationByOrgId(orgId)
-        if (maybeInstallation.isPresent) {
-            editInstallation(orgId, installationId = installationId, accessToken, expirationDate)
-        } else {
-            createInstallation(installationId, orgId, accessToken, expirationDate)
-        }
-    }
-
-    fun createInstallation(installationId: Int, orgId: Int, accessToken: String, expirationDate: OffsetDateTime) =
+    fun createOrUpdateInstallation(installationId: Int, orgId: Int, accessToken: String, expirationDate: OffsetDateTime) =
         jdbi.insert(
             CREATE_INSTALLATION_QUERY,
             mapOf(

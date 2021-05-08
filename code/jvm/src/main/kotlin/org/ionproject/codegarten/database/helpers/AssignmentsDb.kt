@@ -18,12 +18,14 @@ private const val GET_ASSIGNMENTS_OF_CLASSROOM_QUERY =
 private const val GET_ASSIGNMENTS_OF_CLASSROOM_COUNT =
     "SELECT COUNT(aid) as count FROM V_ASSIGNMENT WHERE org_id = :orgId AND classroom_number = :classroomNumber"
 
+private const val GET_ASSIGNMENTS_IDS_OF_USER_QUERY =
+    "SELECT aid FROM USER_ASSIGNMENT WHERE uid = :userId UNION SELECT aid FROM V_TEAM_USER_ASSIGNMENT WHERE uid = :userId"
 private const val GET_ASSIGNMENTS_OF_USER_QUERY =
     "$GET_ASSIGNMENTS_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
-    "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId) ORDER BY number"
+    "aid IN ($GET_ASSIGNMENTS_IDS_OF_USER_QUERY) ORDER BY number"
 private const val GET_ASSIGNMENTS_OF_USER_COUNT =
     "SELECT COUNT(aid) as count FROM V_ASSIGNMENT WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
-    "aid IN (SELECT aid from USER_ASSIGNMENT where uid = :userId)"
+    "aid IN ($GET_ASSIGNMENTS_IDS_OF_USER_QUERY)"
 
 private const val CREATE_ASSIGNMENT_QUERY =
     "INSERT INTO ASSIGNMENT(cid, name, description, type, repo_prefix, repo_template) VALUES" +
