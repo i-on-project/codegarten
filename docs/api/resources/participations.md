@@ -35,14 +35,14 @@ A participation is a registry of the type of presence of a user in a [classroom]
 * [organization](organizations.md/#get-organization)
 
 ## Actions
-* [Get authenticated user participation in assignment](#get-authenticated-user-participation-in-assignment)
-* [Get authenticated user participation in classroom](#get-authenticated-user-participation-in-classroom)
-* [Get assignment participants](#get-assignment-participants)
-* [Add participant to assignment](#add-participant-to-assignment)
-* [Delete participant from assignment](#delete-participant-from-assignment)
+* [Get Authenticated User Participation In Assignment](#get-authenticated-user-participation-in-assignment)
+* [Get Authenticated User Participation In Classroom](#get-authenticated-user-participation-in-classroom)
+* [List Assignment Participants](#list-assignment-participants)
+* [Add Assignment Participant](#add-assignment-participant)
+* [Delete Assignment Participant](#delete-assignment-participant)
 
 ------
-### Get authenticated user participation in assignment
+### Get Authenticated User Participation In Assignment
 Get the type of presence of a authenticated user in an assignment.
 
 ```http
@@ -164,7 +164,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Get authenticated user participation in classroom
+### Get Authenticated User Participation In Classroom
 Get the type of presence of the authenticated user in a classroom.
 
 ```http
@@ -226,8 +226,8 @@ Status: 404 Not Found
 ```
 
 ------
-### Get assignment participants
-Get the participants of an assignment.
+### List Assignment Participants
+List the participants of an assignment.
 
 ```http
 GET /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants
@@ -240,6 +240,8 @@ GET /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber
 | orgId             | integer     | path       | The GitHub Organization's unique identifier                                           |
 | classroomNumber   | integer     | path       | The classroom's identifier relative to the organization                               |
 | assignmentNumber  | integer     | path       | The assignment's identifier relative to the classroom                                 |
+| page              | integer     | query      | Specifies the current page of the list                                                |
+| limit             | integer     | query      | Specifies the number of results per page (max. 100)                                   |
 
 #### Response when the assignment is an individual assignment
 ```
@@ -247,10 +249,7 @@ Status: 200 OK
 ```
 ```json
 {
-  "class": [
-    "participant",
-    "collection"
-  ],
+  "class": ["participant", "collection"],
   "properties": {
     "participantsType": "user",
     "collectionSize": 2,
@@ -416,10 +415,7 @@ Status: 200 OK
 ```
 ```json
 {
-  "class": [
-    "participant",
-    "collection"
-  ],
+  "class": ["participant", "collection"],
   "properties": {
     "participantsType": "team",
     "collectionSize": 2,
@@ -596,7 +592,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Add participant to assignment
+### Add Assignment Participant
 Add a participant to an assignment.
 
 ```http
@@ -635,7 +631,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Delete participant from assignment
+### Delete Assignment Participant
 Delete a participant from an assignment.
 
 ```http

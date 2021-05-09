@@ -72,11 +72,11 @@ An invitation represents an invite to a classroom or an assignment.
 
 
 ## Actions
-* [Get invite code information](#get-invite-code-information)
-* [Get invite code classroom teams](#get-invite-code-classroom-teams)
-* [Join classroom through invite](#join-classroom-through-invite)
+* [Get Invite Information](#get-invite-information)
+* [Get Invite Classroom Teams](#get-invite-classroom-teams)
+* [Join Invite](#join-invite)
 ------
-### Get invite code information
+### Get Invite Information
 Get the detailed information of an invitation.
 
 ```http
@@ -206,7 +206,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Get invite code classroom teams
+### Get Invite Classroom Teams
 Get all teams of a classroom using an invitation.
 
 ```http
@@ -218,16 +218,15 @@ GET /api/user/invites/{inviteCode}/classroom/teams
 | ----------- | ----------- | ---------- | ------------------------------------------------------------------------------------- |
 | accept      | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`            |
 | inviteCode  | string      | path       | The invite code's unique identifier                                                   |
+| page        | integer     | query      | Specifies the current page of the list                                                |
+| limit       | integer     | query      | Specifies the number of results per page (max. 100)                                   |
 #### Default Response
 ```
 Status: 200 OK
 ```
 ```json
 {
-  "class": [
-    "team",
-    "collection"
-  ],
+  "class": ["team", "collection"],
   "properties": {
     "collectionSize": 2,
     "pageIndex": 0,
@@ -302,7 +301,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Join classroom through invite
+### Join Invite
 Add the authenticated user to a classroom using the invite code. 
 In case the user wants to join a team, the `teamId` can be placed in the body.
 

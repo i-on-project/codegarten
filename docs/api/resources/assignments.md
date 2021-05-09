@@ -46,7 +46,7 @@ An assignment is a task allocated for [users](users.md) or [teams](teams.md) in 
 ## Link Relations
 * [self](#get-assignment)
 * [deliveries](deliveries.md#list-deliveries)
-* [participants](participations.md#list-participants)
+* [participants](participations.md#list-assignment-participants)
 * [assignments](#list-assignments)
 * [classroom](classrooms.md#get-classroom)
 * [organization](organizations.md#get-organization)
