@@ -1,8 +1,8 @@
 # Authorization
-All API routes (besides [Home](#home)) require authentication to access them.
+All API routes (besides [Home](#home)) require authentication to access them. More information about the authorization can be found [here](../auth/README.md).
 
-This authentication information is passed via the `Authorization` header in all requests, using the `Bearer` scheme.
-More information about the authorization can be found [here](#auth/README.md).
+# Installations
+In order for the server application to function, its GitHub App needs to be installed in organizations. More information about installations can be found [here](../auth/installations.md). 
 
 # Collections
 Listing resources in the API (classrooms, assignments...) returns an [application/vnd.siren+json](#references) representation containing the various existent resources. If there are more pages to the result set, there are extra link relations present:

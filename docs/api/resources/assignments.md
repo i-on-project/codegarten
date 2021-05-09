@@ -448,7 +448,7 @@ PUT /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber
 | Name             | Type        | In         | Description                                                                                        |
 | ---------------- | ----------- | ---------- | ---------------------------------------------------------------------------------------------------|
 | accept           | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`                         |
-| content-type     | string      | header     | Should be set to `application/x-www-form-urlencoded`                                               |
+| content-type     | string      | header     | Should be set to `application/json`                                                                |
 | orgId            | integer     | path       | The GitHub Organization's unique identifier                                                        |
 | classroomNumber  | integer     | path       | The classroom's identifier relative to the organization                                            |
 | assignmentNumber | integer     | path       | The assignment's identifier relative to the classroom                                              |
