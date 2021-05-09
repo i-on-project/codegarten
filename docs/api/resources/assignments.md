@@ -486,7 +486,7 @@ Status: 409 Conflict
 Delete an existing assignment from a classroom.
 
 ```http
-DELETE Location: /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}
+DELETE /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}
 ```
 
 #### Parameters
