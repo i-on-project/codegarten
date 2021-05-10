@@ -101,6 +101,7 @@ class AssignmentsController(
                 AssignmentItemOutputModel(
                     id = it.aid,
                     inviteCode = if (userClassroom.role == UserClassroomMembership.TEACHER) it.inv_code else null,
+                    number = it.number,
                     name = it.name,
                     description = it.description,
                     type = it.type,
@@ -173,6 +174,7 @@ class AssignmentsController(
         return AssignmentOutputModel(
             id = assignment.aid,
             inviteCode = if (userClassroom.role == UserClassroomMembership.TEACHER) assignment.inv_code else null,
+            number = assignment.number,
             name = assignment.name,
             description = assignment.description,
             type = assignment.type,

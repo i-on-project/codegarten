@@ -12,6 +12,8 @@ import java.net.URI
 
 val MEDIA_TYPE_JSON = "application/json; charset=utf-8".toMediaType()
 
+val requestCache = RequestCache()
+
 fun Request.Builder.from(uri: URI, clientName: String, token: String? = null) =
     this.from(uri.toString(), clientName, token)
 
@@ -24,11 +26,17 @@ fun Request.Builder.from(uri: String, clientName: String, token: String? = null)
     return toReturn
 }
 
-fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: Class<T>): T {
+fun OkHttpClient.call(request: Request) {
     val res = this.newCall(request).execute()
-    if (res.code in 400 until 600) throw HttpRequestException(res.code, res.body?.string())
+    if (!res.isSuccessful) throw HttpRequestException(res.code, res.body?.string())
+}
 
-    val body = res.body!!.string()
+fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: Class<T>, cacheExpiresIn: Long? = null): T {
+    val call = this.newCall(request)
+    val res = call.executeCached(requestCache, cacheExpiresIn)
+    if (!res.isSuccessful) throw HttpRequestException(res.code, res.body)
+
+    val body = res.body
     try {
         return mapper.readValue(body, mapTo)
     } catch (ex: JsonMappingException) {
@@ -36,16 +44,12 @@ fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: C
     }
 }
 
-fun OkHttpClient.call(request: Request) {
-    val res = this.newCall(request).execute()
-    if (res.code in 400 until 600) throw HttpRequestException(res.code, res.body?.string())
-}
+fun <T> OkHttpClient.callAndMapList(request: Request, mapper: ObjectMapper, mapTo: Class<T>, cacheExpiresIn: Long? = null): List<T> {
+    val call = this.newCall(request)
+    val res = call.executeCached(requestCache, cacheExpiresIn)
+    if (!res.isSuccessful) throw HttpRequestException(res.code, res.body)
 
-fun <T> OkHttpClient.callAndMapList(request: Request, mapper: ObjectMapper, mapTo: Class<T>): List<T> {
-    val res = this.newCall(request).execute()
-    if (res.code in 400 until 600) throw HttpRequestException(res.code, res.body?.string())
-
-    val body = res.body!!.string()
+    val body = res.body
     try {
         return mapper.readValue(body, mapper.typeFactory.constructCollectionType(List::class.java, mapTo))
     } catch (ex: JsonMappingException) {

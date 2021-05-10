@@ -12,7 +12,6 @@ import org.ionproject.codegarten.Routes.PARTICIPANT_PARAM
 import org.ionproject.codegarten.Routes.PARTICIPATION_IN_ASSIGNMENT_OF_USER_HREF
 import org.ionproject.codegarten.Routes.PARTICIPATION_IN_CLASSROOM_OF_USER_HREF
 import org.ionproject.codegarten.Routes.SELF_PARAM
-import org.ionproject.codegarten.Routes.USER_INVITE_CLASSROOM_TEAMS_HREF
 import org.ionproject.codegarten.Routes.USER_INVITE_HREF
 import org.ionproject.codegarten.Routes.createSirenLinkListForPagination
 import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
@@ -24,21 +23,13 @@ import org.ionproject.codegarten.Routes.getParticipationInAssignmentOfUserUri
 import org.ionproject.codegarten.Routes.getParticipationInClassroomOfUserUri
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
-import org.ionproject.codegarten.Routes.getUserInviteClassroomTeamsUri
-import org.ionproject.codegarten.Routes.getUserInviteUri
 import org.ionproject.codegarten.Routes.includeHost
-import org.ionproject.codegarten.controllers.api.actions.InvitationActions.getJoinAssignmentInviteAction
-import org.ionproject.codegarten.controllers.api.actions.InvitationActions.getJoinClassroomInviteAction
-import org.ionproject.codegarten.controllers.api.actions.UserActions
-import org.ionproject.codegarten.controllers.models.AssignmentInvitationOutputModel
-import org.ionproject.codegarten.controllers.models.ClassroomInvitationOutputModel
+import org.ionproject.codegarten.controllers.api.actions.ParticipantActions
 import org.ionproject.codegarten.controllers.models.OutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantItemOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantTypes
 import org.ionproject.codegarten.controllers.models.ParticipantsOutputModel
-import org.ionproject.codegarten.controllers.models.TeamOutputModel
-import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.controllers.models.UserInvitationInputModel
 import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.dto.Assignment
@@ -47,17 +38,15 @@ import org.ionproject.codegarten.database.dto.InviteCode
 import org.ionproject.codegarten.database.dto.Team
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
+import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.STUDENT
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.dto.isFromAssignment
-import org.ionproject.codegarten.database.dto.isFromClassroom
 import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.dto.isIndividualAssignment
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
-import org.ionproject.codegarten.database.helpers.ClassroomsDb
-import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
@@ -95,9 +84,7 @@ import java.net.URI
 class ParticipantsController(
     val usersDb: UsersDb,
     val teamsDb: TeamsDb,
-    val classroomsDb: ClassroomsDb,
     val assignmentsDb: AssignmentsDb,
-    val inviteCodesDb: InviteCodesDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils,
 ) {
@@ -213,8 +200,8 @@ class ParticipantsController(
         val actions =
             if (isTeacher)
                 listOf(
-                    UserActions.getAddParticipantToAssignment(orgId, classroomNumber, assignmentNumber, isGroupAssignment),
-                    UserActions.getRemoveParticipantFromAssignment(orgId, classroomNumber, assignmentNumber, isGroupAssignment)
+                    ParticipantActions.getAddParticipantToAssignment(orgId, classroomNumber, assignmentNumber, isGroupAssignment),
+                    ParticipantActions.getRemoveParticipantFromAssignment(orgId, classroomNumber, assignmentNumber, isGroupAssignment)
                 )
             else null
 
@@ -443,7 +430,7 @@ class ParticipantsController(
         user: User,
         @RequestBody input: UserInvitationInputModel?
     ): ResponseEntity<Any> {
-        val isUserInClassroom = usersDb.getUserMembershipInClassroom(inviteCode.classroom_id, user.uid).role != NOT_A_MEMBER
+        val isUserInClassroom = usersDb.getUserMembershipInClassroom(inviteCode.classroom_id, user.uid).role != UserClassroomMembership.NOT_A_MEMBER
         val ghUser = gitHub.getUser(user.gh_id, user.gh_token)
 
         val team =
@@ -514,99 +501,5 @@ class ParticipantsController(
             toReturn.header("Location", locationHeader)
 
         return toReturn.body(null)
-    }
-
-    @RequiresUserAuth
-    @GetMapping(USER_INVITE_HREF)
-    fun getInviteCodeInfo(
-        @PathVariable(name = INVITE_CODE_PARAM) inviteCodePath: String,
-        user: User
-    ): ResponseEntity<Response> {
-        val inviteCode = inviteCodesDb.getInviteCode(inviteCodePath)
-
-        val classroom = classroomsDb.getClassroomById(inviteCode.classroom_id)
-        val org = gitHub.getOrgById(inviteCode.org_id, user.gh_token)
-
-        val toReturn =
-            if (inviteCode.isFromClassroom()) {
-                ClassroomInvitationOutputModel(
-                    id = classroom.cid,
-                    name = classroom.name,
-                    description = classroom.description,
-                    organization = org.login,
-                ).toSirenObject(
-                    actions = listOf(getJoinClassroomInviteAction(inviteCodePath)),
-                    links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("teams"), getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(classroom.org_id, classroom.number))
-                    )
-                )
-            } else {
-                // Invite is from assignment
-                val assignment = assignmentsDb.getAssignmentById(inviteCode.assignment_id)
-                AssignmentInvitationOutputModel(
-                    id = assignment.aid,
-                    name = assignment.name,
-                    description = assignment.description,
-                    type = assignment.type,
-                    classroom = assignment.classroom_name,
-                    organization = org.login
-                ).toSirenObject(
-                    actions = listOf(getJoinAssignmentInviteAction(inviteCodePath)),
-                    links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("teams"), getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("assignment"),
-                            getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number)
-                        )
-                    )
-                )
-            }
-
-        return toReturn.toResponseEntity(HttpStatus.OK)
-    }
-
-    @RequiresUserAuth
-    @GetMapping(USER_INVITE_CLASSROOM_TEAMS_HREF)
-    fun getTeamsOfClassroomInvite(
-        @PathVariable(name = INVITE_CODE_PARAM) inviteCodePath: String,
-        pagination: Pagination,
-        user: User
-    ): ResponseEntity<Response> {
-        val inviteCode = inviteCodesDb.getInviteCode(inviteCodePath)
-
-        val teamsCount = teamsDb.getTeamsOfClassroomCount(inviteCode.classroom_id)
-        val teams = teamsDb.getTeamsOfClassroom(inviteCode.classroom_id, pagination.page, pagination.limit)
-        val org = gitHub.getOrgById(inviteCode.org_id, user.gh_token)
-
-        return TeamsOutputModel(
-            collectionSize = teamsCount,
-            pageIndex = pagination.page,
-            pageSize = teams.size,
-        ).toSirenObject(
-            entities = teams.map {
-                TeamOutputModel(
-                    id = it.tid,
-                    number = it.number,
-                    name = it.name,
-                    classroom = it.classroom_name,
-                    organization = org.login
-                ).toSirenObject(
-                    rel = listOf("item"),
-                    links = listOf(
-                        SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(it.gh_id)),
-                    )
-                )
-            },
-            links = createSirenLinkListForPagination(
-                getUserInviteClassroomTeamsUri(inviteCodePath).includeHost(),
-                pagination.page,
-                pagination.limit,
-                teamsCount
-            ) + listOf(
-                SirenLink(listOf("invite"), getUserInviteUri(inviteCodePath).includeHost()),
-            )
-        ).toResponseEntity(HttpStatus.OK)
     }
 }

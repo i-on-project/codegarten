@@ -168,7 +168,6 @@ class UsersController(
                 UserClassroomOutputModel(
                     id = it.uid,
                     name = it.name,
-                    gitHubId = it.gh_id,
                     role = it.classroom_role
                 ).toSirenObject(
                     rel = listOf("item"),

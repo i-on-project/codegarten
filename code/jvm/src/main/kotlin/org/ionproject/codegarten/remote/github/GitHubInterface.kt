@@ -14,6 +14,14 @@ import org.ionproject.codegarten.remote.call
 import org.ionproject.codegarten.remote.callAndMap
 import org.ionproject.codegarten.remote.callAndMapList
 import org.ionproject.codegarten.remote.from
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_INFO_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_MEMBERSHIP_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_INFO_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAGS_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAG_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.TEAM_INFO_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.USER_INFO_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.USER_ORGS_CACHE
 import org.ionproject.codegarten.remote.github.GitHubRoutes.GITHUB_TOKEN_URI
 import org.ionproject.codegarten.remote.github.GitHubRoutes.GITHUB_USER_URI
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubAuthUri
@@ -101,7 +109,7 @@ class GitHubInterface(
             .from(GITHUB_USER_URI, clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
     }
 
     fun getInstallationOrg(installationId: Int): GitHubInstallationResponse {
@@ -137,7 +145,7 @@ class GitHubInterface(
             .from(getGitHubUserByIdUri(userId), clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
     }
 
     fun getUserOrgMembership(orgId: Int, accessToken: String): GitHubOrgMembershipResponse {
@@ -146,7 +154,7 @@ class GitHubInterface(
             .build()
 
         return try {
-            httpClient.callAndMap(req, mapper, GitHubOrgMembershipResponse::class.java)
+            httpClient.callAndMap(req, mapper, GitHubOrgMembershipResponse::class.java, ORG_MEMBERSHIP_CACHE)
         } catch (ex: HttpRequestException) {
             GitHubOrgMembershipResponse(NOT_A_MEMBER)
         }
@@ -157,7 +165,7 @@ class GitHubInterface(
             .from(getGithubUserOrgsUri(page, limit), clientName, accessToken)
             .build()
 
-        return httpClient.callAndMapList(req, mapper, GitHubOrganizationResponse::class.java)
+        return httpClient.callAndMapList(req, mapper, GitHubOrganizationResponse::class.java, USER_ORGS_CACHE)
     }
 
     fun getOrgById(orgId: Int, accessToken: String): GitHubOrganizationResponse {
@@ -165,7 +173,7 @@ class GitHubInterface(
             .from(getGitHubOrgUri(orgId), clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java, ORG_INFO_CACHE)
     }
 
     fun getRepoById(repoId: Int, accessToken: String): GitHubRepoResponse {
@@ -173,7 +181,7 @@ class GitHubInterface(
             .from(getGitHubRepoByIdUri(repoId), clientName, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
     }
 
     fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse {
@@ -228,7 +236,7 @@ class GitHubInterface(
             .build()
 
         return try {
-            val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java)
+            val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java, REPO_TAGS_CACHE)
             refs.map { GitHubTag(name = getGitHubTagNameFromRef(it.ref)) }
         } catch (ex: HttpRequestException) {
             if (ex.status != HttpStatus.NOT_FOUND.value() && ex.status != HttpStatus.CONFLICT.value()) {
@@ -245,7 +253,7 @@ class GitHubInterface(
             .build()
 
         return try {
-            val ref = httpClient.callAndMap(req, mapper, GitHubRefResponse::class.java)
+            val ref = httpClient.callAndMap(req, mapper, GitHubRefResponse::class.java, REPO_TAG_CACHE)
 
             val commitUri =
                 if (ref.obj.type == "tag") {
@@ -254,7 +262,7 @@ class GitHubInterface(
                         .from(ref.obj.url, clientName, ghToken)
                         .build()
 
-                    val ghTag = httpClient.callAndMap(req, mapper, GitHubTagResponse::class.java)
+                    val ghTag = httpClient.callAndMap(req, mapper, GitHubTagResponse::class.java, REPO_TAG_CACHE)
                     ghTag.obj.url
                 } else {
                     // If ref is not tag, it's a commit
@@ -264,7 +272,7 @@ class GitHubInterface(
             req = Request.Builder()
                 .from(commitUri, clientName, ghToken)
                 .build()
-            val commit = httpClient.callAndMap(req, mapper, GitHubCommitResponse::class.java)
+            val commit = httpClient.callAndMap(req, mapper, GitHubCommitResponse::class.java, REPO_TAG_CACHE)
 
             Optional.of(
                 GitHubTag(
@@ -286,7 +294,7 @@ class GitHubInterface(
             .from(getGitHubTeamByIdUri(orgId, teamId), clientName, installationToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java, TEAM_INFO_CACHE)
     }
 
     fun createTeam(orgId: Int, name: String, installationToken: String): GitHubTeamResponse {
