@@ -59,7 +59,7 @@ class CryptoUtils(cipherKeyPath: String) {
     fun generateAccessToken() = generateRandomCode(ACCESS_TOKEN_LENGTH, OffsetDateTime.now().plusWeeks(2))
     fun generateInviteCode() = generateRandomCode(INVITE_CODE_LENGTH)
 
-    fun validateClientSecret(toValidate: String, secretHash: String) = secretHash == hash(toValidate)
+    fun validateHash(toValidate: String, hash: String) = hash == hash(toValidate)
 
     fun hash(toHash: String) = digester.digest(toHash.toByteArray())
         .fold("") { str, byte -> "$str${"%02x".format(byte)}" }

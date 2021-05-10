@@ -16,7 +16,7 @@ object AuthHeaderValidator {
             throw AuthorizationException("Resource requires authentication")
         }
         if (!header.startsWith(AUTH_SCHEME, true)) {
-            logger.info("Authorization header didn't follow the auth basic scheme")
+            logger.info("Authorization header didn't follow the auth bearer scheme")
             throw AuthorizationException("Invalid authorization scheme")
         }
 
