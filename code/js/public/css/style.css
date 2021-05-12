@@ -1,0 +1,88 @@
+@keyframes slide-in {
+  0% {
+    transform: translateY(-1rem);
+    opacity: 0;
+  }
+  100% {
+    transform:translateY(0rem);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  0% {
+    transform: translateY(0rem);
+    opacity: 1;
+  }
+  100% {
+    transform:translateY(-1rem);
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes slide-in {
+  0% {
+    -webkit-transform: translateY(-1rem);
+    -webkit-opacity: 0;
+  }
+  100% {
+    -webkit-transform: translateY(0);
+    -webkit-opacity: 1;
+    -webkit-display: none;
+  }
+}
+
+@-webkit-keyframes slide-out {
+  0% {
+    -webkit-transform: translateY(0);
+    -webkit-opacity: 1;
+  }
+  100% {
+    -webkit-transform: translateY(-1rem);
+    -webkit-opacity: 0;
+  }
+}
+
+.slide-in {
+  animation-duration: 0.2s;
+  -webkit-animation-duration: 0.2s;
+  -webkit-animation-name: slide-in;
+  animation-name: slide-in;
+  animation-fill-mode: both;
+  -webkit-animation-fill-mode: both;
+}
+
+.slide-out {
+  animation-duration: 0.2s;
+  -webkit-animation-duration: 0.2s;
+  -webkit-animation-name: slide-out;
+  animation-name: slide-out;
+  animation-fill-mode: both;
+  -webkit-animation-fill-mode: both;
+}
+
+.overlay {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255,255,255,0.7);
+  z-index: 3;
+  backdrop-filter: blur(12px);
+}
+
+.alert-message {
+    top: 62px;
+    z-index: 2;
+}
+
+html,body
+{
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow-x: hidden; 
+}
