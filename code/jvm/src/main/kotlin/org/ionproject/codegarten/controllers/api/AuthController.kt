@@ -42,7 +42,7 @@ class AuthController(
         if (input.code == null) throw InvalidInputException("Missing code")
 
         val client = clientsDb.getClientById(input.client_id)
-        if (!cryptoUtils.validateClientSecret(input.client_secret, client.secret)) {
+        if (!cryptoUtils.validateHash(input.client_secret, client.secret)) {
             throw AuthorizationException("Invalid client")
         }
 
