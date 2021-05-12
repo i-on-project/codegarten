@@ -6,7 +6,22 @@ import org.ionproject.codegarten.responses.siren.SirenClass.user
 class UserOutputModel(
     val id: Int,
     val name: String,
-    val githubName: String
+    val gitHubName: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(user)
+}
+
+class UserItemOutputModel(
+    val id: Int,
+    val name: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(user)
+}
+
+class UserClassroomOutputModel(
+    val id: Int,
+    val name: String,
+    val role: String
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(user)
 }
@@ -19,8 +34,10 @@ class UsersOutputModel(
     override fun getSirenClasses() = listOf(user, collection)
 }
 
+
+val validRoleTypes = listOf("student", "teacher")
 data class UserAddInputModel(
-    val id: Int?
+    val role: String?
 )
 
 data class UserEditInputModel(

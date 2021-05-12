@@ -16,8 +16,8 @@ class RequestLoggingFilter : Filter {
         val httpRequest = request as HttpServletRequest
         val start = System.currentTimeMillis()
 
-        logger.info("Handling ${httpRequest.method} ${httpRequest.requestURI}")
+        logger.info("[${request.remoteAddr}] Handling ${httpRequest.method} ${httpRequest.requestURI}")
         chain?.doFilter(request, response)
-        logger.info("Handled ${httpRequest.method} ${httpRequest.requestURI} in ${System.currentTimeMillis() - start} ms")
+        logger.info("[${request.remoteAddr}] Handled ${httpRequest.method} ${httpRequest.requestURI} in ${System.currentTimeMillis() - start} ms")
     }
 }

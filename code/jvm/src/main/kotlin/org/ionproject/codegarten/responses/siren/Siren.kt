@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import org.ionproject.codegarten.responses.Response
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.web.util.UriTemplate
 import java.net.URI
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -14,7 +15,9 @@ data class SirenAction(
     val name: String,
     val title: String,
     val method: HttpMethod,
-    val href: URI,
+    val href: URI? = null,
+    @JsonSerialize(using = ToStringSerializer::class)
+    val hrefTemplate: UriTemplate? = null,
     @JsonSerialize(using = ToStringSerializer::class)
     val type: MediaType? = null,
     var fields: List<SirenActionField>? = null
@@ -25,14 +28,20 @@ data class SirenActionField(
     val name: String,
     val title: String? = null,
     val type: SirenFieldType? = null,
-    val value: Any? = null
+    val value: Any? = null,
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class SirenOneOf(
+    val oneOf: List<Any>
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SirenLink(
     val rel: List<String>,
     val href: URI? = null,
-    val hrefTemplate: String? = null
+    @JsonSerialize(using = ToStringSerializer::class)
+    val hrefTemplate: UriTemplate? = null
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

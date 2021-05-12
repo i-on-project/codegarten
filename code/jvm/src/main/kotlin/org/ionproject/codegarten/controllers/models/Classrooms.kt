@@ -5,6 +5,8 @@ import org.ionproject.codegarten.responses.siren.SirenClass.collection
 
 class ClassroomOutputModel(
     val id: Int,
+    val inviteCode: String?,
+    val number: Int,
     val name: String,
     val description: String?,
     val organization: String

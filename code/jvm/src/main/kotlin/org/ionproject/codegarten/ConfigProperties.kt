@@ -9,12 +9,12 @@ data class ConfigProperties(
     val dbConnectionString: String,
 
     // GitHub App Info
-    val githubAppName: String,
-    val githubAppId: String,
-    val githubAppClientId: String,
-    val githubAppClientSecret: String,
-    val githubAppPrivateKey: String,
+    val gitHubAppName: String,
+    val gitHubAppId: Int,
+    val gitHubAppClientId: String,
+    val gitHubAppClientSecret: String,
+    val gitHubAppPrivateKeyPemPath: String,
 
     // Used to encrypt/decrypt access tokens and other sensitive information
-    val cipherKey: String,
+    val cipherKeyPath: String
 )

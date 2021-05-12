@@ -1,25 +1,57 @@
 package org.ionproject.codegarten.controllers.im
 
-import org.ionproject.codegarten.remote.GitHubInterface
+import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_CB_HREF
+import org.ionproject.codegarten.Routes.GH_INSTALLATIONS_HREF
+import org.ionproject.codegarten.Routes.INSTALLATION_ID_PARAM
+import org.ionproject.codegarten.database.helpers.InstallationsDb
+import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.responses.GitHubAccountType.ORGANIZATION
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping(GH_INSTALLATIONS_HREF)
-class GhAppInstallationController(val github: GitHubInterface) : BaseImController() {
+class GhAppInstallationController(
+    val gitHub: GitHubInterface,
+    val installationsDb: InstallationsDb,
+    val cryptoUtils: CryptoUtils
+) {
 
-    @GetMapping
+    @GetMapping(GH_INSTALLATIONS_HREF)
     fun installToOrg() : ResponseEntity<Any> {
-        TODO()
+        return ResponseEntity
+            .status(302)
+            .header("Location", gitHub.getInstallationUri().toString())
+            .body(null)
     }
 
-    @GetMapping("cb")
+
+    @GetMapping(GH_INSTALLATIONS_CB_HREF)
     fun orgInstallationCallback(
-        @RequestParam installation_id: Int
+        @RequestParam(name = INSTALLATION_ID_PARAM) installationId: Int?
     ) : ResponseEntity<Any> {
-        TODO()
+        val status: String
+
+        if (installationId != null) {
+            val installationOrg = gitHub.getInstallationOrg(installationId)
+            if (installationOrg.account.type == ORGANIZATION) {
+                val installationToken = gitHub.getInstallationToken(installationId)
+                installationsDb.createOrUpdateInstallation(
+                    installationId, installationOrg.account.id,
+                    cryptoUtils.encrypt(installationToken.token), installationToken.expires_at
+                )
+                status = "successful"
+            } else {
+                status = "ignored, since the account is not an organization"
+            }
+        } else {
+            status = "requested"
+        }
+
+        return ResponseEntity
+            .status(200)
+            .body("Installation has been $status. You can now close this page <script> window.close() </script>")
     }
 }
