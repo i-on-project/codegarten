@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>i-on CodeGarten</title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/fontawesome.css">
+    </head>
+    <body>
+        <nav class="navbar shadow-sm sticky-top navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">
+            <img src="/favicon.ico" width="32" height="32" class="d-inline-block align-top" alt="">
+            CodeGarten
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            {{#if user}}
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/orgs">Organizations</a>
+                    </li>
+                </ul>
+                    <ul class="navbar-nav ml-auto">
+                    <div class="dropdown-divider"></div>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            {{user.username}}
+                        </a>
+                        <div class="dropdown-menu collapse dropdown-menu-right slide-in">
+                            <div>
+                                <a class="dropdown-item" href="/user">Edit Account</a>
+                                <a class="dropdown-item" href="/logout">Log Out</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            {{else}}
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                </ul>
+            {{/if}}
+        </div>
+        </nav>
+        <br>
+        <div class="container">
+            <div id="loadingOverlay" class="overlay position-fixed">
+                <div class="w-100 d-flex justify-content-center align-items-center">
+                <div class="spinner-border"></div>
+                </div>
+            </div>
+            <div class="messages sticky-top alert-message">
+                {{#if messages.error}}
+                    <div class="alert alert-warning slide-in" role="alert" style="z-index: 2;">
+                        <button type="button" id="closeAlertButton" class="close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {{messages.error}}
+                    </div>
+                {{/if}}
+                {{#if messages.success}}
+                    <div class="alert alert-success slide-in" role="alert">
+                        <button type="button" id="closeAlertButton" class="close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {{messages.success}}
+                    </div>
+                {{/if}}
+            </div>
+
+            {{{body}}}
+        </div>
+        <script type='text/javascript' src='/js/jquery-3.5.1.slim.min.js'></script>
+        <script type='text/javascript' src='/js/bootstrap.bundle.min.js'></script>
+    </body>
+</html>
