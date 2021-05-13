@@ -1,1 +1,17 @@
 'use strict'
+
+import { authRoutes, getUrlEncodedRequestOptions } from '../api-routes'
+import fetch from 'node-fetch'
+
+export function getAccessToken(code: string): Promise<AccessToken> {
+    const options = getUrlEncodedRequestOptions('POST', authRoutes.getAccessTokenRequestBody(code))
+    return fetch(authRoutes.getAccessToken, options)
+        .then(res => res.json())
+        .then(token => {
+            const date = new Date().getTime()
+            return {
+                accessToken: token.access_token,
+                expiresAt: new Date(date + token.expires_in)
+            } as AccessToken
+        })
+}

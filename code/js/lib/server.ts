@@ -18,6 +18,7 @@ import invitationsRoutes from './routes/invitations-routes'
 import participantsRoutes from './routes/participants-routes'
 import authRoutes from './routes/auth-routes'
 
+import { Error } from './types/error-types'
 
 let PORT = 80
 let server
@@ -38,13 +39,24 @@ export function init(portArg: number, done: Function = null): void {
         resave: true, 
         saveUninitialized: true, 
         cookie: {
-            sameSite: 'strict'
+            sameSite: 'lax'
         }
     }))
     app.use(flash())
 
-    app.use(passport.initialize())
-    app.use(passport.session())  
+    //TODO: implement better session control
+
+    //app.use(passport.initialize())
+    //app.use(passport.session()) 
+    
+    app.use((req, res, next) => {
+        res.locals.user = req.user
+        res.locals.messages = {
+            error: req.flash('error'),
+            success: req.flash('success')
+        }
+        next()
+    })
 
     app.use(authRoutes)
     app.use(homeRoutes)
@@ -57,10 +69,10 @@ export function init(portArg: number, done: Function = null): void {
     app.use(classroomsRoutes)
     app.use(orgsRoutes)
 
-    app.use((err, req, resp, next) => {
-        resp.status(err.status || 500)
+    app.use((err: Error, req, resp, next) => {
+        resp.status(err.code || 500)
         resp.render('error', {
-            'status': err.status,
+            'status': err.code,
             'message': err.message,
             'user': req.user
         })
