@@ -1,12 +1,10 @@
 'use strict'
 
-import cookieParser from 'cookie-parser'
-import expressSession from 'express-session'
-
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import flash from 'connect-flash'
-import passport from 'passport'
+import session from 'express-session'
 
+import userControl from './user-control'
 import homeRoutes from './routes/home-routes'
 import orgsRoutes from './routes/orgs-routes'
 import classroomsRoutes from './routes/classrooms-routes'
@@ -20,10 +18,12 @@ import authRoutes from './routes/auth-routes'
 
 import { Error } from './types/error-types'
 
+const SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 365 // 1 year
+
 let PORT = 80
 let server
 
-export function init(portArg: number, done: Function = null): void {
+export function init(portArg: number, done: () => void = null): void {
     if(portArg) {
         PORT = portArg
     }
@@ -33,23 +33,20 @@ export function init(portArg: number, done: Function = null): void {
     app.set('views', './lib/views')
 
     app.use(express.static('public'))
-    app.use(cookieParser())
-    app.use(expressSession({ 
-        secret: 'change it', 
-        resave: true, 
-        saveUninitialized: true, 
+    app.use(session({
+        secret: 'changeit',
+        resave: true,
+        saveUninitialized: true,
         cookie: {
-            sameSite: 'lax'
+            maxAge: SESSION_MAX_AGE,
+            sameSite: 'lax' 
         }
     }))
+
     app.use(flash())
-
-    //TODO: implement better session control
-
-    //app.use(passport.initialize())
-    //app.use(passport.session()) 
+    app.use(userControl)
     
-    app.use((req, res, next) => {
+    app.use((req: Request, res: Response, next: NextFunction) => {
         res.locals.user = req.user
         res.locals.messages = {
             error: req.flash('error'),
@@ -69,18 +66,18 @@ export function init(portArg: number, done: Function = null): void {
     app.use(classroomsRoutes)
     app.use(orgsRoutes)
 
-    app.use((err: Error, req, resp, next) => {
-        resp.status(err.code || 500)
-        resp.render('error', {
+    app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+        res.status(err.code || 500)
+        res.render('error', {
             'status': err.code,
             'message': err.message,
             'user': req.user
         })
     })
 
-    app.use((req, resp, next) => {
-        resp.status(404)
-        resp.render('error', {
+    app.use((req: Request, res: Response, next: NextFunction) => {
+        res.status(404)
+        res.render('error', {
             'status': 404,
             'message': 'Sorry, that page does not exist!',
             'user': req.user
