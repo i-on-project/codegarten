@@ -7,3 +7,4 @@ type User = {
 }
 
 type AuthenticatedUser = User & { accessToken: AccessToken }
+

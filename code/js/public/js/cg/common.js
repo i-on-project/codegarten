@@ -1,15 +1,4 @@
-window.onload = setup
-
-function setup() {
-    // Close alert
-    const closeAlertButton = document.querySelector('#closeAlertButton')
-    if (closeAlertButton) {
-        closeAlertButton.addEventListener('click', () => dismissAlert())
-    }
-}
-
-function alertMsg(message, kind) {
-    if(!kind) kind = 'danger'
+function alertMsg(message, kind = 'danger') {
     document
         .querySelector('.messages')
         .innerHTML = 
@@ -29,11 +18,15 @@ function dismissAlert() {
     setTimeout(() => overlay.style.display = 'none', 200)
 }
 
-function startLoadingMsg() {
+function workWithLoading(workPromise) {
     const overlay = document.querySelector('#loadingOverlay')
     overlay.classList.remove('slide-out')
     overlay.classList.add('slide-in')
     overlay.style.display = 'flex'
+
+    workPromise
+        .then(finishLoadingMsg)
+        .catch(finishLoadingMsg)
 }
 
 function finishLoadingMsg() {
@@ -41,4 +34,32 @@ function finishLoadingMsg() {
     overlay.classList.remove('slide-in')
     overlay.classList.add('slide-out')
     setTimeout(() => overlay.style.display = 'none', 200)
+}
+
+function mapEnterToButton(elem, event, button) {
+    if (event.key == 'Enter') {
+        elem.blur()
+        button.click()
+    }
+}
+
+function sanitizeInput(input) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        '\'': '&#x27;',
+        '/': '&#x2F;',
+    }
+    const reg = /[&<>"'/]/ig
+    return input.replace(reg, (match)=>(map[match]))
+}
+
+export {
+    alertMsg,
+    dismissAlert,
+    workWithLoading,
+    mapEnterToButton,
+    sanitizeInput
 }

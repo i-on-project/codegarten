@@ -5,7 +5,8 @@
         <link rel="stylesheet" href="/css/bootstrap.min.css">
         <link rel="stylesheet" href="/css/style.css">
         <link rel="stylesheet" href="/css/fontawesome.css">
-        <script type='text/javascript' src='/js/index.js'></script>
+        <script type='module' src='/js/cg/index.js'></script>
+        <script type='module' src='/js/cg/common.js'></script>
     </head>
     <body>
         <nav class="navbar shadow-sm sticky-top navbar-expand-lg navbar-light bg-light">
@@ -29,11 +30,14 @@
 
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            {{user.username}}
+                            <span class="d-inline-block text-truncate align-middle" id="usernameNavbar" style="max-width: 150px;">
+                                {{user.username}}
+                            </span>
+                            <img src={{user.avatarUri}} width="35" height="35" class="rounded-circle ml-1"> 
                         </a>
                         <div class="dropdown-menu collapse dropdown-menu-right slide-in">
                             <div>
-                                <a class="dropdown-item" href="/user">Edit Account</a>
+                                <a class="dropdown-item" href="/user">View Profile</a>
                                 <a class="dropdown-item" href="/logout">Log Out</a>
                             </div>
                         </div>

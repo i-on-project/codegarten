@@ -33,6 +33,7 @@ export function init(portArg: number, done: () => void = null): void {
     app.set('views', './lib/views')
 
     app.use(express.static('public'))
+    app.use(express.json())
     app.use(session({
         secret: 'changeit',
         resave: true,
@@ -68,7 +69,7 @@ export function init(portArg: number, done: () => void = null): void {
 
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         res.status(err.code || 500)
-        res.render('error', {
+        res.render('error-page', {
             'status': err.code,
             'message': err.message,
             'user': req.user
@@ -77,7 +78,7 @@ export function init(portArg: number, done: () => void = null): void {
 
     app.use((req: Request, res: Response, next: NextFunction) => {
         res.status(404)
-        res.render('error', {
+        res.render('error-page', {
             'status': 404,
             'message': 'Sorry, that page does not exist!',
             'user': req.user
