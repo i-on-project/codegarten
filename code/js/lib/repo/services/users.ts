@@ -24,7 +24,19 @@ function getUserById() {
     // TODO: 
 }
 
+function editUser(newName: string, accessToken: string): Promise<number> {
+    return fetch(userRoutes.getAuthenticatedUser, getJsonRequestOptions('PUT', accessToken, { name: newName }))
+        .then(res => res.status)
+}
+
+function deleteUser(accessToken: string) : Promise<number> {
+    return fetch(userRoutes.getAuthenticatedUser, getJsonRequestOptions('DELETE', accessToken))
+        .then(res => res.status)
+}
+
 export {
     getAuthenticatedUser,
-    getUserById
+    getUserById,
+    editUser,
+    deleteUser
 }

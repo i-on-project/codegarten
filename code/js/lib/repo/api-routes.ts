@@ -7,7 +7,7 @@ const IM_HOST = 'http://localhost:8080/im'
 const CLIENT_ID = process.env.CG_CLIENT_ID
 const CLIENT_SECRET = process.env.CG_CLIENT_SECRET
 
-export function getJsonRequestOptions(method: string, accessToken: string, body: string = null): RequestInit {
+export function getJsonRequestOptions(method: string, accessToken: string, body: any = null): RequestInit {
     return {
         method: method,
         headers: {
@@ -15,7 +15,7 @@ export function getJsonRequestOptions(method: string, accessToken: string, body:
             'Accept': 'application/json',
             'Authorization': `Bearer ${accessToken}`
         },
-        body: body
+        body: body ? JSON.stringify(body) : null
     }
 }
 
