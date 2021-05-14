@@ -11,7 +11,7 @@ export function getAccessToken(code: string): Promise<AccessToken> {
             const date = new Date().getTime()
             return {
                 accessToken: token.access_token,
-                expiresAt: new Date(date + token.expires_in)
+                expiresAt: new Date(date + token.expires_in * 1000)
             } as AccessToken
         })
 }
