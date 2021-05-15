@@ -43,6 +43,7 @@ import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubLoginUri
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
@@ -88,6 +89,9 @@ class DeliveriesController(
         }
 
         return DeliveriesOutputModel(
+            assignment = assignment.name,
+            classroom = userClassroom.classroom.name,
+            organization = org.login,
             collectionSize = deliveriesCount,
             pageIndex = pagination.page,
             pageSize = deliveries.size
@@ -107,7 +111,8 @@ class DeliveriesController(
                         SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
@@ -120,7 +125,8 @@ class DeliveriesController(
             ) + listOf(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()) ,
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -161,7 +167,8 @@ class DeliveriesController(
                 SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -202,6 +209,9 @@ class DeliveriesController(
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         return DeliveriesOutputModel(
+            assignment = assignment.name,
+            classroom = userClassroom.classroom.name,
+            organization = org.login,
             collectionSize = deliveriesCount,
             pageIndex = pagination.page,
             pageSize = deliveries.size
@@ -226,6 +236,7 @@ class DeliveriesController(
                         SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
                         SirenLink(listOf("participant"),
                             if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
                             else getTeamByNumberUri(orgId, classroomNumber, participantId)
@@ -243,6 +254,7 @@ class DeliveriesController(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("participant"),
                     if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
                     else getTeamByNumberUri(orgId, classroomNumber, participantId))
@@ -300,6 +312,7 @@ class DeliveriesController(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("participant"),
                     if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
                     else getTeamByNumberUri(orgId, classroomNumber, participantId)

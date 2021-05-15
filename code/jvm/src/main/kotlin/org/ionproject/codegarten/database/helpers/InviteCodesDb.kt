@@ -48,6 +48,7 @@ class InviteCodesDb(
             val invCode = cryptoUtils.generateInviteCode()
             try {
                 createInviteCode(invCode, classroomId, assignmentId)
+                break
             } catch (ex: JdbiException) {
                 if (ex.getPsqlErrorCode() != PsqlErrorCode.UniqueViolation) throw ex
                 // If invite code was not unique, the loop will repeat and generate a new one

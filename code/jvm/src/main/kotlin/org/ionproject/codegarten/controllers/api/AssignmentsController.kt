@@ -38,6 +38,8 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubRoutes
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubLoginUri
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenAction
@@ -93,6 +95,8 @@ class AssignmentsController(
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
         return AssignmentsOutputModel(
+            classroom = userClassroom.classroom.name,
+            organization = org.login,
             collectionSize = assignmentsCount,
             pageIndex = pagination.page,
             pageSize = assignments.size,
@@ -116,6 +120,7 @@ class AssignmentsController(
                         SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                         SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
@@ -127,7 +132,8 @@ class AssignmentsController(
                 assignmentsCount
             ) + listOf(
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -152,6 +158,7 @@ class AssignmentsController(
             UserClassroomMembership.STUDENT -> { listOf() }
             else -> throw AuthorizationException("User is not a member of the classroom")
         }
+        val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val sirenLinks = mutableListOf(
             SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number).includeHost()),
@@ -160,9 +167,9 @@ class AssignmentsController(
             SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
             SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
             SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+            SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
         )
 
-        val org = gitHub.getOrgById(orgId, user.gh_token)
         var repo: GitHubRepoResponse? = null
         if (assignment.repo_template != null) {
             try {
