@@ -19,17 +19,15 @@ function handlerGetAuthenticatedUser(req: Request, res: Response, next: NextFunc
 
 function handlerGetUserById(req: Request, res: Response, next: NextFunction) {
     const userId = Number(req.params.userId)
-    if (isNaN(userId)) return res.redirect('/')
+    if (isNaN(userId)) return next()
     
     getUserById(userId, req.user.accessToken.token)
         .then(user => {
-            if (!user) {
-                const err: Error = {
-                    status: 404,
-                    message: 'User does not exist'
-                }
-                return next(err)
-            }
+            if (!user) return next()
+
+            // Render the auth profile page if the user is the authenticated user
+            if (user.id == req.user.id)
+                return res.render('auth-user-profile')
 
             res.render('user-profile', {
                 userById: user

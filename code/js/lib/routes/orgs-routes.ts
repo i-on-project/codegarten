@@ -13,12 +13,19 @@ router.get('/orgs', requiresAuth, handlerGetOrgs)
 function handlerGetOrgs(req: Request, res: Response, next: NextFunction) {
     const page = Number(req.query.page) || 0
 
-    getUserOrgs(page, req.user.accessToken.token)
+    getUserOrgs(page >= 0 ? page : 0, req.user.accessToken.token)
         .then(orgs => {
             res.render('list-orgs', {
                 orgs: orgs.orgs,
+                isEmpty: orgs.orgs.length == 0,
                 page: orgs.page,
-                isLastPage: orgs.isLastPage,
+
+                hasPrev: orgs.page > 0,
+                prevPage: orgs.page > 0 ? orgs.page - 1 : 0,
+
+                hasNext: !orgs.isLastPage,
+                nextPage: orgs.page + 1,
+
                 orgInstallUri: imRoutes.getInstallOrgUri
             })
         })

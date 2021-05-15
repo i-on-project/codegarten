@@ -38,7 +38,12 @@
                         <div class="dropdown-menu collapse dropdown-menu-right slide-in">
                             <div>
                                 <a class="dropdown-item" href="/user">View Profile</a>
-                                <a class="dropdown-item" href="/logout">Log Out</a>
+                                <a class="dropdown-item" href="{{user.gitHubUri}}">
+                                    GitHub Profile
+                                    <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item text-danger" href="/logout">Log Out</a>
                             </div>
                         </div>
                     </li>
@@ -46,7 +51,10 @@
             {{else}}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Login</a>
+                        <a class="nav-link" href="/login">
+                            <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                            Login with GitHub
+                        </a>
                     </li>
                 </ul>
             {{/if}}

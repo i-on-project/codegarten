@@ -1,12 +1,12 @@
 'use strict'
 
-import { orgRoutes, getJsonRequestOptions, SirenLink, getSirenLink } from '../api-routes'
+import { orgRoutes, getJsonRequestOptions, getSirenLink } from '../api-routes'
 import fetch from 'node-fetch'
 
-const ORG_LIST_LIMIT = 10
+const ORG_LIST_LIMIT = 9
 
 function getUserOrgs(page: number, accessToken: string): Promise<Organizations> {
-    return fetch(orgRoutes.getOrgsUri(page), getJsonRequestOptions('GET', accessToken))
+    return fetch(orgRoutes.getOrgsUri(page, ORG_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
         .then(res => res.json())
         .then(collection => {
             const entities = Array.from(collection.entities) as any[]
@@ -31,5 +31,5 @@ function getUserOrgs(page: number, accessToken: string): Promise<Organizations> 
 }
 
 export {
-    getUserOrgs,
+    getUserOrgs
 }

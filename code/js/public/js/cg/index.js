@@ -3,6 +3,7 @@ window.onload = setup
 import { dismissAlert } from './common.js'
 import * as userProfile from './user-profile.js'
 import * as orgs from './orgs.js'
+import * as classrooms from './classrooms.js'
 
 function setup() {
     // Close alert
@@ -13,4 +14,5 @@ function setup() {
 
     userProfile.setup()
     orgs.setup()
+    classrooms.setup()
 }

@@ -1,6 +1,6 @@
 'use strict'
 
-import { userRoutes, getJsonRequestOptions, SirenLink, getSirenLink } from '../api-routes'
+import { userRoutes, getJsonRequestOptions, getSirenLink } from '../api-routes'
 import fetch from 'node-fetch'
 
 function getAuthenticatedUser(accessToken: AccessToken): Promise<AuthenticatedUser> {

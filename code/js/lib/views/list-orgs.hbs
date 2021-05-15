@@ -1,29 +1,53 @@
 <div class="row">
-    <div class="col">
-        <h1>Your organizations</h1>
+    <div class="col-7">
+        <h1>Organizations</h1>
     </div>
-    <div class="col">
-        <button id="installGitHubAppButton" type="button" class="btn btn-outline-primary btn-lg btn-block" href="{{orgInstallUri}}">Install To Other Organizations</button>
+    <div class="col d-flex">
+        <div class="align-self-center">Don't see your organization?</div>
+        <button id="installGitHubAppButton" type="button" class="btn btn-outline-primary btn-lg btn-block" href="{{orgInstallUri}}">Install to other organizations</button>
     </div>
 </div>
 
-<div class="row">
-    {{#each orgs}}
-    <div class="col-sm-4 py-4">
-        <div class="card h-100 shadow">
-            <img class="card-img-top" src="{{avatarUri}}">
-            <div class="card-body d-flex flex-column">
-                <h3 class="card-title">{{name}}</h3>
-                <p class="card-text">{{description}}</p>
-                <div class="mt-auto">
-                    <a class="btn btn-primary card-link">View Classrooms</a>
-                    <a class="card-link" href="{{gitHubUri}}">
-                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
-                        GitHub
-                    </a>
+<hr>
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No organizations available</h5>
+{{else}}
+    <div class="row">
+        {{#each orgs}}
+            <div class="col-sm-4 py-4">
+                <div class="card h-100 shadow">
+                    <img class="card-img-top" src="{{avatarUri}}">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="card-title">{{name}}</h3>
+                        <p class="card-text">{{description}}</p>
+                        <div class="mt-auto">
+                            <a class="btn btn-primary card-link" href="/orgs/{{id}}/classrooms">View classrooms</a>
+                            <a class="card-link" href="{{gitHubUri}}">
+                                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                                GitHub
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        {{/each}}
     </div>
-    {{/each}}
-</div>
+{{/if}}
+
+<nav>
+    <ul class="pagination pagination-lg justify-content-end">
+        <li>
+            <li class="page-item {{#unless hasPrev}}disabled{{/unless}}">
+                <a class="page-link" href="?page={{prevPage}}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            <li class="page-item {{#unless hasNext}}disabled{{/unless}}">
+                <a class="page-link" href="?page={{nextPage}}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+        </li>
+    </ul>
+</nav>

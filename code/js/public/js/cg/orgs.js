@@ -16,6 +16,7 @@ function handlerClickInstallButton(button) {
             const int = setInterval(() => {
                 if (window.closed) {
                     clearInterval(int)
+                    location.reload()
                     resolve()
                 }
             }, 1000)

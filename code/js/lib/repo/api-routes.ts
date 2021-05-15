@@ -30,18 +30,17 @@ function getUrlEncodedRequestOptions(method: string, body: string = null): Reque
     }
 }
 
-
-type SirenLink = {
-    rel: string[],
-    href: string
-}
-
 function getSirenLink(links: SirenLink[], rel: string): SirenLink {
     return links
         .find(link => {
             const relArr = Array.from(link.rel)
             return relArr.includes(rel)
         })
+}
+
+function getSirenAction(actions: SirenAction[], name: string): SirenAction {
+    return actions
+        .find(action => action.name == name)
 }
 
 const authRoutes = {
@@ -63,17 +62,22 @@ const userRoutes = {
 }
 
 const orgRoutes = {
-    getOrgsUri: (page: number): string => `${API_HOST}/orgs?page=${page}`,
-    getOrgByIdUri: (orgId: number): string => `${API_HOST}/orgs/${orgId}`
+    getOrgsUri: (page: number, limit: number): string => `${API_HOST}/orgs?page=${page}&limit=${limit}`,
+}
+
+const classroomRoutes = {
+    getPaginatedClassroomsUri: (orgId: number, page: number, limit: number): string => `${API_HOST}/orgs/${orgId}/classrooms?page=${page}&limit=${limit}`,
+    getClassroomsUri: (orgId: number): string => `${API_HOST}/orgs/${orgId}/classrooms`
 }
 
 export {
     getJsonRequestOptions,
     getUrlEncodedRequestOptions,
-    SirenLink,
     getSirenLink,
+    getSirenAction,
     authRoutes,
     imRoutes,
     userRoutes,
-    orgRoutes
+    orgRoutes,
+    classroomRoutes,
 }
