@@ -104,8 +104,11 @@ class InvitationsController(
         val teamsCount = teamsDb.getTeamsOfClassroomCount(inviteCode.classroom_id)
         val teams = teamsDb.getTeamsOfClassroom(inviteCode.classroom_id, pagination.page, pagination.limit)
         val org = gitHub.getOrgById(inviteCode.org_id, user.gh_token)
+        val classroom = classroomsDb.getClassroomById(inviteCode.classroom_id)
 
         return TeamsOutputModel(
+            classroom = classroom.name,
+            organization = org.login,
             collectionSize = teamsCount,
             pageIndex = pagination.page,
             pageSize = teams.size,
