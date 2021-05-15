@@ -1,17 +1,41 @@
 'use strict'
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
-import { requiresAuth } from './common-routes'
-import { deleteUser, editUser } from '../repo/services/users'
+import { INTERNAL_ERROR, requiresAuth } from './common-routes'
+import { getUserById, deleteUser, editUser } from '../repo/services/users'
+import { Error } from '../types/error-types'
 
 const router = expressRouter()
 
-router.get('/user', requiresAuth, handlerUser)
+router.get('/user', requiresAuth, handlerGetAuthenticatedUser)
+router.get('/users/:userId', requiresAuth, handlerGetUserById)
+
 router.put('/user', requiresAuth, handlerEditUser)
 router.delete('/user', requiresAuth, handlerDeleteUser)
 
-function handlerUser(req: Request, res: Response, next: NextFunction) {
-    res.render('user-profile')
+function handlerGetAuthenticatedUser(req: Request, res: Response, next: NextFunction) {
+    res.render('auth-user-profile')
+}
+
+function handlerGetUserById(req: Request, res: Response, next: NextFunction) {
+    const userId = Number(req.params.userId)
+    if (isNaN(userId)) return res.redirect('/')
+    
+    getUserById(userId, req.user.accessToken.token)
+        .then(user => {
+            if (!user) {
+                const err: Error = {
+                    status: 404,
+                    message: 'User does not exist'
+                }
+                return next(err)
+            }
+
+            res.render('user-profile', {
+                userById: user
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
 }
 
 function handlerEditUser(req: Request, res: Response, next: NextFunction) {
@@ -22,7 +46,7 @@ function handlerEditUser(req: Request, res: Response, next: NextFunction) {
             message: 'New username was not specified'
         })
 
-    editUser(newName, req.user.accessToken.accessToken)
+    editUser(newName, req.user.accessToken.token)
         .then(result => {
             let message: string
             switch(result) {
@@ -51,7 +75,7 @@ function handlerEditUser(req: Request, res: Response, next: NextFunction) {
 
 function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
     // TODO secure this route against CSRF
-    deleteUser(req.user.accessToken.accessToken)
+    deleteUser(req.user.accessToken.token)
         .then(result => {
             let message: string
             switch(result) {

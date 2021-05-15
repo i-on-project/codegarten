@@ -1,8 +1,14 @@
 'use strict'
 
-import {NextFunction, Request, Response} from 'express'
+import { NextFunction, Request, Response } from 'express'
+import { Error } from '../types/error-types'
 
-export function requiresAuth(req: Request, res: Response, next: NextFunction): void {
+const INTERNAL_ERROR: Error = {
+    status: 500,
+    message: 'Internal server error' 
+}
+
+function requiresAuth(req: Request, res: Response, next: NextFunction): void {
     if (req.user) {
         req.session.redirectUri = null
         return next()
@@ -10,4 +16,9 @@ export function requiresAuth(req: Request, res: Response, next: NextFunction): v
 
     req.session.redirectUri = req.url
     res.redirect('/login')
+}
+
+export {
+    INTERNAL_ERROR,
+    requiresAuth
 }

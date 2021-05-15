@@ -1,4 +1,4 @@
 type AccessToken = {
-    accessToken: string,
+    token: string,
     expiresAt: Date
 }

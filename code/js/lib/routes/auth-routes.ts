@@ -1,6 +1,6 @@
 'use strict'
 
-import {NextFunction, Request, Response, Router as expressRouter} from 'express'
+import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 
 import { getAuthenticatedUser } from '../repo/services/users'
 import { getAccessToken } from '../repo/services/auth'
@@ -14,7 +14,7 @@ router.get('/login/cb', handlerLoginCallback)
 router.get('/logout', handlerLogout)
 
 function handlerLogin(req: Request, res: Response, next: NextFunction) {
-    res.redirect(authRoutes.getAuthCode)
+    res.redirect(authRoutes.getAuthCodeUri)
 }
 
 function handlerLoginCallback(req: Request, res: Response, next: NextFunction) {

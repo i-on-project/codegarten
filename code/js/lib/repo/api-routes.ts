@@ -7,7 +7,7 @@ const IM_HOST = 'http://localhost:8080/im'
 const CLIENT_ID = process.env.CG_CLIENT_ID
 const CLIENT_SECRET = process.env.CG_CLIENT_SECRET
 
-export function getJsonRequestOptions(method: string, accessToken: string, body: any = null): RequestInit {
+function getJsonRequestOptions(method: string, accessToken: string, body: any = null): RequestInit {
     return {
         method: method,
         headers: {
@@ -19,7 +19,7 @@ export function getJsonRequestOptions(method: string, accessToken: string, body:
     }
 }
 
-export function getUrlEncodedRequestOptions(method: string, body: string = null): RequestInit {
+function getUrlEncodedRequestOptions(method: string, body: string = null): RequestInit {
     return {
         method: method,
         headers: {
@@ -31,12 +31,12 @@ export function getUrlEncodedRequestOptions(method: string, body: string = null)
 }
 
 
-export type SirenLink = {
+type SirenLink = {
     rel: string[],
     href: string
 }
 
-export function getSirenLink(links: SirenLink[], rel: string): SirenLink {
+function getSirenLink(links: SirenLink[], rel: string): SirenLink {
     return links
         .find(link => {
             const relArr = Array.from(link.rel)
@@ -44,15 +44,36 @@ export function getSirenLink(links: SirenLink[], rel: string): SirenLink {
         })
 }
 
-export const authRoutes = {
+const authRoutes = {
     // TODO: Implement state
-    getAuthCode: `${IM_HOST}/oauth/authorize?client_id=${CLIENT_ID}`,
-    getAccessToken: `${API_HOST}/oauth/access_token`,
+    getAuthCodeUri: `${IM_HOST}/oauth/authorize?client_id=${CLIENT_ID}`,
+    getAccessTokenUri: `${API_HOST}/oauth/access_token`,
     getAccessTokenRequestBody: (code: string): string => 
         `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${code}`
 }
 
-export const userRoutes = {
-    getAuthenticatedUser: `${API_HOST}/user`
+// Interaction Manager routes
+const imRoutes = {
+    getInstallOrgUri: `${IM_HOST}/github/install`
 }
 
+const userRoutes = {
+    getAuthenticatedUserUri: `${API_HOST}/user`,
+    getUserByIdUri: (userId: number): string => `${API_HOST}/users/${userId}`
+}
+
+const orgRoutes = {
+    getOrgsUri: (page: number): string => `${API_HOST}/orgs?page=${page}`,
+    getOrgByIdUri: (orgId: number): string => `${API_HOST}/orgs/${orgId}`
+}
+
+export {
+    getJsonRequestOptions,
+    getUrlEncodedRequestOptions,
+    SirenLink,
+    getSirenLink,
+    authRoutes,
+    imRoutes,
+    userRoutes,
+    orgRoutes
+}
