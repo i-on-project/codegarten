@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from 'express'
 import { getAuthenticatedUser } from './repo/services/users'
 import { authRoutes } from './repo/api-routes'
 
-const ACCESS_TOKEN_VALIDITY_THRESHOLD = 1000 * 10 * 60 // 10 minutes
+const ACCESS_TOKEN_VALIDITY_THRESHOLD = 1000 * 60 * 60 * 24 // 1 day
 
 export = function(req: Request, res: Response, next: NextFunction): void {
     req.login = function(user: AuthenticatedUser) {
@@ -27,7 +27,7 @@ export = function(req: Request, res: Response, next: NextFunction): void {
         if (expirDate <= date) {
             req.session.accessToken = null
             req.session.redirectUri = req.url
-            return res.redirect(authRoutes.getAuthCode)
+            return res.redirect(authRoutes.getAuthCodeUri)
         }
         
         getAuthenticatedUser(accessToken)

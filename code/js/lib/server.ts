@@ -68,9 +68,9 @@ export function init(portArg: number, done: () => void = null): void {
     app.use(orgsRoutes)
 
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-        res.status(err.code || 500)
+        res.status(err.status || 500)
         res.render('error-page', {
-            'status': err.code,
+            'status': err.status,
             'message': err.message,
             'user': req.user
         })
