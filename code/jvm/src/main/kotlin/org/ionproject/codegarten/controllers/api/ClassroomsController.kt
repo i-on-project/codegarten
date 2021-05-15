@@ -33,6 +33,8 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInOrg
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubRoutes
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubLoginUri
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
@@ -78,6 +80,7 @@ class ClassroomsController(
                 null
 
         return ClassroomsOutputModel(
+            organization = org.login,
             collectionSize = classroomsCount,
             pageIndex = pagination.page,
             pageSize = classrooms.size,
@@ -98,7 +101,8 @@ class ClassroomsController(
                         SirenLink(listOf("teams"), getTeamsUri(orgId, it.number).includeHost()),
                         SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, it.number).includeHost()),
                         SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
@@ -108,7 +112,10 @@ class ClassroomsController(
                 pagination.page,
                 pagination.limit,
                 classroomsCount
-            ) + listOf(SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+            ) + listOf(
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
         ).toResponseEntity(HttpStatus.OK)
     }
 
@@ -150,7 +157,8 @@ class ClassroomsController(
                 SirenLink(listOf("teams"), getTeamsUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, classroom.number).includeHost()),
                 SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
     }

@@ -14,6 +14,8 @@ class TeamOutputModel(
 }
 
 class TeamsOutputModel(
+    val classroom: String,
+    val organization: String,
     val collectionSize: Int,
     val pageIndex: Int,
     val pageSize: Int,

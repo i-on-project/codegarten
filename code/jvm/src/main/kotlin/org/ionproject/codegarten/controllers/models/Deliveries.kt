@@ -41,6 +41,9 @@ class ParticipantDeliveryOutputModel(
 }
 
 class DeliveriesOutputModel(
+    val assignment: String,
+    val classroom: String,
+    val organization: String,
     val collectionSize: Int,
     val pageIndex: Int,
     val pageSize: Int,

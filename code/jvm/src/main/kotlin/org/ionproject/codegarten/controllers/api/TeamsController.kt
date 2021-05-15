@@ -33,6 +33,7 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenTeamName
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamAvatarUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubLoginUri
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.siren.SirenLink
 import org.ionproject.codegarten.responses.toResponseEntity
@@ -81,6 +82,8 @@ class TeamsController(
                 null
 
         return TeamsOutputModel(
+            classroom = userClassroom.classroom.name,
+            organization = org.login,
             collectionSize = teamsCount,
             pageIndex = pagination.page,
             pageSize = teams.size,
@@ -99,7 +102,8 @@ class TeamsController(
                         SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(it.gh_id)),
                         SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, it.number).includeHost()),
                         SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
@@ -111,7 +115,8 @@ class TeamsController(
                 teamsCount
             ) + listOf(
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -129,6 +134,7 @@ class TeamsController(
         if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
             throw AuthorizationException("User is not in team")
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
         val ghTeam = gitHub.getTeam(orgId, team.gh_id, user.gh_token)
 
         val actions =
@@ -155,7 +161,8 @@ class TeamsController(
                 SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, team.number).includeHost()),
                 SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost())
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
 
