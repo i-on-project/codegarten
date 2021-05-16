@@ -1,0 +1,90 @@
+<div class="modal fade" id="createAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create assignment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="assignmentName" class="col-form-label">Name:</label>
+            <input type="text" class="form-control" placeholder="Assignment name" id="assignmentName" maxlength="64">
+            <div class="invalid-feedback" id="assignmentNameFeedback"></div>
+          </div>
+          <div class="form-group">
+            <label for="assignmentDescription" class="col-form-label">Description:</label>
+            <input type="text" class="form-control" placeholder="Assignment description" id="assignmentDescription" maxlength="256">
+            <div class="invalid-feedback" id="assignmentDescriptionFeedback">Description too long</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="createAssignmentButton">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms">
+            <i class="fas fa-angle-double-left"></i>
+            Classrooms
+        </a>
+        <h4 class="text-muted mt-1">
+            <a href="{{orgUri}}" target="_blank" style="color: inherit;">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                {{organization}}
+            </a>
+        </h4>
+        <h1>{{classroom.name}}</h1>
+        <h5 class="text-muted font-weight-light">{{classroom.description}}</h5>
+    </div>
+    {{#if canManage}}
+        <div class="col-md d-flex align-items-center mx-3">
+            <div class="row">
+                <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editClassroomForm">Edit classroom</button>
+                <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#createAssignmentForm">Create new assignment</button>
+            </div>
+        </div>
+    {{/if}}
+</div>
+
+<div class="row mt-2">
+    <div class="col btn-group btn-group-toggle" data-toggle="buttons">
+        <label class="d-flex btn btn-outline-secondary active align-items-center justify-content-center">
+            <input type="radio" id="assignmentOption" autocomplete="off" checked>
+            <i class="fas fa-book mt-1"></i>
+            <h4 class="my-2 ml-1">Assignments</h4>
+        </label>
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="usersOption" autocomplete="off">
+            <i class="fas fa-user mt-1"></i>
+            <h4 class="my-2 ml-1">Users</h4>
+        </label>
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="teamsOption" autocomplete="off">
+            <i class="fas fa-users mt-1"></i>
+            <h4 class="my-2 ml-1">Teams</h4>
+        </label>
+    </div>
+</div>
+
+<br>
+
+<div>
+    <div id="loadingClassroomContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border"></div>
+            <h4 class="mt-2">Loading...</h4>
+        </div>
+    </div>
+
+    <div id="classroomContent">
+        <!-- To be filled via javascript with DOM -->
+    </div>
+</div>

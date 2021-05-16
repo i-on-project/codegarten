@@ -62,12 +62,20 @@ const userRoutes = {
 }
 
 const orgRoutes = {
-    getOrgsUri: (page: number, limit: number): string => `${API_HOST}/orgs?page=${page}&limit=${limit}`,
+    getPaginatedOrgsUri: (page: number, limit: number): string => `${API_HOST}/orgs?page=${page}&limit=${limit}`,
 }
 
 const classroomRoutes = {
     getPaginatedClassroomsUri: (orgId: number, page: number, limit: number): string => `${API_HOST}/orgs/${orgId}/classrooms?page=${page}&limit=${limit}`,
-    getClassroomsUri: (orgId: number): string => `${API_HOST}/orgs/${orgId}/classrooms`
+    getClassroomsUri: (orgId: number): string => `${API_HOST}/orgs/${orgId}/classrooms`,
+    getClassroomUri: (orgId: number, classroomNumber: number): string => `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}`
+}
+
+const assignmentRoutes = {
+    getPaginatedAssignmentsUri: (orgId: number, classroomNumber: number, page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments?page=${page}&limit=${limit}`,
+    getAssignmentsUri: (orgId: number, classroomNumber: number) =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments`
 }
 
 export {
@@ -80,4 +88,5 @@ export {
     userRoutes,
     orgRoutes,
     classroomRoutes,
+    assignmentRoutes
 }

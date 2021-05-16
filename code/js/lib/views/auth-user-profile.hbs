@@ -34,8 +34,9 @@
             <div class="row-auto px-2">
                 <div class="collapse" id="editUsernameForm">
                     <div class="row">
-                        <div class="col-md">
-                            <input type="text" class="form-control mb-2" placeholder="{{user.username}}" maxlength="64" autocomplete="off" id="editUsername">
+                        <div class="col-md mb-2">
+                            <input type="text" class="form-control" placeholder="{{user.username}}" maxlength="64" autocomplete="off" id="editUsername">
+                            <div class="invalid-feedback" id="usernameFeedback"></div>
                         </div>
                         <div class="col-md">
                             <button class="btn btn-primary btn-block mb-2">Submit</button>

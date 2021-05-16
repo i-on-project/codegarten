@@ -12,7 +12,7 @@
           <div class="form-group">
             <label for="classroomName" class="col-form-label">Name:</label>
             <input type="text" class="form-control" placeholder="Classroom name" id="classroomName" maxlength="64">
-            <div class="invalid-feedback" id="classroomNameFeedback">Name can't be empty</div>
+            <div class="invalid-feedback" id="classroomNameFeedback"></div>
           </div>
           <div class="form-group">
             <label for="classroomDescription" class="col-form-label">Description:</label>
@@ -70,21 +70,21 @@
             </div>
         {{/each}}
     </div>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{prevPage}}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
 {{/if}}
 
-<nav>
-    <ul class="pagination pagination-lg justify-content-end">
-        <li>
-            <li class="page-item {{#unless hasPrev}}disabled{{/unless}}">
-                <a class="page-link" href="?page={{prevPage}}">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-            </li>
-            <li class="page-item {{#unless hasNext}}disabled{{/unless}}">
-                <a class="page-link" href="?page={{nextPage}}">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            </li>
-        </li>
-    </ul>
-</nav>

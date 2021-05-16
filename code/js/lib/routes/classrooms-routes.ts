@@ -3,11 +3,12 @@
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getClassrooms, createClassroom } from '../repo/services/classrooms'
+import { getClassrooms, createClassroom, getClassroom } from '../repo/services/classrooms'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms', requiresAuth, handlerGetClassrooms)
+router.get('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerGetClassroom)
 router.post('/orgs/:orgId/classrooms', requiresAuth, handlerCreateClassroom)
 
 function handlerGetClassrooms(req: Request, res: Response, next: NextFunction) {
@@ -38,6 +39,28 @@ function handlerGetClassrooms(req: Request, res: Response, next: NextFunction) {
             })
         })
         .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetClassroom(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+    
+    getClassroom(orgId, classroomNumber, req.user.accessToken.token)
+        .then(classroom => {
+            if (!classroom) return next()
+
+            res.render('classroom', {
+                classroom: classroom,
+
+                organization: classroom.organization,
+                orgId: orgId,
+                orgUri: classroom.organizationUri,
+                
+                canManage: classroom.canManage
+            })
+        })
 }
 
 function handlerCreateClassroom(req: Request, res: Response, next: NextFunction) {

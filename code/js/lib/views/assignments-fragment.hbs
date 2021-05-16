@@ -1,0 +1,37 @@
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No assignments available</h5>
+{{else}}
+    {{#each assignments}}
+        <div class="row rounded" style="background-color:#f8f8ff;">
+            <div class="col-1 d-flex justify-content-center align-items-center fa-2x">
+                <i class="fas fa-{{#if isGroup}}user{{else}}users{{/if}}" style="z-index: 2;"></i>
+                <i class="fas fa-circle fa-stack-2x" style="color: white; z-index: 1;"></i>
+                
+            </div>
+            <div class="col-8">
+                <h3>{{name}}</h3>
+                <h5>{{description}}</h5>
+            </div>
+            <div class="col d-flex justify-content-center align-items-center">
+                <button class="btn btn-primary btn-block">View assignment</button>
+            </div>
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage">
+                    <a class="page-link" href="#" data-prev-page="{{prevPage}}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage">
+                    <a class="page-link" href="#" data-next-page="{{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

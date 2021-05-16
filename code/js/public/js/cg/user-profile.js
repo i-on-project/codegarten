@@ -6,7 +6,10 @@ export function setup() {
         const newUsername = userNameForm.querySelector('#editUsername')
         const button = userNameForm.querySelector('button')
         button.addEventListener('click', () => handlerEditName(button, newUsername))
-        newUsername.addEventListener('keyup', (event) => mapEnterToButton(newUsername, event, button))
+        newUsername.addEventListener('keyup', (event) => {
+            newUsername.classList.remove('is-invalid')
+            mapEnterToButton(newUsername, event, button)
+        })
     }
 
     const deleteAccountButton = document.querySelector('#deleteAccountButton')
@@ -19,12 +22,14 @@ export function setup() {
 
 function handlerEditName(elem, newName) {
     if (newName.value.length == 0 || newName.value == newName.placeholder) {
-        return alertMsg('Please enter a new name')
+        $('#usernameFeedback').html('Please enter a new name')
+        return newName.classList.add('is-invalid')
     }
     const name = newName.value
     
     if (name.length > 64) {
-        return alertMsg('Name too long.')
+        $('#usernameFeedback').html('Name too long')
+        return newName.classList.add('is-invalid')
     }
 
     elem.blur()

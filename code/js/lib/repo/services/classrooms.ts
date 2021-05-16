@@ -42,7 +42,32 @@ function getClassrooms(orgId: number, page: number, accessToken: string): Promis
         })
 }
 
+function getClassroom(orgId: number, classroomNumber: number, accessToken: string): Promise<Classroom> {
+    return fetch(classroomRoutes.getClassroomUri(orgId, classroomNumber), getJsonRequestOptions('GET', accessToken))
+        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(entity => {
+            if (!entity) return null
+
+            const links: SirenLink[] = Array.from(entity.links)
+            const sirenActions: SirenAction[] = Array.from(entity.actions || [])
+            const orgUri = getSirenLink(links, 'organizationGitHub').href
+
+            return {
+                id: entity.properties.id,
+                inviteCode: entity.properties.inviteCode,
+                number: entity.properties.number,
+                name: entity.properties.name,
+                description: entity.properties.description,
+                organization: entity.properties.organization,
+                organizationUri: orgUri,
+            
+                canManage: getSirenAction(sirenActions, 'edit-classroom') != null,
+            } as Classroom
+        })
+}
+
 function createClassroom(orgId: number, name: string, description: string, accessToken: string): Promise<ApiResponse> {
+    //TODO: Change this when API changes for resource creation go through
     return fetch(
         classroomRoutes.getClassroomsUri(orgId), 
         getJsonRequestOptions('POST', accessToken, { 
@@ -87,5 +112,6 @@ function createClassroom(orgId: number, name: string, description: string, acces
 
 export {
     getClassrooms,
+    getClassroom,
     createClassroom,
 }

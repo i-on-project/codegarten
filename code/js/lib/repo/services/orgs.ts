@@ -6,7 +6,7 @@ import fetch from 'node-fetch'
 const ORG_LIST_LIMIT = 9
 
 function getUserOrgs(page: number, accessToken: string): Promise<Organizations> {
-    return fetch(orgRoutes.getOrgsUri(page, ORG_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
+    return fetch(orgRoutes.getPaginatedOrgsUri(page, ORG_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
         .then(res => res.json())
         .then(collection => {
             const entities = Array.from(collection.entities) as any[]
