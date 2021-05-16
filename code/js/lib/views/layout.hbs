@@ -9,56 +9,49 @@
         <script type='module' src='/js/cg/common.js'></script>
     </head>
     <body>
-        <nav class="navbar shadow-sm sticky-top navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/">
-            <img src="/favicon.ico" width="32" height="32" class="d-inline-block align-top" alt="">
-            CodeGarten
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <nav class="navbar shadow-sm sticky-top navbar-expand-md navbar-dark" style="background-color: #222222;">
+            <button class="navbar-toggler mr-3" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand align-self-center" href="/">
+                <img src="/res/codegarten-nav.png" height="25px">
+            </a>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            {{#if user}}
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/orgs">Organizations</a>
-                    </li>
-                </ul>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                {{#if user}}
                     <ul class="navbar-nav ml-auto">
-                    <div class="dropdown-divider"></div>
-
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <span class="d-inline-block text-truncate align-middle" id="usernameNavbar" style="max-width: 150px;">
-                                {{user.username}}
-                            </span>
-                            <img src={{user.avatarUri}} width="35" height="35" class="rounded-circle ml-1"> 
-                        </a>
-                        <div class="dropdown-menu collapse dropdown-menu-right slide-in">
-                            <div>
-                                <a class="dropdown-item" href="/user">View Profile</a>
-                                <a class="dropdown-item" href="{{user.gitHubUri}}">
-                                    GitHub Profile
-                                    <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" href="/logout">Log Out</a>
+                        <li class="nav-item dropdown d-flex flex-column">
+                            <a class="nav-link align-self-center" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="d-inline-block text-truncate align-middle pb-1" id="usernameNavbar" style="max-width: 200;">
+                                    {{user.username}}
+                                </div>
+                                <img src={{user.avatarUri}} width="32" height="32" class="rounded-circle ml-2 mr-1 border">
+                                <i class="fas fa-caret-down"></i>
+                            </a>
+                            <div class="dropdown-menu collapse dropdown-menu-right slide-in shadow-sm">
+                                <div>
+                                    <a class="dropdown-item" href="/user">View Profile</a>
+                                    <a class="dropdown-item" href="{{user.gitHubUri}}" target="_blank">
+                                        GitHub Profile
+                                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1 ml-1">
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="/logout">Log Out</a>
+                                </div>
                             </div>
-                        </div>
-                    </li>
-                </ul>
-            {{else}}
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login">
-                            <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
-                            Login with GitHub
-                        </a>
-                    </li>
-                </ul>
-            {{/if}}
-        </div>
+                        </li>
+                    </ul>
+                {{else}}
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <img src="/res/github-32x-light.png" width="24" height="24" class="rounded-circle m-1">
+                                Login with GitHub
+                            </a>
+                        </li>
+                    </ul>
+                {{/if}}
+            </div>
         </nav>
         <br>
         <div class="container">

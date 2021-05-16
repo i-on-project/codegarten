@@ -1,20 +1,20 @@
-<div class="rounded shadow" style="background-color: #EEEEEE;">
+<div class="rounded shadow" style="background-color: #FDFDFD;">
     <div class="row py-4">
         <div class="col-md-3 d-flex justify-content-center">
             <div class="row px-4">
                 <img src={{userById.avatarUri}} class="rounded-circle img-thumbnail" width="256"/>
             </div>
         </div>
-        <div class="col-sm-5">
+        <div class="col-lg-5">
             <div class="row px-4">
                 <h2 class="text-break">
-                    <div id="username" style="display: inline-block;">
+                    <div id="username">
                         {{userById.username}}
                     </div>
                 </h2>
             </div>
             <div class="row pl-4">
-                <a href={{userById.gitHubUri}}> 
+                <a href={{userById.gitHubUri}} target="_blank"> 
                     <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
                     {{userById.gitHubName}}
                 </a>
