@@ -123,7 +123,7 @@ function handlerEditClassroomUserMembership(req: Request, res: Response, next: N
         .then(result => {
             let message: string
             switch(result.status) {
-                case 201: 
+                case 200: 
                     message = 'User role was updated successfully'
                     break
                 default:
@@ -131,7 +131,7 @@ function handlerEditClassroomUserMembership(req: Request, res: Response, next: N
             }
 
             res.send({
-                wasEdited: result.status == 201,
+                wasEdited: result.status == 200,
                 message: message
             })
         })
