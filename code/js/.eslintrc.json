@@ -3,7 +3,8 @@
         "browser": true,
         "commonjs": true,
         "es2021": true,
-        "node": true
+        "node": true,
+        "jquery": true
     },
     "extends": [
         "eslint:recommended",
@@ -33,6 +34,15 @@
         "semi": [
             "error",
             "never"
-        ]
-    }
+        ],
+        "@typescript-eslint/explicit-module-boundary-types": "off"
+    },
+    "overrides": [
+        {
+            "files": ["*.ts", "*.tsx"],
+            "rules": {
+            "@typescript-eslint/explicit-module-boundary-types": ["error"]
+            }
+        }
+    ]
 }

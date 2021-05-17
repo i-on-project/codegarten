@@ -1,0 +1,96 @@
+{{#if canManage}}
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#addUserForm">
+            <i class="fas fa-plus"></i>
+            Add user
+        </button>
+    </div>
+    <hr>
+{{/if}}
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No users available</h5>
+{{else}}
+    <div id="deleteUserOverlay" class="overlay-fixed position-fixed">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <h1 class="font-weight-bold" style="text-align: center;">Are you sure you want to remove this user?</h1>
+            <br>
+            <div class="row">
+                <div class="col-sm">
+                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteUser">Yes</button>
+                </div>
+                <div class="col-sm">
+                    <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteUser">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{#each users}}
+        <div class="row rounded bg-light p-3">
+            <div class="col-sm-auto d-flex justify-content-center align-items-center">
+                <a href="/users/{{id}}">
+                    <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
+                </a>
+            </div>
+            <div class="col-md-9">
+                <h3 class="d-inline-block text-truncate" style="max-width: 100%;">{{username}}</h3>
+                <br>
+                {{#if ../canManage}}
+                    {{#if isTeacher}}
+                        <button class="btn btn-sm btn-outline-success dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
+                            <i class="fas fa-chalkboard-teacher mr-2"></i>
+                            Teacher
+                        </button>
+                    {{else}}
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
+                            <i class="fas fa-user-graduate mr-2"></i>
+                            Student
+                        </button>
+                    {{/if}}
+                    {{#if isAuthUser}}<span class="text-muted">(you)</span>
+                    {{else}}<a class="text-danger" href="#">Remove</span>{{/if}}
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item {{#if isTeacher}} active {{/if}}" href="#">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            Teacher
+                        </a>
+                        <a class="dropdown-item {{#unless isTeacher}} active {{/unless}}" href="#">
+                            <i class="fas fa-user-graduate"></i>
+                            Student
+                        </a>
+                    </div>
+                {{else}}
+                    {{#if isTeacher}}
+                        <h6 class="text-success">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            Teacher
+                    {{else}}
+                        <h6 class="text-muted">
+                            <i class="fas fa-user-graduate"></i>
+                            Student
+                    {{/if}}
+                    {{#if isAuthUser}}<span class="text-muted">(you)</span>{{/if}}
+                    </h6>
+                {{/if}}
+            </div>
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#" page="{{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

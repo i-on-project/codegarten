@@ -3,13 +3,18 @@
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getClassrooms, createClassroom, getClassroom } from '../repo/services/classrooms'
+import { getClassrooms, getClassroom, createClassroom, deleteClassroom, editClassroom } from '../repo/services/classrooms'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms', requiresAuth, handlerGetClassrooms)
 router.get('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerGetClassroom)
+
 router.post('/orgs/:orgId/classrooms', requiresAuth, handlerCreateClassroom)
+
+router.put('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerEditClassroom)
+
+router.delete('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerDeleteClassroom)
 
 function handlerGetClassrooms(req: Request, res: Response, next: NextFunction) {
     const orgId = Number(req.params.orgId)
@@ -100,6 +105,78 @@ function handlerCreateClassroom(req: Request, res: Response, next: NextFunction)
             res.send({
                 wasCreated: false,
                 message: 'Failed to create classroom'
+            })
+        })
+}
+
+function handlerEditClassroom(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+
+    const name = req.body.name
+    const description = req.body.description
+
+    if (!name && !description) { 
+        return res.send({
+            wasEdited: false,
+            message: 'You need to change at least one field'
+        })
+    }
+
+    editClassroom(orgId, classroomNumber, name, description, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    message = 'Classroom edited successfully'
+                    break
+                case 409:
+                    message = 'Classroom name already exists'
+                    break
+                default:
+                    message = 'Failed to edit classroom'
+            }
+
+            res.send({
+                wasEdited: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasEdited: false,
+                message: 'Failed to edit classroom'
+            })
+        })
+}
+
+function handlerDeleteClassroom(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+
+    deleteClassroom(orgId, classroomNumber, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    req.flash('success', 'Classroom was deleted successfully')
+                    message = `/orgs/${orgId}/classrooms`
+                    break
+                default:
+                    message = 'Failed to delete classroom'
+            }
+
+            res.send({
+                wasDeleted: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasDeleted: false,
+                message: 'Failed to delete classroom'
             })
         })
 }

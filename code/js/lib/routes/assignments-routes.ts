@@ -34,6 +34,8 @@ function handlerGetAssignments(req: Request, res: Response, next: NextFunction) 
                 hasNext: !assignments.isLastPage,
                 nextPage: assignments.page + 1,
 
+                classroomNumber: classroomNumber,
+
                 organization: assignments.organization,
                 orgId: orgId,
                 orgUri: assignments.organizationUri,

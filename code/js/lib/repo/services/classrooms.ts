@@ -110,8 +110,33 @@ function createClassroom(orgId: number, name: string, description: string, acces
         })
 }
 
+function editClassroom(orgId: number, classroomNumber: number, newName: string, newDescription: string, accessToken: string): Promise<ApiResponse> {
+    return fetch(
+        classroomRoutes.getClassroomUri(orgId, classroomNumber), 
+        getJsonRequestOptions('PUT', accessToken, {
+            name: newName,
+            description: newDescription
+        }))
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
+function deleteClassroom(orgId: number, classroomNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(classroomRoutes.getClassroomUri(orgId, classroomNumber), getJsonRequestOptions('DELETE', accessToken))
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
 export {
     getClassrooms,
     getClassroom,
     createClassroom,
+    editClassroom,
+    deleteClassroom
 }

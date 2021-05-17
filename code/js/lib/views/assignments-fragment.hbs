@@ -1,19 +1,61 @@
+<div class="modal fade" id="createAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create assignment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="assignmentName" class="col-form-label">Name:</label>
+                        <input type="search" class="form-control" placeholder="Assignment name" id="assignmentName" maxlength="64">
+                        <div class="invalid-feedback" id="assignmentNameFeedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignmentDescription" class="col-form-label">Description:</label>
+                        <input type="search" class="form-control" placeholder="Assignment description" id="assignmentDescription" maxlength="256">
+                        <div class="invalid-feedback" id="assignmentDescriptionFeedback">Description too long</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="createAssignmentButton">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if canCreate}}
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#createAssignmentForm">
+            <i class="fas fa-plus"></i>
+            Create new assignment
+        </button>
+    </div>
+    <hr>
+{{/if}}
 {{#if isEmpty}}
     <h5 style="text-align: center;">No assignments available</h5>
 {{else}}
     {{#each assignments}}
-        <div class="row rounded" style="background-color:#f8f8ff;">
-            <div class="col-1 d-flex justify-content-center align-items-center fa-2x">
-                <i class="fas fa-{{#if isGroup}}user{{else}}users{{/if}}" style="z-index: 2;"></i>
-                <i class="fas fa-circle fa-stack-2x" style="color: white; z-index: 1;"></i>
-                
+        <div class="row rounded bg-light p-3">
+            <div class="col-md-auto d-flex justify-content-center align-items-center">
+                <span class="fa-stack fa-2x">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fas fa-stack-1x fa-{{#if isGroup}}users{{else}}user{{/if}}"></i>
+                </span>
             </div>
-            <div class="col-8">
-                <h3>{{name}}</h3>
-                <h5>{{description}}</h5>
+            <div class="col-md-8">
+                <h3 class="d-inline-block text-truncate" style="max-width: 100%;">{{name}}</h3>
+                <br>
+                <h6 class="text-muted d-inline-block text-truncate" style="max-width: 100%;">{{description}}</h6>
             </div>
-            <div class="col d-flex justify-content-center align-items-center">
-                <button class="btn btn-primary btn-block">View assignment</button>
+            <div class="col-md d-flex align-items-center">
+                <a class="btn btn-primary btn-block" href="/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/assignments/{{number}}">View assignment</a>
             </div>
         </div>
     {{/each}}
@@ -21,13 +63,13 @@
     <nav>
         <ul class="pagination pagination-lg justify-content-end">
             <li>
-                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage">
-                    <a class="page-link" href="#" data-prev-page="{{prevPage}}">
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#" data-page="{{prevPage}}">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 </li>
-                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage">
-                    <a class="page-link" href="#" data-next-page="{{nextPage}}">
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>

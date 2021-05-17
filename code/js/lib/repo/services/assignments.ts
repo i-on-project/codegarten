@@ -3,7 +3,7 @@
 import { assignmentRoutes, getJsonRequestOptions, getSirenLink, getSirenAction } from '../api-routes'
 import fetch from 'node-fetch'
 
-const ASSIGNMENT_LIST_LIMIT = 9
+const ASSIGNMENT_LIST_LIMIT = 10
 
 function getAssignments(orgId: number, classroomNumber: number, page: number, accessToken: string): Promise<Assignments> {
     return fetch(

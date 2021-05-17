@@ -4,7 +4,7 @@
         <br>
         <div class="row">
             <div class="col-sm">
-                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteAccount" data-covida-username="{{user.username}}">Yes</button>
+                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteAccount">Yes</button>
             </div>
             <div class="col-sm">
                 <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteAccount">No</button>
@@ -13,7 +13,7 @@
     </div>
 </div>
 
-<div class="rounded shadow" style="background-color: #FDFDFD;">
+<div class="rounded shadow bg-light">
     <div class="row py-4">
         <div class="col-md-3 d-flex justify-content-center">
             <div class="row px-4">
@@ -35,7 +35,7 @@
                 <div class="collapse" id="editUsernameForm">
                     <div class="row">
                         <div class="col-md mb-2">
-                            <input type="text" class="form-control" placeholder="{{user.username}}" maxlength="64" autocomplete="off" id="editUsername">
+                            <input type="search" class="form-control" placeholder="{{user.username}}" maxlength="64" autocomplete="off" id="editUsername">
                             <div class="invalid-feedback" id="usernameFeedback"></div>
                         </div>
                         <div class="col-md">

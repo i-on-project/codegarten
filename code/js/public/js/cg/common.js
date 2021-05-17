@@ -56,10 +56,16 @@ function sanitizeInput(input) {
     return input.replace(reg, (match)=>(map[match]))
 }
 
+function getLocation() {
+    // Removes trailing '/' and '#'
+    return document.location.href.replace(/\/$/, '').replace('#', '')
+}
+
 export {
     alertMsg,
     dismissAlert,
     workWithLoading,
     mapEnterToButton,
-    sanitizeInput
+    sanitizeInput,
+    getLocation
 }

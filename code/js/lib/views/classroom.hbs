@@ -1,32 +1,51 @@
-<div class="modal fade" id="createAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Create assignment</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <form>
-          <div class="form-group">
-            <label for="assignmentName" class="col-form-label">Name:</label>
-            <input type="text" class="form-control" placeholder="Assignment name" id="assignmentName" maxlength="64">
-            <div class="invalid-feedback" id="assignmentNameFeedback"></div>
-          </div>
-          <div class="form-group">
-            <label for="assignmentDescription" class="col-form-label">Description:</label>
-            <input type="text" class="form-control" placeholder="Assignment description" id="assignmentDescription" maxlength="256">
-            <div class="invalid-feedback" id="assignmentDescriptionFeedback">Description too long</div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="createAssignmentButton">Create</button>
-      </div>
+<div class="modal fade" id="editClassroomForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div id="deleteClassroomOverlay" class="overlay">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <h1 class="font-weight-bold" style="text-align: center;">Are you sure you want to delete this classroom?</h1>
+            <br>
+            <div class="row">
+                <div class="col-sm">
+                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteClassroom">Yes</button>
+                </div>
+                <div class="col-sm">
+                    <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteClassroom">No</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit classroom</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                        <label for="classroomName" class="col-form-label">Name:</label>
+                        <input type="search" class="form-control" placeholder="{{classroom.name}}" id="editClassroomName" maxlength="64" autocomplete="off">
+                        <div class="invalid-feedback" id="classroomNameFeedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                        <label for="classroomDescription" class="col-form-label">Description:</label>
+                        <input type="search" class="form-control" placeholder="{{classroom.description}}" id="editClassroomDescription" maxlength="256" autocomplete="off">
+                        <div class="invalid-feedback" id="classroomDescriptionFeedback"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger mr-auto" id="deleteClassroomButton">Delete Classroom</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="editClassroomButton">Edit</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row">
@@ -39,25 +58,23 @@
             <a href="{{orgUri}}" target="_blank" style="color: inherit;">
                 <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
                 {{organization}}
+                <i class="fas fa-external-link-alt fa-xs"></i>
             </a>
         </h4>
-        <h1>{{classroom.name}}</h1>
-        <h5 class="text-muted font-weight-light">{{classroom.description}}</h5>
+        <h1 id="classroomName">{{classroom.name}}</h1>
+        <h5 class="text-muted font-weight-light" id="classroomDescription">{{classroom.description}}</h5>
     </div>
     {{#if canManage}}
-        <div class="col-md d-flex align-items-center mx-3">
-            <div class="row">
-                <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editClassroomForm">Edit classroom</button>
-                <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#createAssignmentForm">Create new assignment</button>
-            </div>
+        <div class="col-md d-flex align-items-center">
+            <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editClassroomForm">Edit classroom</button>
         </div>
     {{/if}}
 </div>
 
 <div class="row mt-2">
-    <div class="col btn-group btn-group-toggle" data-toggle="buttons">
+    <div class="col btn-group btn-group-toggle flex-wrap" data-toggle="buttons">
         <label class="d-flex btn btn-outline-secondary active align-items-center justify-content-center">
-            <input type="radio" id="assignmentOption" autocomplete="off" checked>
+            <input type="radio" id="assignmentsOption" autocomplete="off" checked>
             <i class="fas fa-book mt-1"></i>
             <h4 class="my-2 ml-1">Assignments</h4>
         </label>

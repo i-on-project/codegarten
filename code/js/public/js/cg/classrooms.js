@@ -1,4 +1,4 @@
-import { mapEnterToButton, alertMsg, workWithLoading } from './common.js'
+import { mapEnterToButton, alertMsg, workWithLoading, getLocation } from './common.js'
 
 export function setup() {
     const createClassroomForm = document.querySelector('#createClassroomForm')
@@ -37,11 +37,10 @@ function handlerCreateClassroom(createClassroomButton, classroomName, classroomD
     createClassroomButton.blur()
     $('#createClassroomForm').modal('hide')
     classroomName.value = ''
-    classroomName.value = ''
+    classroomDescription.value = ''
 
-    const loc = document.location.href
     workWithLoading(
-        fetch(loc, { 
+        fetch(getLocation(), { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -57,5 +56,5 @@ function handlerCreateClassroom(createClassroomButton, classroomName, classroomD
                 }
 
             })
-            .catch(err => alertMsg(err)))
+            .catch(err => alertMsg('Failed to create classroom')))
 }

@@ -58,7 +58,9 @@ const imRoutes = {
 
 const userRoutes = {
     getAuthenticatedUserUri: `${API_HOST}/user`,
-    getUserByIdUri: (userId: number): string => `${API_HOST}/users/${userId}`
+    getUserByIdUri: (userId: number): string => `${API_HOST}/users/${userId}`,
+    getClassroomUsersUri: (orgId: number, classroomNumber: number, page: number, limit: number): string => 
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/users?page=${page}&limit=${limit}`, 
 }
 
 const orgRoutes = {

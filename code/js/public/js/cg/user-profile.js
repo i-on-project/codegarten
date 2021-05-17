@@ -1,4 +1,4 @@
-import { mapEnterToButton, alertMsg, workWithLoading } from './common.js'
+import { mapEnterToButton, alertMsg, workWithLoading, getLocation } from './common.js'
 
 export function setup() {
     const userNameForm = document.querySelector('#editUsernameForm')
@@ -33,9 +33,8 @@ function handlerEditName(elem, newName) {
     }
 
     elem.blur()
-    const loc = document.location.href
     workWithLoading(
-        fetch(loc, { 
+        fetch(getLocation(), { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({name: name})
@@ -53,7 +52,7 @@ function handlerEditName(elem, newName) {
                 }
 
             })
-            .catch(err => alertMsg(err)))
+            .catch(err => alertMsg('Failed to edit name')))
 }
 
 function handlerDeleteAccountShow() {
@@ -72,9 +71,8 @@ function handlerDeleteAccountClose() {
 
 function handlerDeleteAccount() {
     handlerDeleteAccountClose()
-    const loc = document.location.href
     workWithLoading(
-        fetch(loc, { 
+        fetch(getLocation(), { 
             method: 'DELETE'
         })
             .then(res => res.json())
@@ -84,5 +82,5 @@ function handlerDeleteAccount() {
                     window.location.href = '/'
                 }
             })
-            .catch(err => alertMsg(err)))
+            .catch(err => alertMsg('Failed to delete account')))
 }

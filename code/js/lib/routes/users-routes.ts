@@ -2,13 +2,14 @@
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getUserById, deleteUser, editUser } from '../repo/services/users'
+import { getUserById, getClassroomUsers, deleteUser, editUser } from '../repo/services/users'
 import { Error } from '../types/error-types'
 
 const router = expressRouter()
 
 router.get('/user', requiresAuth, handlerGetAuthenticatedUser)
 router.get('/users/:userId', requiresAuth, handlerGetUserById)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/users', requiresAuth, handlerGetClassroomUsers)
 
 router.put('/user', requiresAuth, handlerEditUser)
 router.delete('/user', requiresAuth, handlerDeleteUser)
@@ -31,6 +32,37 @@ function handlerGetUserById(req: Request, res: Response, next: NextFunction) {
 
             res.render('user-profile', {
                 userById: user
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetClassroomUsers(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+
+    const page = Number(req.query.page) || 0
+    
+    getClassroomUsers(orgId, classroomNumber, req.user, page >= 0 ? page : 0, req.user.accessToken.token)
+        .then(users => {
+            if (!users) return next()
+
+            res.render('classroom-users-fragment', {
+                layout: false,
+
+                users: users.users,
+                isEmpty: users.users.length == 0,
+                page: users.page,
+
+                hasPrev: users.page > 0,
+                prevPage: users.page > 0 ? users.page - 1 : 0,
+
+                hasNext: !users.isLastPage,
+                nextPage: users.page + 1,
+                
+                canManage: users.canManage
             })
         })
         .catch(err => next(INTERNAL_ERROR))

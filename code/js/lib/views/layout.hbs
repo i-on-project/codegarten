@@ -14,7 +14,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <a class="navbar-brand align-self-center" href="/">
-                <img src="/res/codegarten-nav.png" height="25px">
+                <img src="/res/codegarten-nav.png" height="19px">
             </a>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -32,6 +32,7 @@
                                 <div>
                                     <a class="dropdown-item" href="/user">View Profile</a>
                                     <a class="dropdown-item" href="{{user.gitHubUri}}" target="_blank">
+                                        <i class="fas fa-external-link-alt fa-xs"></i>
                                         GitHub Profile
                                         <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1 ml-1">
                                     </a>
@@ -43,9 +44,9 @@
                     </ul>
                 {{else}}
                     <ul class="navbar-nav ml-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/login">
-                                <img src="/res/github-32x-light.png" width="24" height="24" class="rounded-circle m-1">
+                        <li class="nav-item d-flex flex-column">
+                            <a class="nav-link align-self-center" href="/login">
+                                <img src="/res/github-32x-light.png" width="24" height="24" class="rounded-circle mr-1">
                                 Login with GitHub
                             </a>
                         </li>
