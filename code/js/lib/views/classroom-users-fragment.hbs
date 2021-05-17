@@ -1,3 +1,4 @@
+<!--
 {{#if canManage}}
     <div class="d-flex flex-row-reverse mb-2">
         <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#addUserForm">
@@ -7,55 +8,73 @@
     </div>
     <hr>
 {{/if}}
+-->
+
 {{#if isEmpty}}
     <h5 style="text-align: center;">No users available</h5>
 {{else}}
-    <div id="deleteUserOverlay" class="overlay-fixed position-fixed">
-        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
-            <h1 class="font-weight-bold" style="text-align: center;">Are you sure you want to remove this user?</h1>
-            <br>
-            <div class="row">
-                <div class="col-sm">
-                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteUser">Yes</button>
-                </div>
-                <div class="col-sm">
-                    <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteUser">No</button>
-                </div>
-            </div>
-        </div>
-    </div>
     {{#each users}}
-        <div class="row rounded bg-light p-3">
-            <div class="col-sm-auto d-flex justify-content-center align-items-center">
+        <div class="row rounded bg-light" style="position: relative;">
+            {{#if ../canManage}}
+                <!-- Overlays -->
+                <div id="user{{id}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                        <div class="spinner-border"></div>
+                        <h4 class="ml-3">Please wait...</h4>
+                </div>
+                <div id="removeUser{{id}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="col-sm-auto">
+                        <h5 class="font-weight-bold">
+                            Are you sure you want to remove the user from the classroom?
+                        </h5>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveUser" data-user-id="{{id}}">Yes</button>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveUser">No</button>
+                    </div>
+                </div>
+            {{/if}}
+
+            <!-- User Info -->
+            <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
                 <a href="/users/{{id}}">
                     <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
                 </a>
             </div>
-            <div class="col-md-9">
+            <div class="col-md-9 p-3">
                 <h3 class="d-inline-block text-truncate" style="max-width: 100%;">{{username}}</h3>
                 <br>
                 {{#if ../canManage}}
+                    <!-- Role Dropdown Button -->
                     {{#if isTeacher}}
-                        <button class="btn btn-sm btn-outline-success dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-success dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
                             <i class="fas fa-chalkboard-teacher mr-2"></i>
                             Teacher
                         </button>
                     {{else}}
-                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
                             <i class="fas fa-user-graduate mr-2"></i>
                             Student
                         </button>
                     {{/if}}
-                    {{#if isAuthUser}}<span class="text-muted">(you)</span>
-                    {{else}}<a class="text-danger" href="#">Remove</span>{{/if}}
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item {{#if isTeacher}} active {{/if}}" href="#">
+                    {{#if isAuthUser}}
+                        <h6 class="text-muted d-inline">(you)</h6>
+                    {{else}}
+                        <a class="text-danger removeUserButton" href="#">
+                            <h6 class="d-inline" data-user-id="{{id}}">Remove</h6>
+                        </a>
+                    {{/if}}
+
+                    <!-- Role Dropdown Options -->
+                    <div class="dropdown-menu userRoleDropdown" data-user-id="{{id}}">
+                        <a class="dropdown-item {{#if isTeacher}} active {{/if}}" href="#" data-role="teacher">
                             <i class="fas fa-chalkboard-teacher"></i>
                             Teacher
                         </a>
-                        <a class="dropdown-item {{#unless isTeacher}} active {{/unless}}" href="#">
+                        <a class="dropdown-item {{#unless isTeacher}}active {{/unless}}" href="#" data-role="student">
                             <i class="fas fa-user-graduate"></i>
                             Student
                         </a>

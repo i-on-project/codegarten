@@ -20,20 +20,28 @@ function dismissAlert() {
 
 function workWithLoading(workPromise) {
     const overlay = document.querySelector('#loadingOverlay')
-    overlay.classList.remove('slide-out')
-    overlay.classList.add('slide-in')
-    overlay.style.display = 'flex'
+    showOverlay
 
     workPromise
         .then(finishLoadingMsg)
         .catch(finishLoadingMsg)
 }
 
-function finishLoadingMsg() {
-    const overlay = document.querySelector('#loadingOverlay')
+function showOverlay(overlay) {
+    overlay.classList.remove('slide-out')
+    overlay.classList.add('slide-in')
+    overlay.style.display = 'flex'
+}
+
+function hideOverlay(overlay) {
     overlay.classList.remove('slide-in')
     overlay.classList.add('slide-out')
     setTimeout(() => overlay.style.display = 'none', 200)
+}
+
+function finishLoadingMsg() {
+    const overlay = document.querySelector('#loadingOverlay')
+    hideOverlay(overlay)
 }
 
 function mapEnterToButton(elem, event, button) {
@@ -67,5 +75,7 @@ export {
     workWithLoading,
     mapEnterToButton,
     sanitizeInput,
-    getLocation
+    getLocation,
+    showOverlay,
+    hideOverlay
 }

@@ -2,8 +2,7 @@
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getUserById, getClassroomUsers, deleteUser, editUser } from '../repo/services/users'
-import { Error } from '../types/error-types'
+import { getUserById, getClassroomUsers, deleteUser, editUser ,removeUserFromClassroom, editClassroomUserMembership } from '../repo/services/users'
 
 const router = expressRouter()
 
@@ -12,7 +11,10 @@ router.get('/users/:userId', requiresAuth, handlerGetUserById)
 router.get('/orgs/:orgId/classrooms/:classroomNumber/users', requiresAuth, handlerGetClassroomUsers)
 
 router.put('/user', requiresAuth, handlerEditUser)
+router.put('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerEditClassroomUserMembership)
+
 router.delete('/user', requiresAuth, handlerDeleteUser)
+router.delete('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerDeleteClassroomUser)
 
 function handlerGetAuthenticatedUser(req: Request, res: Response, next: NextFunction) {
     res.render('auth-user-profile')
@@ -79,7 +81,7 @@ function handlerEditUser(req: Request, res: Response, next: NextFunction) {
     editUser(newName, req.user.accessToken.token)
         .then(result => {
             let message: string
-            switch(result) {
+            switch(result.status) {
                 case 200: 
                     message = 'Username was successfully edited'
                     break
@@ -91,7 +93,7 @@ function handlerEditUser(req: Request, res: Response, next: NextFunction) {
             }
 
             res.send({
-                wasEdited: result == 200,
+                wasEdited: result.status == 200,
                 message: message
             })
         })
@@ -103,12 +105,50 @@ function handlerEditUser(req: Request, res: Response, next: NextFunction) {
         })
 }
 
+function handlerEditClassroomUserMembership(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const userId = Number(req.params.userId)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(userId)) return next()
+    
+    const role = req.body.role
+    if (!role) 
+        return res.send({
+            wasEdited: false,
+            message: 'New role was not specified'
+        })
+
+    editClassroomUserMembership(orgId, classroomNumber, userId, role, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 201: 
+                    message = 'User role was updated successfully'
+                    break
+                default:
+                    message = 'Failed to update user role'
+            }
+
+            res.send({
+                wasEdited: result.status == 201,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasEdited: false,
+                message: 'Failed to update user role'
+            })
+        })
+}
+
 function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
     // TODO secure this route against CSRF
     deleteUser(req.user.accessToken.token)
         .then(result => {
             let message: string
-            switch(result) {
+            switch(result.status) {
                 case 200: 
                     message = 'User was successfully deleted'
                     req.logout()
@@ -119,7 +159,7 @@ function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
             }
 
             res.send({
-                wasDeleted: result == 200,
+                wasDeleted: result.status == 200,
                 message: message
             })
         })
@@ -127,6 +167,37 @@ function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
             res.send({
                 wasDeleted: false,
                 message: 'Failed to delete user'
+            })
+        })
+}
+
+function handlerDeleteClassroomUser(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const userId = Number(req.params.userId)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(userId)) return next()
+
+    removeUserFromClassroom(orgId, classroomNumber, userId, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200: 
+                    message = 'User was successfully removed'
+                    break
+                default:
+                    message = 'Failed to remove user'
+            }
+
+            res.send({
+                wasRemoved: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasRemoved: false,
+                message: 'Failed to remove user'
             })
         })
 }

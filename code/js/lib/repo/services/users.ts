@@ -72,14 +72,32 @@ function getClassroomUsers(orgId: number, classroomNumber: number, authUser: Aut
         })
 }
 
-function editUser(newName: string, accessToken: string): Promise<number> {
+function editUser(newName: string, accessToken: string): Promise<ApiResponse> {
     return fetch(userRoutes.getAuthenticatedUserUri, getJsonRequestOptions('PUT', accessToken, { name: newName }))
-        .then(res => res.status)
+        .then(res => {
+            return { status: res.status } as ApiResponse
+        })
 }
 
-function deleteUser(accessToken: string) : Promise<number> {
+function editClassroomUserMembership(orgId: number, classroomNumber: number, userId: number, role: string, accessToken: string): Promise<ApiResponse> {
+    return fetch(userRoutes.getClassroomUserUri(orgId, classroomNumber, userId), getJsonRequestOptions('PUT', accessToken, { role: role }))
+        .then(res => {
+            return { status: res.status } as ApiResponse
+        })
+}
+
+function deleteUser(accessToken: string) : Promise<ApiResponse> {
     return fetch(userRoutes.getAuthenticatedUserUri, getJsonRequestOptions('DELETE', accessToken))
-        .then(res => res.status)
+        .then(res => {
+            return { status: res.status } as ApiResponse
+        })
+}
+
+function removeUserFromClassroom(orgId: number, classroomNumber: number, userId: number, accessToken: string) : Promise<ApiResponse> {
+    return fetch(userRoutes.getClassroomUserUri(orgId, classroomNumber, userId), getJsonRequestOptions('DELETE', accessToken))
+        .then(res => {
+            return { status: res.status } as ApiResponse
+        })
 }
 
 export {
@@ -87,5 +105,7 @@ export {
     getUserById,
     getClassroomUsers,
     editUser,
-    deleteUser
+    editClassroomUserMembership,
+    deleteUser,
+    removeUserFromClassroom
 }
