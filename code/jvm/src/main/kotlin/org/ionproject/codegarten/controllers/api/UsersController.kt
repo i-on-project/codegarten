@@ -30,6 +30,7 @@ import org.ionproject.codegarten.controllers.models.validRoleTypes
 import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
+import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
@@ -214,15 +215,22 @@ class UsersController(
         if (!validRoleTypes.contains(input.role)) throw InvalidInputException("Invalid role. Must be one of: $validRoleTypes")
 
         val userToAdd = usersDb.getUserById(userId)
+        val classroomMembership = usersDb.getUserMembershipInClassroom(userClassroom.classroom.cid, userId)
 
-        if (gitHub.getUserOrgMembership(orgId, userToAdd.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
-            gitHub.inviteUserToOrg(orgId, userToAdd.gh_id, installationToken = installation.accessToken)
-        }
+        val status =
+            if (classroomMembership.role == NOT_A_MEMBER) {
+                if (gitHub.getUserOrgMembership(orgId, cryptoUtils.decrypt(userToAdd.gh_token)).role == GitHubUserOrgRole.NOT_A_MEMBER) {
+                    gitHub.inviteUserToOrg(orgId, userToAdd.gh_id, installationToken = installation.accessToken)
+                }
+                HttpStatus.CREATED
+            } else {
+                HttpStatus.OK
+            }
 
         usersDb.addOrEditUserInClassroom(orgId, classroomNumber, userId, input.role)
 
         return ResponseEntity
-            .status(HttpStatus.CREATED)
+            .status(status)
             .header("Location", getClassroomByNumberUri(orgId, classroomNumber).includeHost().toString())
             .body(null)
     }
