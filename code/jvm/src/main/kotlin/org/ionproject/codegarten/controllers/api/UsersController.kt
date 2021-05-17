@@ -89,22 +89,24 @@ class UsersController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
+    @RequiresUserAuth
     @GetMapping(USER_BY_ID_HREF)
     fun getUserById(
         @PathVariable(name = USER_PARAM) userId: Int,
+        user: User,
     ): ResponseEntity<Response> {
-        val user = usersDb.getUserById(userId)
-        val ghUser = gitHub.getUser(user.gh_id, cryptoUtils.decrypt(user.gh_token))
+        val requestedUser = usersDb.getUserById(userId)
+        val requestedGitHubUser = gitHub.getUser(requestedUser.gh_id, user.gh_token)
 
         return UserOutputModel(
-            id = user.uid,
-            name = user.name,
-            gitHubName = ghUser.login
+            id = requestedUser.uid,
+            name = requestedUser.name,
+            gitHubName = requestedGitHubUser.login
         ).toSirenObject(
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), getUserByIdUri(userId).includeHost()),
-                SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(ghUser.login)),
-                SirenLink(listOf("avatar"), URI(ghUser.avatar_url))
+                SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(requestedGitHubUser.login)),
+                SirenLink(listOf("avatar"), URI(requestedGitHubUser.avatar_url))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
