@@ -33,7 +33,6 @@ import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInOrg
 import org.ionproject.codegarten.remote.github.GitHubInterface
-import org.ionproject.codegarten.remote.github.GitHubRoutes
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubLoginUri
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole
 import org.ionproject.codegarten.responses.Response

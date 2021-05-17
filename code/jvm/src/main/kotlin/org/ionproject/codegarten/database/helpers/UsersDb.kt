@@ -28,7 +28,8 @@ private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
 // Classrooms
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
-    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM WHERE classroom_id = :classroomId ORDER BY uid"
+    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
+        "WHERE classroom_id = :classroomId ORDER BY classroom_role DESC, uid"
 private const val GET_USER_IN_CLASSROOM_QUERY =
     "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
 private const val GET_USERS_IN_CLASSROOM_COUNT =
