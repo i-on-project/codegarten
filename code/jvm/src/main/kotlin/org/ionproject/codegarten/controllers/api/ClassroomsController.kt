@@ -22,7 +22,7 @@ import org.ionproject.codegarten.controllers.models.ClassroomOutputModel
 import org.ionproject.codegarten.controllers.models.ClassroomsOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
-import org.ionproject.codegarten.database.dto.UserClassroomMembership
+import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.UsersDb
@@ -130,10 +130,10 @@ class ClassroomsController(
         val classroom = userClassroom.classroom
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
-        val isOrgAdmin = orgRole == GitHubUserOrgRole.ADMIN
+        val isTeacher = userClassroom.role == TEACHER
 
         val actions =
-            if (isOrgAdmin)
+            if (isTeacher)
                 listOf(
                     getEditClassroomAction(orgId, classroom.number),
                     getDeleteClassroomAction(orgId, classroom.number)
@@ -143,7 +143,7 @@ class ClassroomsController(
 
         return ClassroomOutputModel(
             id = classroom.cid,
-            if (isOrgAdmin) classroom.inv_code else null,
+            if (isTeacher) classroom.inv_code else null,
             number = classroom.number,
             name = classroom.name,
             description = classroom.description,
@@ -179,7 +179,7 @@ class ClassroomsController(
         val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description)
         inviteCodesDb.generateAndCreateUniqueInviteCode(createdClassroom.cid)
 
-        usersDb.addUserToClassroom(createdClassroom.cid, user.uid, UserClassroomMembership.TEACHER)
+        usersDb.addUserToClassroom(createdClassroom.cid, user.uid, TEACHER)
         return ResponseEntity
             .status(HttpStatus.CREATED)
             .header("Location", getClassroomByNumberUri(orgId, createdClassroom.number).includeHost().toString())
@@ -195,7 +195,7 @@ class ClassroomsController(
         userClassroom: UserClassroom,
         @RequestBody input: ClassroomEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
@@ -215,7 +215,7 @@ class ClassroomsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
 
         classroomsDb.deleteClassroom(orgId, classroomNumber)
         return ResponseEntity
