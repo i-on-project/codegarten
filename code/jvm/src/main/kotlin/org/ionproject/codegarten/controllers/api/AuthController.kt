@@ -1,7 +1,9 @@
 package org.ionproject.codegarten.controllers.api
 
+import org.ionproject.codegarten.Routes.AUTH_REVOKE_HREF
 import org.ionproject.codegarten.Routes.AUTH_TOKEN_HREF
 import org.ionproject.codegarten.controllers.models.AuthorizationInputModel
+import org.ionproject.codegarten.controllers.models.RevocationInputModel
 import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.dto.AuthCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
@@ -84,5 +86,35 @@ class AuthController(
                 // If token was not unique, the loop will repeat and generate a new one
             }
         }
+    }
+
+    @PostMapping(AUTH_REVOKE_HREF)
+    fun revokeAccessToken(
+        input: RevocationInputModel?
+    ) : ResponseEntity<Any> {
+        if (input == null) throw InvalidInputException("Missing body")
+        if (input.client_id == null) throw InvalidInputException("Missing client_id")
+        if (input.client_secret == null) throw InvalidInputException("Missing client_secret")
+        if (input.token == null) throw InvalidInputException("Missing token to revoke")
+
+        val client = clientsDb.getClientById(input.client_id)
+        if (!cryptoUtils.validateHash(input.client_secret, client.secret)) {
+            throw AuthorizationException("Invalid client")
+        }
+
+        val hashedToken = cryptoUtils.hash(input.token)
+        val token: org.ionproject.codegarten.database.dto.AccessToken
+        try {
+            token = accessTokensDb.getAccessToken(hashedToken)
+            if (token.client_id != input.client_id) throw AuthorizationException("Invalid client")
+        } catch (ex: NotFoundException) {
+            throw AuthorizationException("Invalid token")
+        }
+
+        accessTokensDb.deleteAccessToken(hashedToken)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(null)
     }
 }
