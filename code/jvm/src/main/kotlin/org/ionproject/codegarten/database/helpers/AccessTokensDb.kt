@@ -10,6 +10,8 @@ private const val GET_ACCESSTOKEN_QUERY = "$GET_ACCESSTOKENS_BASE WHERE token = 
 
 private const val CREATE_ACCESSTOKEN_QUERY = "INSERT INTO ACCESSTOKEN VALUES(:token, :exp, :userId, :clientId)"
 
+private const val DELETE_ACCESSTOKEN_QUERY = "DELETE FROM ACCESSTOKEN WHERE token = :token"
+
 @Component
 class AccessTokensDb(val jdbi: Jdbi) {
 
@@ -26,4 +28,8 @@ class AccessTokensDb(val jdbi: Jdbi) {
                 "clientId" to clientId
             )
         )
+
+    fun deleteAccessToken(token: String) {
+        jdbi.delete(DELETE_ACCESSTOKEN_QUERY, mapOf("token" to token))
+    }
 }
