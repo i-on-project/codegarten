@@ -47,8 +47,12 @@ const authRoutes = {
     // TODO: Implement state
     getAuthCodeUri: `${IM_HOST}/oauth/authorize?client_id=${CLIENT_ID}`,
     getAccessTokenUri: `${API_HOST}/oauth/access_token`,
+    getRevokeAccessTokenUri: `${API_HOST}/oauth/revoke`,
     getAccessTokenRequestBody: (code: string): string => 
-        `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${code}`
+        `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${code}`,
+    getRevokeAccessTokenRequestBody: (token: string): string => 
+        `client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&token=${token}`
+    
 }
 
 // Interaction Manager routes

@@ -15,3 +15,13 @@ export function getAccessToken(code: string): Promise<AccessToken> {
             } as AccessToken
         })
 }
+
+export function revokeAccessToken(token: string): Promise<ApiResponse> {
+    const options = getUrlEncodedRequestOptions('POST', authRoutes.getRevokeAccessTokenRequestBody(token))
+    return fetch(authRoutes.getRevokeAccessTokenUri, options)
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}

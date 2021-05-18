@@ -4,8 +4,8 @@ import express from 'express'
 declare module 'express' {
     export interface Request {
         user: AuthenticatedUser
-        login: (user: AuthenticatedUser) => void
-        logout: () => void
+        login: (user: AuthenticatedUser) => Promise<boolean>
+        logout: () => Promise<boolean>
     }
 }
 
