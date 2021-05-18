@@ -1,19 +1,22 @@
-import { mapEnterToButton, alertMsg, workWithLoading, getLocation, showOverlay, hideOverlay } from './common.js'
+import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, hideOverlay } from './common.js'
+import { getAssignments } from './classroom-assignments.js'
+import { getTeams } from './classroom-teams.js'
+import { getUsers } from './classroom-users.js'
 
 export function setup() {
     const content = $('#classroomContent')[0]
     if (content) {
-        getAssignments(content, 0)
+        const contentOverlay = $('#loadingClassroomContentOverlay')[0]
+
         const assignmentsButton = $('#assignmentsOption').parent()[0]
         const usersButton = $('#usersOption').parent()[0]
         const teamsButton = $('#teamsOption').parent()[0]
 
-        // Disable other buttons when clicking
         $('#assignmentsOption').on('click', (event) => {
             if (event.target.parentElement.classList.contains('active')) return
             usersButton.classList.add('disabled')
             teamsButton.classList.add('disabled')
-            getAssignments(content, 0)
+            workWithOverlay(contentOverlay, getAssignments(content, 0, updatePagination))
                 .finally(() => {
                     usersButton.classList.remove('disabled')
                     teamsButton.classList.remove('disabled')
@@ -23,7 +26,7 @@ export function setup() {
             if (event.target.parentElement.classList.contains('active')) return
             assignmentsButton.classList.add('disabled')
             teamsButton.classList.add('disabled')
-            getUsers(content, 0)
+            workWithOverlay(contentOverlay, getUsers(content, 0, updatePagination))
                 .finally(() => {
                     assignmentsButton.classList.remove('disabled')
                     teamsButton.classList.remove('disabled')
@@ -33,26 +36,48 @@ export function setup() {
             if (event.target.parentElement.classList.contains('active')) return
             assignmentsButton.classList.add('disabled')
             usersButton.classList.add('disabled')
-            getTeams(content, 0)
+            workWithOverlay(contentOverlay, getTeams(content, 0, updatePagination))
                 .finally(() => {
                     assignmentsButton.classList.remove('disabled')
                     usersButton.classList.remove('disabled')
                 })
         })
         setUpEditForm()
+
+        workWithOverlay(contentOverlay, getAssignments(content, 0, updatePagination))
     }
 }
 
 function setUpEditForm() {
-    $('#deleteClassroomButton').on('click', event => {
-        deleteClassroomShow(event)
+    const overlay = $('#confirmOverlay')[0]
+    const yesConfirm = $('#yesConfirm')
+    const confirmMessage = $('#confirmOverlayMessage')
+
+    $('#noConfirm').on('click', (event) => {
+        hideOverlay(overlay)
     })
-    $('#noDeleteClassroom').on('click', (event => {
-        deleteClassroomHide(event)
-    }))
-    $('#yesDeleteClassroom').on('click', (event => {
-        deleteClassroom(event)
-    }))
+
+    $('#deleteClassroomButton').on('click', (event) => {
+        confirmMessage.text('Are you sure you want to delete this classroom?')
+
+        yesConfirm.off()
+        yesConfirm.on('click', (event) => {
+            hideOverlay(overlay)
+            deleteClassroom()
+        })
+        showOverlay(overlay)
+    })
+    $('#leaveClassroomButton').on('click', (event) => {
+        const userId = event.target.dataset.userId
+
+        confirmMessage.text('Are you sure you want to leave this classroom?')
+        yesConfirm.off()
+        yesConfirm.on('click', (event) => {
+            hideOverlay(overlay)
+            leaveClassroom(userId)
+        })
+        showOverlay(overlay)
+    })
 
     const editButton = $('#editClassroomButton')
     const classroomName = $('#editClassroomName')
@@ -70,72 +95,6 @@ function setUpEditForm() {
     editButton.on('click', (event) => {
         editClassroom(editButton[0], classroomName[0], classroomDescription[0])
     })
-}
-
-function getAssignments(content, page) {
-    content.innerHTML = ''
-    const promise = fetch(`${getLocation()}/assignments?page=${page}`)
-        .then(res => {
-            if (res.status != 200) return alertMsg('Error while getting assignments')
-            return res.text()
-        })
-        .then(fragment => {
-            content.innerHTML = fragment ? fragment : ''
-            updatePagination(nextPage => getAssignments(content, nextPage))
-        })
-        .catch((err) => alertMsg('Error while getting assignments'))
-        
-    getContentWithLoading(promise)
-    return promise
-}
-
-function getUsers(content, page) {
-    content.innerHTML = ''
-    const promise = fetch(`${getLocation()}/users?page=${page}`)
-        .then(res => {
-            if (res.status != 200) return alertMsg('Error while getting users')
-            return res.text()
-        })
-        .then(fragment => {
-            content.innerHTML = fragment ? fragment : ''
-            updatePagination(nextPage => getUsers(content, nextPage))
-            $('.removeUserButton').on('click', (event) => {
-                const overlay = $(`#removeUser${event.target.dataset.userId}Overlay`)
-                showOverlay(overlay[0])
-            })
-            $('.noRemoveUser').on('click', (event) => {
-                hideOverlay(event.target.parentElement.parentElement)
-            })
-            $('.yesRemoveUser').on('click', (event) => {
-                const overlay = $(`#removeUser${event.target.dataset.userId}Overlay`)
-                removeUser(overlay[0], event.target.dataset.userId)
-            })
-            $('.userRoleDropdown a').on('click', (event => {
-                if (event.target.classList.contains('active')) return
-                updateUserRole(event.target)
-            }))
-        })
-        .catch((err) => alertMsg('Error while getting users'))
-
-    getContentWithLoading(promise)
-    return promise
-}
-
-function getTeams(content, page) {
-    content.innerHTML = ''
-    const promise = fetch(`${getLocation()}/teams?page=${page}`)
-        .then(res => {
-            if (res.status != 200) return alertMsg('Error while getting teams')
-            return res.text()
-        })
-        .then(fragment => {
-            content.innerHTML = fragment ? fragment : ''
-            updatePagination(nextPage => getTeams(content, nextPage))
-        })
-        .catch((err) => alertMsg('Error while getting teams'))
-
-    getContentWithLoading(promise)
-    return promise
 }
 
 function updatePagination(cb) {
@@ -200,89 +159,7 @@ function editClassroom(editButton, classroomName, classroomDescription) {
             .catch(err => alertMsg('Failed to edit classroom')))
 }
 
-function deleteClassroomShow(event) {
-    const overlay = $('#deleteClassroomOverlay')[0]
-    overlay.classList.remove('slide-out')
-    overlay.classList.add('slide-in')
-    overlay.style.display = 'flex'
-}
-
-function deleteClassroomHide(event) {
-    const overlay = $('#deleteClassroomOverlay')[0]
-    overlay.classList.remove('slide-in')
-    overlay.classList.add('slide-out')
-    setTimeout(() => overlay.style.display = 'none', 200)
-}
-
-function removeUser(overlay, userId) {
-    showOverlay(overlay)
-    const loadingOverlay = $(`#user${userId}LoadingOverlay`)[0]
-    showOverlay(loadingOverlay)
-
-    fetch(`${getLocation()}/users/${userId}`, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(res => {
-            hideOverlay(loadingOverlay)
-            
-            if (res.wasRemoved) {
-                alertMsg(res.message, 'success')
-                loadingOverlay.parentElement.remove()
-            } else alertMsg(res.message)
-        })
-        .catch(err => {
-            hideOverlay(loadingOverlay)
-            alertMsg('Failed to remove user')
-        })
-}
-
-function updateUserRole(elem) {
-    const userId = elem.parentElement.dataset.userId
-    const role = elem.dataset.role
-    const dropdownButton = $(`#user${userId}RoleDropdownButton`)[0]
-
-    const overlay = $(`#user${userId}LoadingOverlay`)[0]
-    showOverlay(overlay)
-    fetch(`${getLocation()}/users/${userId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            role: role
-        })
-    })
-        .then(res => res.json())
-        .then(res => {
-            if (!res.wasEdited) alertMsg(res.message)
-            else {
-                elem.classList.add('active')
-                alertMsg(res.message, 'success')
-                if (role == 'teacher') {
-                    elem.nextElementSibling.classList.remove('active')
-                    dropdownButton.classList.remove('btn-outline-secondary')
-                    dropdownButton.classList.add('btn-outline-success')
-                    dropdownButton.innerHTML = `
-                    <i class="fas fa-chalkboard-teacher mr-2"></i>
-                    Teacher
-                    `
-                } else {
-                    elem.previousElementSibling.classList.remove('active')
-                    dropdownButton.classList.add('btn-outline-secondary')
-                    dropdownButton.classList.remove('btn-outline-success')
-                    dropdownButton.innerHTML = `
-                    <i class="fas fa-user-graduate mr-2"></i>
-                    Student
-                    `
-                }
-            }
-            hideOverlay(overlay)
-        })
-        .catch(err => {
-            alertMsg('Failed to update user role')
-            hideOverlay(overlay)
-        })
-}
-
-function deleteClassroom(event) {
-    deleteClassroomHide()
+function deleteClassroom() {
     $('#editClassroomForm').modal('hide')
     workWithLoading(
         fetch(getLocation(), { method: 'DELETE' })
@@ -297,20 +174,16 @@ function deleteClassroom(event) {
             .catch(err => alertMsg('Failed to delete classroom')))
 }
 
-function getContentWithLoading(workPromise) {
-    const overlay = $('#loadingClassroomContentOverlay')[0]
-    overlay.classList.remove('slide-out')
-    overlay.classList.add('slide-in')
-    overlay.style.display = 'flex'
+function leaveClassroom(userId) {
+    workWithLoading(
+        fetch(`${getLocation()}/users/${userId}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(res => {
+                if (!res.wasRemoved) alertMsg(res.message)
+                else {
+                    location.href = res.message
+                }
 
-    workPromise
-        .then(finishLoadingMsg)
-        .catch(finishLoadingMsg)
-}
-
-function finishLoadingMsg() {
-    const overlay = $('#loadingClassroomContentOverlay')[0]
-    overlay.classList.remove('slide-in')
-    overlay.classList.add('slide-out')
-    setTimeout(() => overlay.style.display = 'none', 200)
+            })
+            .catch(err => alertMsg('Failed to leave classroom')))
 }

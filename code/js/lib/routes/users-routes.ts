@@ -14,7 +14,7 @@ router.put('/user', requiresAuth, handlerEditUser)
 router.put('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerEditClassroomUserMembership)
 
 router.delete('/user', requiresAuth, handlerDeleteUser)
-router.delete('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerDeleteClassroomUser)
+router.delete('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerRemoveClassroomUser)
 
 function handlerGetAuthenticatedUser(req: Request, res: Response, next: NextFunction) {
     res.render('auth-user-profile')
@@ -171,7 +171,7 @@ function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
         })
 }
 
-function handlerDeleteClassroomUser(req: Request, res: Response, next: NextFunction) {
+function handlerRemoveClassroomUser(req: Request, res: Response, next: NextFunction) {
     const orgId = Number(req.params.orgId)
     const classroomNumber = Number(req.params.classroomNumber)
     const userId = Number(req.params.userId)
@@ -182,8 +182,13 @@ function handlerDeleteClassroomUser(req: Request, res: Response, next: NextFunct
         .then(result => {
             let message: string
             switch(result.status) {
-                case 200: 
-                    message = 'User was successfully removed'
+                case 200:
+                    if (userId == req.user.id) {
+                        message = `/orgs/${orgId}/classrooms`
+                        req.flash('success', 'Classroom was successfully left')
+                    } else {
+                        message = 'User was successfully removed'
+                    }
                     break
                 default:
                     message = 'Failed to remove user'

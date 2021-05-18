@@ -20,11 +20,19 @@ function dismissAlert() {
 
 function workWithLoading(workPromise) {
     const overlay = document.querySelector('#loadingOverlay')
-    showOverlay
+    showOverlay(overlay)
 
     workPromise
-        .then(finishLoadingMsg)
-        .catch(finishLoadingMsg)
+        .finally(finishLoadingMsg)
+}
+
+function workWithOverlay(overlay, workPromise) {
+    showOverlay(overlay)
+
+    workPromise
+        .finally(hideOverlay(overlay))
+
+    return workPromise
 }
 
 function showOverlay(overlay) {
@@ -51,19 +59,6 @@ function mapEnterToButton(elem, event, button) {
     }
 }
 
-function sanitizeInput(input) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        '\'': '&#x27;',
-        '/': '&#x2F;',
-    }
-    const reg = /[&<>"'/]/ig
-    return input.replace(reg, (match)=>(map[match]))
-}
-
 function getLocation() {
     // Removes trailing '/' and '#'
     return document.location.href.replace(/\/$/, '').replace('#', '')
@@ -73,8 +68,8 @@ export {
     alertMsg,
     dismissAlert,
     workWithLoading,
+    workWithOverlay,
     mapEnterToButton,
-    sanitizeInput,
     getLocation,
     showOverlay,
     hideOverlay

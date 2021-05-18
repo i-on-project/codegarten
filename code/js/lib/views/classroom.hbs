@@ -1,18 +1,21 @@
-<div class="modal fade" id="editClassroomForm" tabindex="-1" role="dialog" aria-hidden="true">
-    <div id="deleteClassroomOverlay" class="overlay">
-        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
-            <h1 class="font-weight-bold" style="text-align: center;">Are you sure you want to delete this classroom?</h1>
-            <br>
-            <div class="row">
-                <div class="col-sm">
-                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteClassroom">Yes</button>
-                </div>
-                <div class="col-sm">
-                    <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteClassroom">No</button>
-                </div>
+<!-- Overlay used to confirm classroom deletion or to leave classroom -->
+<div id="confirmOverlay" class="overlay">
+    <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id="confirmOverlayMessage" class="font-weight-bold" style="text-align: center;"><!-- To be filled with DOM--></h1>
+        <br>
+        <div class="row">
+            <div class="col-sm">
+                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesConfirm">Yes</button>
+            </div>
+            <div class="col-sm">
+                <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noConfirm">No</button>
             </div>
         </div>
     </div>
+</div>
+
+
+<div class="modal fade" id="editClassroomForm" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -48,7 +51,7 @@
     </div>
 </div>
 
-<div class="row">
+<div class="row d-flex align-items-center">
     <div class="col-lg-8">
         <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms">
             <i class="fas fa-angle-double-left"></i>
@@ -64,11 +67,12 @@
         <h1 id="classroomName">{{classroom.name}}</h1>
         <h5 class="text-muted font-weight-light" id="classroomDescription">{{classroom.description}}</h5>
     </div>
-    {{#if canManage}}
-        <div class="col-md d-flex align-items-center">
+    <div class="col-md d-flex flex-column">
+        {{#if canManage}}
             <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editClassroomForm">Edit classroom</button>
-        </div>
-    {{/if}}
+        {{/if}}
+        <button id="leaveClassroomButton" type="button" class="btn btn-outline-danger btn-lg btn-block" data-user-id="{{user.id}}">Leave classroom</button>
+    </div>
 </div>
 
 <div class="row mt-2">
