@@ -10,6 +10,8 @@ const router = expressRouter()
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerGetAssignments)
 
 function handlerGetAssignments(req: Request, res: Response, next: NextFunction) {
+    if (!req.xhr) return next()
+
     const orgId = Number(req.params.orgId)
     const classroomNumber = Number(req.params.classroomNumber)
 

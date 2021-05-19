@@ -1,8 +1,9 @@
-import { alertMsg, getLocation } from './common.js'
+import { alertMsg, fetchXhr, getLocation } from './common.js'
 
 function getAssignments(content, page, updatePaginationFn) {
     content.innerHTML = ''
-    const promise = fetch(`${getLocation()}/assignments?page=${page}`)
+
+    const promise = fetchXhr(`${getLocation()}?page=${page}`)
         .then(res => {
             if (res.status != 200) return alertMsg('Error while getting assignments')
             return res.text()

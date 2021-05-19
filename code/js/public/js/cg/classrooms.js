@@ -7,7 +7,7 @@ export function setup() {
         const classroomName = createClassroomForm.querySelector('#classroomName')
         const classroomDescription = createClassroomForm.querySelector('#classroomDescription')
 
-        createClassroomButton.addEventListener('click', () => handlerCreateClassroom(createClassroomButton, classroomName, classroomDescription))
+        createClassroomButton.addEventListener('click', () => createClassroom(createClassroomButton, classroomName, classroomDescription))
         classroomName.addEventListener('keyup', (event) => {
             classroomName.classList.remove('is-invalid')
             mapEnterToButton(classroomName, event, createClassroomButton)
@@ -19,7 +19,7 @@ export function setup() {
     }
 }
 
-function handlerCreateClassroom(createClassroomButton, classroomName, classroomDescription) {
+function createClassroom(createClassroomButton, classroomName, classroomDescription) {
     if (classroomName.value.length == 0) {
         $('#classroomNameFeedback').html('Name can\'t be empty')
         return classroomName.classList.add('is-invalid')

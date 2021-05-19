@@ -1,8 +1,8 @@
-import { alertMsg, getLocation, showOverlay, hideOverlay } from './common.js'
+import { alertMsg, getLocation, showOverlay, hideOverlay, workWithOverlay, fetchXhr } from './common.js'
 
 function getUsers(content, page, updatePaginationFn) {
     content.innerHTML = ''
-    const promise = fetch(`${getLocation()}/users?page=${page}`)
+    const promise = fetchXhr(`${getLocation()}?page=${page}`)
         .then(res => {
             if (res.status != 200) return alertMsg('Error while getting users')
             return res.text()
@@ -18,8 +18,8 @@ function getUsers(content, page, updatePaginationFn) {
                 hideOverlay(event.target.parentElement.parentElement)
             })
             $('.yesRemoveUser').on('click', (event) => {
-                const overlay = $(`#removeUser${event.target.dataset.userId}Overlay`)
-                removeUser(overlay[0], event.target.dataset.userId)
+                hideOverlay(event.target.parentElement.parentElement)
+                removeUser(event.target.dataset.userId)
             })
             $('.userRoleDropdown a').on('click', (event => {
                 if (event.target.classList.contains('active')) return
@@ -31,26 +31,21 @@ function getUsers(content, page, updatePaginationFn) {
     return promise
 }
 
-
-function removeUser(overlay, userId) {
-    showOverlay(overlay)
+function removeUser(userId) {
     const loadingOverlay = $(`#user${userId}LoadingOverlay`)[0]
-    showOverlay(loadingOverlay)
-
-    fetch(`${getLocation()}/users/${userId}`, { method: 'DELETE' })
+    
+    workWithOverlay(loadingOverlay, fetch(`${getLocation()}/${userId}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(res => {
-            hideOverlay(loadingOverlay)
-            
             if (res.wasRemoved) {
                 alertMsg(res.message, 'success')
                 loadingOverlay.parentElement.remove()
             } else alertMsg(res.message)
         })
         .catch(err => {
-            hideOverlay(loadingOverlay)
             alertMsg('Failed to remove user')
-        })
+        }))
+    
 }
 
 function updateUserRole(elem) {
@@ -59,8 +54,7 @@ function updateUserRole(elem) {
     const dropdownButton = $(`#user${userId}RoleDropdownButton`)[0]
 
     const overlay = $(`#user${userId}LoadingOverlay`)[0]
-    showOverlay(overlay)
-    fetch(`${getLocation()}/users/${userId}`, {
+    workWithOverlay(overlay, fetch(`${getLocation()}/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -96,7 +90,7 @@ function updateUserRole(elem) {
         .catch(err => {
             alertMsg('Failed to update user role')
             hideOverlay(overlay)
-        })
+        }))
 }
 
 export {

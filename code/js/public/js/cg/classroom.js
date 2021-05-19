@@ -1,11 +1,17 @@
-import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, hideOverlay } from './common.js'
+import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, hideOverlay, getLocationWithoutQuery } from './common.js'
 import { getAssignments } from './classroom-assignments.js'
 import { getTeams } from './classroom-teams.js'
 import { getUsers } from './classroom-users.js'
 
+let classroomUri
+
 export function setup() {
     const content = $('#classroomContent')[0]
     if (content) {
+        const location = getLocationWithoutQuery()
+        let currentOption = location.substring(location.lastIndexOf('/') + 1)
+        classroomUri = location.substring(0, location.lastIndexOf('/'))
+
         const contentOverlay = $('#loadingClassroomContentOverlay')[0]
 
         const assignmentsButton = $('#assignmentsOption').parent()[0]
@@ -13,38 +19,78 @@ export function setup() {
         const teamsButton = $('#teamsOption').parent()[0]
 
         $('#assignmentsOption').on('click', (event) => {
-            if (event.target.parentElement.classList.contains('active')) return
+            if (assignmentsButton.classList.contains('active')) return
+            history.pushState({}, '', `${classroomUri}/assignments`)
+            updateState(content, contentOverlay, 'assignments', assignmentsButton, usersButton, teamsButton)
+        })
+        $('#usersOption').on('click', (event) => {
+            if (usersButton.classList.contains('active')) return
+            history.pushState({}, '', `${classroomUri}/users`)
+            updateState(content, contentOverlay, 'users', assignmentsButton, usersButton, teamsButton)
+        })
+        $('#teamsOption').on('click', (event) => {
+            if (teamsButton.classList.contains('active')) return
+            history.pushState({}, '', `${classroomUri}/teams`)
+            updateState(content, contentOverlay, 'teams', assignmentsButton, usersButton, teamsButton)
+        })
+        setUpEditForm()
+
+        window.onpopstate = () => {
+            currentOption = getLocation().substring(getLocation().lastIndexOf('/') + 1)
+            updateState(content, contentOverlay, currentOption, assignmentsButton, usersButton, teamsButton)
+        }
+
+        updateState(content, contentOverlay, currentOption, assignmentsButton, usersButton, teamsButton)
+    }
+}
+
+function updateState(content, contentOverlay, currentOption, assignmentsButton, usersButton, teamsButton) {
+    switch(currentOption) {
+        case 'assignments':
+            if (assignmentsButton.classList.contains('active')) return 
+            assignmentsButton.classList.add('active')
+            
             usersButton.classList.add('disabled')
+            usersButton.classList.remove('active')
             teamsButton.classList.add('disabled')
+            teamsButton.classList.remove('active')
+
             workWithOverlay(contentOverlay, getAssignments(content, 0, updatePagination))
                 .finally(() => {
                     usersButton.classList.remove('disabled')
                     teamsButton.classList.remove('disabled')
                 })
-        })
-        $('#usersOption').on('click', (event) => {
-            if (event.target.parentElement.classList.contains('active')) return
+            break
+        case 'users': 
+            if (usersButton.classList.contains('active')) return
+            usersButton.classList.add('active')
+
             assignmentsButton.classList.add('disabled')
+            assignmentsButton.classList.remove('active')
             teamsButton.classList.add('disabled')
+            teamsButton.classList.remove('active')
+
             workWithOverlay(contentOverlay, getUsers(content, 0, updatePagination))
                 .finally(() => {
                     assignmentsButton.classList.remove('disabled')
                     teamsButton.classList.remove('disabled')
                 })
-        })
-        $('#teamsOption').on('click', (event) => {
-            if (event.target.parentElement.classList.contains('active')) return
+            break
+        case 'teams':
+            if (teamsButton.classList.contains('active')) return
+            teamsButton.classList.add('active')
+
             assignmentsButton.classList.add('disabled')
+            assignmentsButton.classList.remove('active')
             usersButton.classList.add('disabled')
+            usersButton.classList.remove('active')
+
             workWithOverlay(contentOverlay, getTeams(content, 0, updatePagination))
                 .finally(() => {
                     assignmentsButton.classList.remove('disabled')
                     usersButton.classList.remove('disabled')
                 })
-        })
-        setUpEditForm()
-
-        workWithOverlay(contentOverlay, getAssignments(content, 0, updatePagination))
+            break
     }
 }
 
@@ -136,7 +182,7 @@ function editClassroom(editButton, classroomName, classroomDescription) {
     classroomDescription.value = ''
 
     workWithLoading(
-        fetch(getLocation(), { 
+        fetch(classroomUri, { 
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({name: name, description: description})
@@ -162,7 +208,7 @@ function editClassroom(editButton, classroomName, classroomDescription) {
 function deleteClassroom() {
     $('#editClassroomForm').modal('hide')
     workWithLoading(
-        fetch(getLocation(), { method: 'DELETE' })
+        fetch(classroomUri, { method: 'DELETE' })
             .then(res => res.json())
             .then(res => {
                 if (!res.wasDeleted) alertMsg(res.message)
@@ -176,14 +222,13 @@ function deleteClassroom() {
 
 function leaveClassroom(userId) {
     workWithLoading(
-        fetch(`${getLocation()}/users/${userId}`, { method: 'DELETE' })
+        fetch(`${classroomUri}/users/${userId}`, { method: 'DELETE' })
             .then(res => res.json())
             .then(res => {
                 if (!res.wasRemoved) alertMsg(res.message)
                 else {
                     location.href = res.message
                 }
-
             })
             .catch(err => alertMsg('Failed to leave classroom')))
 }

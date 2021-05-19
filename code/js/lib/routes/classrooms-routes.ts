@@ -8,7 +8,10 @@ import { getClassrooms, getClassroom, createClassroom, deleteClassroom, editClas
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms', requiresAuth, handlerGetClassrooms)
-router.get('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerGetClassroom)
+router.get('/orgs/:orgId/classrooms/:classroomNumber', requiresAuth, handlerGetClassroomDefault)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerGetClassroom)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/users', requiresAuth, handlerGetClassroom)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/teams', requiresAuth, handlerGetClassroom)
 
 router.post('/orgs/:orgId/classrooms', requiresAuth, handlerCreateClassroom)
 
@@ -66,6 +69,15 @@ function handlerGetClassroom(req: Request, res: Response, next: NextFunction) {
                 canManage: classroom.canManage
             })
         })
+}
+
+function handlerGetClassroomDefault(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+    
+    res.redirect(`/orgs/${orgId}/classrooms/${classroomNumber}/assignments`)
 }
 
 function handlerCreateClassroom(req: Request, res: Response, next: NextFunction) {

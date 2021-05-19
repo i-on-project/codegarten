@@ -30,7 +30,7 @@ function workWithOverlay(overlay, workPromise) {
     showOverlay(overlay)
 
     workPromise
-        .finally(hideOverlay(overlay))
+        .finally(() => hideOverlay(overlay))
 
     return workPromise
 }
@@ -64,6 +64,18 @@ function getLocation() {
     return document.location.href.replace(/\/$/, '').replace('#', '')
 }
 
+function getLocationWithoutQuery() {
+    return getLocation().split('?')[0]
+}
+
+function fetchXhr(uri) {
+    return fetch(uri, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+}
+
 export {
     alertMsg,
     dismissAlert,
@@ -71,6 +83,8 @@ export {
     workWithOverlay,
     mapEnterToButton,
     getLocation,
+    getLocationWithoutQuery,
     showOverlay,
-    hideOverlay
+    hideOverlay,
+    fetchXhr
 }

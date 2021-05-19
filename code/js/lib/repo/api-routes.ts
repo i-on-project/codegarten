@@ -86,6 +86,15 @@ const assignmentRoutes = {
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments`
 }
 
+const teamRoutes = {
+    getPaginatedTeamsUri: (orgId: number, classroomNumber: number, page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams?page=${page}&limit=${limit}`,
+    getTeamsUri: (orgId: number, classroomNumber: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams`,
+    getTeamUri: (orgId: number, classroomNumber: number, teamNumber: number): string => 
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams/${teamNumber}`
+}
+
 export {
     getJsonRequestOptions,
     getUrlEncodedRequestOptions,
@@ -96,5 +105,6 @@ export {
     userRoutes,
     orgRoutes,
     classroomRoutes,
-    assignmentRoutes
+    assignmentRoutes,
+    teamRoutes
 }

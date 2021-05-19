@@ -40,6 +40,8 @@ function handlerGetUserById(req: Request, res: Response, next: NextFunction) {
 }
 
 function handlerGetClassroomUsers(req: Request, res: Response, next: NextFunction) {
+    if (!req.xhr) return next()
+
     const orgId = Number(req.params.orgId)
     const classroomNumber = Number(req.params.classroomNumber)
 
