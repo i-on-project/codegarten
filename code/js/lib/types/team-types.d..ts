@@ -6,6 +6,7 @@ type Team = {
     organization: string,
     organizationUri: string,
     avatarUri: string,
+    gitHubUri?: string,
 
     canManage?: boolean,
 }

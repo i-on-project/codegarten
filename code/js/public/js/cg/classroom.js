@@ -147,12 +147,17 @@ function updatePagination(cb) {
     $('#prevPage').on('click', (event) => {
         const target = event.target
         if (target.classList.contains('disabled')) return
-        cb($('#prevPage').data('page'))
+        workWithOverlay($('#loadingClassroomContentOverlay')[0], 
+            cb($('#prevPage').data('page'))
+        )
+        
     })
     $('#nextPage').on('click', (event) => {
         const target = event.target
         if (target.classList.contains('disabled')) return
-        cb($('#nextPage').data('page'))
+        workWithOverlay($('#loadingClassroomContentOverlay')[0], 
+            cb($('#nextPage').data('page'))
+        )
     })
 }
 

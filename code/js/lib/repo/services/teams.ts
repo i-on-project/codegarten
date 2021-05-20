@@ -54,6 +54,7 @@ function getTeam(orgId: number, classroomNumber: number, teamNumber: number, acc
             const sirenActions: SirenAction[] = Array.from(entity.actions || [])
             const orgUri = getSirenLink(links, 'organizationGitHub').href
             const avatarUri = getSirenLink(links, 'avatar').href
+            const gitHubUri = getSirenLink(links, 'github').href
 
             return {
                 id: entity.properties.id,
@@ -63,6 +64,7 @@ function getTeam(orgId: number, classroomNumber: number, teamNumber: number, acc
                 organization: entity.properties.organization,
                 organizationUri: orgUri,
                 avatarUri: avatarUri,
+                gitHubUri: gitHubUri,
             
                 canManage: getSirenAction(sirenActions, 'edit-team') != null,
             } as Team

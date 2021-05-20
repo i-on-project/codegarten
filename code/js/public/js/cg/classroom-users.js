@@ -1,8 +1,8 @@
-import { alertMsg, getLocation, showOverlay, hideOverlay, workWithOverlay, fetchXhr } from './common.js'
+import { alertMsg, showOverlay, hideOverlay, workWithOverlay, fetchXhr, getLocationWithoutQuery } from './common.js'
 
 function getUsers(content, page, updatePaginationFn) {
     content.innerHTML = ''
-    const promise = fetchXhr(`${getLocation()}?page=${page}`)
+    const promise = fetchXhr(`${getLocationWithoutQuery()}?page=${page}`)
         .then(res => {
             if (res.status != 200) return alertMsg('Error while getting users')
             return res.text()
@@ -34,7 +34,7 @@ function getUsers(content, page, updatePaginationFn) {
 function removeUser(userId) {
     const loadingOverlay = $(`#user${userId}LoadingOverlay`)[0]
     
-    workWithOverlay(loadingOverlay, fetch(`${getLocation()}/${userId}`, { method: 'DELETE' })
+    workWithOverlay(loadingOverlay, fetch(`${getLocationWithoutQuery()}/${userId}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(res => {
             if (res.wasRemoved) {
@@ -54,7 +54,7 @@ function updateUserRole(elem) {
     const dropdownButton = $(`#user${userId}RoleDropdownButton`)[0]
 
     const overlay = $(`#user${userId}LoadingOverlay`)[0]
-    workWithOverlay(overlay, fetch(`${getLocation()}/${userId}`, {
+    workWithOverlay(overlay, fetch(`${getLocationWithoutQuery()}/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

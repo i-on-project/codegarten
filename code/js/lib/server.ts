@@ -31,6 +31,7 @@ export function init(portArg: number, done: () => void = null): void {
     const app = express()
     app.set('view engine', 'hbs')
     app.set('views', './lib/views')
+    app.set('view options', { layout: 'common/layout' })
 
     app.use(express.static('public'))
     app.use(express.json())
@@ -69,19 +70,17 @@ export function init(portArg: number, done: () => void = null): void {
 
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         res.status(err.status || 500)
-        res.render('error-page', {
+        res.render('common/error-page', {
             'status': err.status,
-            'message': err.message,
-            'user': req.user
+            'message': err.message
         })
     })
 
     app.use((req: Request, res: Response, next: NextFunction) => {
         res.status(404)
-        res.render('error-page', {
+        res.render('common/error-page', {
             'status': 404,
-            'message': 'Sorry, that page does not exist!',
-            'user': req.user
+            'message': 'Sorry, that page does not exist!'
         })
     })
 

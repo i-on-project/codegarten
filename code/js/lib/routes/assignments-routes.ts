@@ -23,7 +23,7 @@ function handlerGetAssignments(req: Request, res: Response, next: NextFunction) 
         .then(assignments => {
             if (!assignments) return next()
 
-            res.render('assignments-fragment', {
+            res.render('classroom-fragments/classroom-assignments', {
                 layout: false,
 
                 assignments: assignments.assignments,

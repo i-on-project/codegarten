@@ -3,7 +3,8 @@
 import { userRoutes, getJsonRequestOptions, getSirenLink, getSirenAction } from '../api-routes'
 import fetch from 'node-fetch'
 
-const USER_LIST_LIMIT = 10
+const CLASSROOM_USER_LIST_LIMIT = 1
+const TEAM_USER_LIST_LIMIT = 8
 
 function getAuthenticatedUser(accessToken: AccessToken): Promise<AuthenticatedUser> {
     return fetch(userRoutes.getAuthenticatedUserUri, getJsonRequestOptions('GET', accessToken.token))
@@ -41,7 +42,7 @@ function getUserById(userId: number, accessToken: string): Promise<User>  {
 }
 
 function getClassroomUsers(orgId: number, classroomNumber: number, authUser: AuthenticatedUser, page: number, accessToken: string): Promise<Users>  {
-    return fetch(userRoutes.getClassroomUsersUri(orgId, classroomNumber, page, USER_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
+    return fetch(userRoutes.getClassroomUsersUri(orgId, classroomNumber, page, CLASSROOM_USER_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
         .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
@@ -65,9 +66,39 @@ function getClassroomUsers(orgId: number, classroomNumber: number, authUser: Aut
             return {
                 users: users,
                 page: page,
-                isLastPage: USER_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
+                isLastPage: CLASSROOM_USER_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
 
                 canManage: getSirenAction(sirenActions, 'add-user-to-classroom') != null,
+            } as Users
+        })
+}
+
+function getTeamUsers(orgId: number, classroomNumber: number, teamNumber: number, authUser: AuthenticatedUser, page: number, accessToken: string): Promise<Users>  {
+    return fetch(userRoutes.getTeamUsersUri(orgId, classroomNumber, teamNumber, page, TEAM_USER_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
+        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(collection => {
+            if (!collection) return null
+
+            const entities = Array.from(collection.entities) as any[]
+            const sirenActions: SirenAction[] = Array.from(collection.actions || [])
+
+            const users = entities.map(entity => {
+                const userLinks: SirenLink[] = Array.from(entity.links)
+
+                return {
+                    id: entity.properties.id,
+                    username: entity.properties.name,
+                    avatarUri: getSirenLink(userLinks, 'avatar').href,
+                    isAuthUser: entity.properties.id == authUser.id
+                } as User
+            })
+
+            return {
+                users: users,
+                page: page,
+                isLastPage: TEAM_USER_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
+
+                canManage: getSirenAction(sirenActions, 'add-user-to-team') != null,
             } as Users
         })
 }
@@ -100,12 +131,21 @@ function removeUserFromClassroom(orgId: number, classroomNumber: number, userId:
         })
 }
 
+function removeUserFromTeam(orgId: number, classroomNumber: number, teamNumber: number, userId: number, accessToken: string) : Promise<ApiResponse> {
+    return fetch(userRoutes.getTeamUserUri(orgId, classroomNumber, teamNumber, userId), getJsonRequestOptions('DELETE', accessToken))
+        .then(res => {
+            return { status: res.status } as ApiResponse
+        })
+}
+
 export {
     getAuthenticatedUser,
     getUserById,
     getClassroomUsers,
+    getTeamUsers,
     editUser,
     editClassroomUserMembership,
     deleteUser,
-    removeUserFromClassroom
+    removeUserFromClassroom,
+    removeUserFromTeam
 }

@@ -66,7 +66,11 @@ const userRoutes = {
     getClassroomUsersUri: (orgId: number, classroomNumber: number, page: number, limit: number): string => 
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/users?page=${page}&limit=${limit}`, 
     getClassroomUserUri: (orgId: number, classroomNumber: number, userId: number): string => 
-        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/users/${userId}`
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/users/${userId}`,
+    getTeamUsersUri: (orgId: number, classroomNumber: number, teamNumber: number, page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams/${teamNumber}/users?page=${page}&limit=${limit}`, 
+    getTeamUserUri: (orgId: number, classroomNumber: number, teamNumber: number, userId: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams/${teamNumber}/users/${userId}`, 
 }
 
 const orgRoutes = {

@@ -2,11 +2,15 @@
 
 import {NextFunction, Request, Response, Router as expressRouter} from 'express'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { createTeam, deleteTeam, getTeams } from '../repo/services/teams'
+import { createTeam, deleteTeam, editTeam, getTeam, getTeams } from '../repo/services/teams'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/teams', requiresAuth, handlerGetClassroomTeams)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/teams/:teamNumber', requiresAuth, handlerGetTeam)
+
+router.put('/orgs/:orgId/classrooms/:classroomNumber/teams/:teamNumber', requiresAuth, handlerEditTeam)
+
 router.post('/orgs/:orgId/classrooms/:classroomNumber/teams', requiresAuth, handlerCreateTeam)
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/teams/:teamNumber', requiresAuth, handlerDeleteTeam)
 
@@ -25,7 +29,7 @@ function handlerGetClassroomTeams(req: Request, res: Response, next: NextFunctio
         .then(teams => {
             if (!teams) return next()
 
-            res.render('classroom-teams-fragment', {
+            res.render('classroom-fragments/classroom-teams', {
                 layout: false,
 
                 teams: teams.teams,
@@ -48,8 +52,26 @@ function handlerGetClassroomTeams(req: Request, res: Response, next: NextFunctio
             })
         })
         .catch(err => next(INTERNAL_ERROR))
+}
 
-    
+function handlerGetTeam(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const teamNumber = Number(req.params.teamNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(teamNumber)) return next()
+
+    getTeam(orgId, classroomNumber, teamNumber, req.user.accessToken.token)
+        .then(team => {
+            if (!team) return next()
+
+            res.render('team', {
+                team: team,
+                orgId: orgId,
+                classroomNumber: classroomNumber
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
 }
 
 function handlerCreateTeam(req: Request, res: Response, next: NextFunction) {
@@ -90,6 +112,46 @@ function handlerCreateTeam(req: Request, res: Response, next: NextFunction) {
             res.send({
                 wasCreated: false,
                 message: 'Failed to create team'
+            })
+        })
+}
+
+function handlerEditTeam(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const teamNumber = Number(req.params.teamNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(teamNumber)) return next()
+
+    const name = req.body.name
+
+    if (!name) { 
+        return res.send({
+            wasEdited: false,
+            message: 'Name can\'t be empty'
+        })
+    }
+
+    editTeam(orgId, classroomNumber, teamNumber, name, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    message = 'Team was edited successfully'
+                    break
+                default:
+                    message = 'Failed to edit team'
+            }
+
+            res.send({
+                wasEdited: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasEdited: false,
+                message: 'Failed to edit team'
             })
         })
 }

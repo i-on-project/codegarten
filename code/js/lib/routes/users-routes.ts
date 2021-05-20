@@ -2,19 +2,21 @@
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getUserById, getClassroomUsers, deleteUser, editUser ,removeUserFromClassroom, editClassroomUserMembership } from '../repo/services/users'
+import { getUserById, getClassroomUsers, deleteUser, editUser ,removeUserFromClassroom, editClassroomUserMembership, getTeamUsers, removeUserFromTeam } from '../repo/services/users'
 
 const router = expressRouter()
 
 router.get('/user', requiresAuth, handlerGetAuthenticatedUser)
 router.get('/users/:userId', requiresAuth, handlerGetUserById)
 router.get('/orgs/:orgId/classrooms/:classroomNumber/users', requiresAuth, handlerGetClassroomUsers)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/teams/:teamNumber/users', requiresAuth, handlerGetTeamUsers)
 
 router.put('/user', requiresAuth, handlerEditUser)
 router.put('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerEditClassroomUserMembership)
 
 router.delete('/user', requiresAuth, handlerDeleteUser)
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/users/:userId', requiresAuth, handlerRemoveClassroomUser)
+router.delete('/orgs/:orgId/classrooms/:classroomNumber/teamS/:teamNumber/users/:userId', requiresAuth, handlerRemoveTeamUser)
 
 function handlerGetAuthenticatedUser(req: Request, res: Response, next: NextFunction) {
     res.render('auth-user-profile')
@@ -53,7 +55,41 @@ function handlerGetClassroomUsers(req: Request, res: Response, next: NextFunctio
         .then(users => {
             if (!users) return next()
 
-            res.render('classroom-users-fragment', {
+            res.render('classroom-fragments/classroom-users', {
+                layout: false,
+
+                users: users.users,
+                isEmpty: users.users.length == 0,
+                page: users.page,
+
+                hasPrev: users.page > 0,
+                prevPage: users.page > 0 ? users.page - 1 : 0,
+
+                hasNext: !users.isLastPage,
+                nextPage: users.page + 1,
+                
+                canManage: users.canManage
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetTeamUsers(req: Request, res: Response, next: NextFunction) {
+    if (!req.xhr) return next()
+
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const teamNumber = Number(req.params.teamNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(teamNumber)) return next()
+
+    const page = Number(req.query.page) || 0
+    
+    getTeamUsers(orgId, classroomNumber, teamNumber, req.user, page >= 0 ? page : 0, req.user.accessToken.token)
+        .then(users => {
+            if (!users) return next()
+
+            res.render('team-fragments/team-users', {
                 layout: false,
 
                 users: users.users,
@@ -188,6 +224,42 @@ function handlerRemoveClassroomUser(req: Request, res: Response, next: NextFunct
                     if (userId == req.user.id) {
                         message = `/orgs/${orgId}/classrooms`
                         req.flash('success', 'Classroom was successfully left')
+                    } else {
+                        message = 'User was successfully removed'
+                    }
+                    break
+                default:
+                    message = 'Failed to remove user'
+            }
+
+            res.send({
+                wasRemoved: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasRemoved: false,
+                message: 'Failed to remove user'
+            })
+        })
+}
+
+function handlerRemoveTeamUser(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const teamNumber = Number(req.params.teamNumber)
+    const userId = Number(req.params.userId)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(teamNumber) || isNaN(userId)) return next()
+
+    removeUserFromTeam(orgId, classroomNumber, teamNumber, userId, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    if (userId == req.user.id) {
+                        req.flash('success', 'Team was successfully left')
                     } else {
                         message = 'User was successfully removed'
                     }

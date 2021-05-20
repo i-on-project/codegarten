@@ -5,6 +5,7 @@ import * as userProfile from './user-profile.js'
 import * as orgs from './orgs.js'
 import * as classrooms from './classrooms.js'
 import * as classroom from './classroom.js'
+import * as team from './team.js'
 
 function setup() {
     // Close alert
@@ -17,4 +18,5 @@ function setup() {
     orgs.setup()
     classrooms.setup()
     classroom.setup()
+    team.setup()
 }

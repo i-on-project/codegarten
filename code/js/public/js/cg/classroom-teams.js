@@ -1,8 +1,8 @@
-import { alertMsg, getLocation, hideOverlay, showOverlay, mapEnterToButton, workWithLoading, workWithOverlay, fetchXhr } from './common.js'
+import { alertMsg, getLocationWithoutQuery, hideOverlay, showOverlay, mapEnterToButton, workWithLoading, workWithOverlay, fetchXhr } from './common.js'
 
 function getTeams(content, page, updatePaginationFn) {
     content.innerHTML = ''
-    const promise = fetchXhr(`${getLocation()}?page=${page}`)
+    const promise = fetchXhr(`${getLocationWithoutQuery()}?page=${page}`)
         .then(res => {
             if (res.status != 200) return alertMsg('Error while getting teams')
             return res.text()
@@ -57,7 +57,7 @@ function createTeam(teamName, createTeamButton) {
     teamName.value = ''
 
     workWithLoading(
-        fetch(getLocation(), { 
+        fetch(getLocationWithoutQuery(), { 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -76,7 +76,7 @@ function createTeam(teamName, createTeamButton) {
 
 function deleteTeam(teamNumber) {
     const loadingOverlay = $(`#team${teamNumber}LoadingOverlay`)[0]
-    workWithOverlay(loadingOverlay, fetch(`${getLocation()}/${teamNumber}`, { method: 'DELETE' })
+    workWithOverlay(loadingOverlay, fetch(`${getLocationWithoutQuery()}/${teamNumber}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(res => {
             hideOverlay(loadingOverlay)
