@@ -70,7 +70,7 @@ class TeamsDb(
 
     fun getTeamsOfClassroomOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, limit: Int): List<Team> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return getTeamsOfClassroomOfUser(classroomId, page, limit, userId)
+        return getTeamsOfClassroomOfUser(classroomId, userId, page, limit)
     }
 
     fun getTeamsOfClassroomOfUserCount(orgId: Int, classroomNumber: Int, userId: Int): Int {
