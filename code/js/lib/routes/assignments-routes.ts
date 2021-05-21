@@ -3,11 +3,14 @@
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getAssignments } from '../repo/services/assignments'
+import { getAssignments, getAssignment, createAssignment } from '../repo/services/assignments'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerGetAssignments)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber', requiresAuth, handlerGetAssignment)
+
+router.post('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerCreateAssignment)
 
 function handlerGetAssignments(req: Request, res: Response, next: NextFunction) {
     if (!req.xhr) return next()
@@ -46,6 +49,75 @@ function handlerGetAssignments(req: Request, res: Response, next: NextFunction) 
             })
         })
         .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetAssignment(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
+
+    getAssignment(orgId, classroomNumber, assignmentNumber, req.user.accessToken.token)
+        .then(assignment => {
+            if (!assignment) return next()
+
+            res.render('assignment', {
+                assignment: assignment,
+
+                classroomNumber: classroomNumber,
+
+                organization: assignment.organization,
+                orgId: orgId,
+                orgUri: assignment.organizationUri,
+                
+                canManage: assignment.canManage
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerCreateAssignment(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber)) return next()
+
+    const name = req.body.name
+    const description = req.body.description
+    const type = req.body.type
+    const repoPrefix = req.body.repoPrefix
+    const repoTemplate = req.body.repoTemplate
+
+    if (!name) return res.send({wasCreated: false, message: 'Name was not specified'})
+    if (!type) return res.send({wasCreated: false, message: 'Type was not specified'})
+    if (!repoPrefix) return res.send({wasCreated: false, message: 'Repository prefix was not specified'})
+
+    createAssignment(orgId, classroomNumber, name, description, type, repoPrefix, repoTemplate, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 201: 
+                    message = `/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${result.content.number}`
+                    break
+                case 409:
+                    message = 'Assignment name already exists'
+                    break
+                default:
+                    message = 'Failed to create assignment'
+            }
+
+            res.send({
+                wasCreated: result.status == 201,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasCreated: false,
+                message: 'Failed to create assignment'
+            })
+        })
 }
 
 export = router

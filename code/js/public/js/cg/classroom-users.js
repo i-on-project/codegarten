@@ -49,8 +49,10 @@ function removeUser(userId) {
 }
 
 function updateUserRole(elem) {
-    const userId = elem.parentElement.dataset.userId
-    const role = elem.dataset.role
+    const option = elem.tagName == 'I' ? elem.parentElement : elem // Get the anchor element depending on the clicked element
+
+    const userId = option.parentElement.dataset.userId
+    const role = option.dataset.role
     const dropdownButton = $(`#user${userId}RoleDropdownButton`)[0]
 
     const overlay = $(`#user${userId}LoadingOverlay`)[0]
@@ -65,10 +67,10 @@ function updateUserRole(elem) {
         .then(res => {
             if (!res.wasEdited) alertMsg(res.message)
             else {
-                elem.classList.add('active')
+                option.classList.add('active')
                 alertMsg(res.message, 'success')
                 if (role == 'teacher') {
-                    elem.nextElementSibling.classList.remove('active')
+                    option.nextElementSibling.classList.remove('active')
                     dropdownButton.classList.remove('btn-outline-secondary')
                     dropdownButton.classList.add('btn-outline-success')
                     dropdownButton.innerHTML = `
@@ -76,7 +78,7 @@ function updateUserRole(elem) {
                     Teacher
                     `
                 } else {
-                    elem.previousElementSibling.classList.remove('active')
+                    option.previousElementSibling.classList.remove('active')
                     dropdownButton.classList.add('btn-outline-secondary')
                     dropdownButton.classList.remove('btn-outline-success')
                     dropdownButton.innerHTML = `

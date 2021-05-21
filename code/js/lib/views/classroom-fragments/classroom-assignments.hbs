@@ -8,15 +8,47 @@
                 </button>
             </div>
             <div class="modal-body">
+                <div class="form-group text-center">
+                    <label for="assignmentTypeButton" class="col-form-label">Type:</label>
+                    <button id="assignmentTypeButton" class="btn btn-sm btn-outline-dark dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" 
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user mr-2"></i>
+                        Individual
+                    </button>
+                    <div class="dropdown-menu assignment-type" id="assignmentTypeDropdown">
+                        <a class="dropdown-item active" href="#" data-type="individual">
+                            <i class="fas fa-user"></i>
+                            Individual
+                        </a>
+                        <a class="dropdown-item" href="#" data-type="group">
+                            <i class="fas fa-users"></i>
+                            Group
+                        </a>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="assignmentName" class="col-form-label">Name:</label>
                     <input type="search" class="form-control" placeholder="Assignment name" id="assignmentName" maxlength="64">
-                    <div class="invalid-feedback" id="assignmentNameFeedback"></div>
+                    <div class="invalid-feedback" id="assignmentNameFeedback"><!-- Name too long or name not provided --></div>
                 </div>
+
                 <div class="form-group">
                     <label for="assignmentDescription" class="col-form-label">Description:</label>
                     <input type="search" class="form-control" placeholder="Assignment description" id="assignmentDescription" maxlength="256">
                     <div class="invalid-feedback" id="assignmentDescriptionFeedback">Description too long</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="repoPrefix" class="col-form-label">Repository prefix:</label>
+                    <input type="search" class="form-control" placeholder="Repository prefix" id="repoPrefix" maxlength="64">
+                    <div class="invalid-feedback" id="repoPrefixFeedback">Prefix too long</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="repoTemplate" class="col-form-label">Repository template:</label>
+                    <input type="search" class="form-control" placeholder="Repository template" id="repoTemplate">
+                    <div class="invalid-feedback" id="repoTemplateFeedback">Invalid repository name</div>
                 </div>
             </div>
             <div class="modal-footer">

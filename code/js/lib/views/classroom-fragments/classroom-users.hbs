@@ -48,13 +48,13 @@
                 {{#if ../canManage}}
                     <!-- Role Dropdown Button -->
                     {{#if isTeacher}}
-                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-success dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-success dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" 
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
                             <i class="fas fa-chalkboard-teacher mr-2"></i>
                             Teacher
                         </button>
                     {{else}}
-                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" id="dropdownMenuButton" 
+                        <button id="user{{id}}RoleDropdownButton" class="btn btn-sm btn-outline-secondary dropdown-toggle font-weight-bold d-inline-flex justify-content-center align-items-center mr-1" type="button" 
                             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" {{#if isAuthUser}}disabled{{/if}}>
                             <i class="fas fa-user-graduate mr-2"></i>
                             Student

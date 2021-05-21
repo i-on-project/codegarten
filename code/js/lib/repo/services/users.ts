@@ -3,7 +3,7 @@
 import { userRoutes, getJsonRequestOptions, getSirenLink, getSirenAction } from '../api-routes'
 import fetch from 'node-fetch'
 
-const CLASSROOM_USER_LIST_LIMIT = 1
+const CLASSROOM_USER_LIST_LIMIT = 10
 const TEAM_USER_LIST_LIMIT = 8
 
 function getAuthenticatedUser(accessToken: AccessToken): Promise<AuthenticatedUser> {

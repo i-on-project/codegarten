@@ -69,6 +69,7 @@ function handlerGetClassroom(req: Request, res: Response, next: NextFunction) {
                 canManage: classroom.canManage
             })
         })
+        .catch(err => next(INTERNAL_ERROR))
 }
 
 function handlerGetClassroomDefault(req: Request, res: Response, next: NextFunction) {

@@ -87,7 +87,9 @@ const assignmentRoutes = {
     getPaginatedAssignmentsUri: (orgId: number, classroomNumber: number, page: number, limit: number): string =>
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments?page=${page}&limit=${limit}`,
     getAssignmentsUri: (orgId: number, classroomNumber: number): string =>
-        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments`
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments`,
+    getAssignmentUri: (orgId: number, classroomNumber: number, assignmentNumber: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}`
 }
 
 const teamRoutes = {

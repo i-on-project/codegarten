@@ -51,6 +51,91 @@ function getAssignments(orgId: number, classroomNumber: number, page: number, ac
         })
 }
 
+function getAssignment(orgId: number, classroomNumber: number, assignmentNumber: number, accessToken: string): Promise<Assignment> {
+    return fetch(assignmentRoutes.getAssignmentUri(orgId, classroomNumber, assignmentNumber), getJsonRequestOptions('GET', accessToken))
+        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(entity => {
+            if (!entity) return null
+
+            const links: SirenLink[] = Array.from(entity.links)
+            const sirenActions: SirenAction[] = Array.from(entity.actions || [])
+            const orgUri = getSirenLink(links, 'organizationGitHub').href
+
+            return {
+                id: entity.properties.id,
+                inviteCode: entity.properties.inviteCode,
+                number: entity.properties.number,
+                name: entity.properties.name,
+                description: entity.properties.description,
+                isGroup: entity.properties.type == 'group',
+                repoPrefix: entity.properties.repoPrefix,
+                repoTemplate: entity.properties.repoTemplate,
+
+                organization: entity.properties.organization,
+                organizationUri: orgUri,
+
+                classroom: entity.properties.classroom,
+            
+                canManage: getSirenAction(sirenActions, 'edit-assignment') != null,
+            } as Assignment
+        })
+}
+
+function createAssignment(orgId: number, classroomNumber: number, name: string, description: string, 
+    type: string, repoPrefix: string, repoTemplate: string, accessToken: string): Promise<ApiResponse> {
+        
+    //TODO: Change this when API changes for resource creation go through
+    return fetch(
+        assignmentRoutes.getAssignmentsUri(orgId, classroomNumber), 
+        getJsonRequestOptions('POST', accessToken, { 
+            name: name, 
+            description: description,
+            type: type,
+            repoPrefix: repoPrefix,
+            repoTemplate: repoTemplate
+        })
+    )
+        .then(res => {
+            if (res.status == 201) {
+                // Classroom was created
+                return fetch(res.headers.get('Location'), getJsonRequestOptions('GET', accessToken))
+                    .then(res => res.json())
+                    .then(entity => {
+                        const links: SirenLink[] = Array.from(entity.links)
+                        const orgUri = getSirenLink(links, 'organizationGitHub').href
+
+                        const assignment =  {
+                            id: entity.properties.id,
+                            inviteCode: entity.properties.inviteCode,
+                            number: entity.properties.number,
+                            name: entity.properties.name,
+                            description: entity.properties.description,
+                            isGroup: entity.properties.type == 'group',
+        
+                            organization: entity.properties.organization,
+                            organizationUri: orgUri,
+        
+                            classroom: entity.properties.classroom,
+                        
+                            canManage: null,
+                        } as Assignment
+
+                        return {
+                            status: res.status,
+                            content: assignment,
+                        } as ApiResponse
+                    })
+            }
+
+            return {
+                status: res.status,
+                content: null,
+            } as ApiResponse
+        })
+}
+
 export {
     getAssignments,
+    getAssignment,
+    createAssignment
 }

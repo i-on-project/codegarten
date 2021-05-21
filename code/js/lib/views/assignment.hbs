@@ -1,0 +1,17 @@
+<div class="row d-flex align-items-center mb-2">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms/{{classroomNumber}}/assignments">
+            <i class="fas fa-angle-double-left"></i>
+            Classroom Assignments
+        </a>
+        <h4 class="text-muted mt-1">
+            <a href="{{orgUri}}" target="_blank" style="color: inherit;">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                {{organization}}
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+        </h4>
+        <h1 id="assignmentName">{{assignment.name}}</h1>
+        <h5 class="text-muted font-weight-light" id="assignmentDescription">{{assignment.description}}</h5>
+    </div>
+</div>

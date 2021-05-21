@@ -36,8 +36,6 @@ function createClassroom(createClassroomButton, classroomName, classroomDescript
 
     createClassroomButton.blur()
     $('#createClassroomForm').modal('hide')
-    classroomName.value = ''
-    classroomDescription.value = ''
 
     workWithLoading(
         fetch(getLocation(), { 
