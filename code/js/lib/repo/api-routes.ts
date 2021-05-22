@@ -101,6 +101,13 @@ const teamRoutes = {
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/teams/${teamNumber}`
 }
 
+const participationRoutes = {
+    getUserParticipationInAssignmentUri: (assignmentId: number): string =>
+        `${API_HOST}/user/assignments/${assignmentId}/participation`,
+    getAssignmentParticipantUri: (orgId: number, classroomNumber: number, assignmentNumber: number, participantId: number): string => 
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants/${participantId}`
+}
+
 export {
     getJsonRequestOptions,
     getUrlEncodedRequestOptions,
@@ -112,5 +119,6 @@ export {
     orgRoutes,
     classroomRoutes,
     assignmentRoutes,
-    teamRoutes
+    teamRoutes,
+    participationRoutes
 }

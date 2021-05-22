@@ -134,8 +134,36 @@ function createAssignment(orgId: number, classroomNumber: number, name: string, 
         })
 }
 
+function editAssignment(orgId: number, classroomNumber: number, assignmentNumber: number, 
+    newName: string, newDescription: string, accessToken: string): Promise<ApiResponse> {
+    
+    return fetch(
+        assignmentRoutes.getAssignmentUri(orgId, classroomNumber, assignmentNumber), 
+        getJsonRequestOptions('PUT', accessToken, {
+            name: newName,
+            description: newDescription
+        }))
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
+function deleteAssignment(orgId: number, classroomNumber: number, assignmentNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(assignmentRoutes.getAssignmentUri(orgId, classroomNumber, assignmentNumber), getJsonRequestOptions('DELETE', accessToken))
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
+
 export {
     getAssignments,
     getAssignment,
-    createAssignment
+    createAssignment,
+    editAssignment,
+    deleteAssignment
 }

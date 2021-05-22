@@ -3,14 +3,21 @@
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
 
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
-import { getAssignments, getAssignment, createAssignment } from '../repo/services/assignments'
+import { getAssignments, getAssignment, createAssignment, editAssignment, deleteAssignment } from '../repo/services/assignments'
+import { getUserParticipationInAssignment } from '../repo/services/participants'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerGetAssignments)
-router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber', requiresAuth, handlerGetAssignment)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber', requiresAuth, handlerGetAssignmentDefault)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants', requiresAuth, handlerGetAssignment)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries', requiresAuth, handlerGetAssignment)
 
 router.post('/orgs/:orgId/classrooms/:classroomNumber/assignments', requiresAuth, handlerCreateAssignment)
+
+router.put('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber', requiresAuth, handlerEditAssignment)
+
+router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber', requiresAuth, handlerDeleteAssignment)
 
 function handlerGetAssignments(req: Request, res: Response, next: NextFunction) {
     if (!req.xhr) return next()
@@ -59,22 +66,45 @@ function handlerGetAssignment(req: Request, res: Response, next: NextFunction) {
     if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
 
     getAssignment(orgId, classroomNumber, assignmentNumber, req.user.accessToken.token)
-        .then(assignment => {
-            if (!assignment) return next()
+        .then(async (res) => {
+            if (!res) return next()
 
+            return {
+                assignment: res,
+                participation: await getUserParticipationInAssignment(res.id, req.user.accessToken.token)
+            }
+        })
+        .then(userAssignment => {
+            if (!userAssignment) return next()
+            const assignment = userAssignment.assignment
+            const participation = userAssignment.participation
+
+            if (!assignment || !participation) return next()
+            
             res.render('assignment', {
                 assignment: assignment,
+                participantId: participation.id,
 
                 classroomNumber: classroomNumber,
 
                 organization: assignment.organization,
                 orgId: orgId,
                 orgUri: assignment.organizationUri,
-                
+
                 canManage: assignment.canManage
             })
         })
         .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetAssignmentDefault(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
+    
+    res.redirect(`/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants`)
 }
 
 function handlerCreateAssignment(req: Request, res: Response, next: NextFunction) {
@@ -116,6 +146,82 @@ function handlerCreateAssignment(req: Request, res: Response, next: NextFunction
             res.send({
                 wasCreated: false,
                 message: 'Failed to create assignment'
+            })
+        })
+}
+
+function handlerEditAssignment(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
+
+    const name = req.body.name
+    const description = req.body.description
+
+    if (!name && !description) { 
+        return res.send({
+            wasEdited: false,
+            message: 'You need to change at least one field'
+        })
+    }
+
+    editAssignment(orgId, classroomNumber, assignmentNumber, name, description, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    message = 'Assignment edited successfully'
+                    break
+                case 409:
+                    message = 'Assignment name already exists'
+                    break
+                default:
+                    message = 'Failed to edit assignment'
+            }
+
+            res.send({
+                wasEdited: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasEdited: false,
+                message: 'Failed to edit assignment'
+            })
+        })
+}
+
+function handlerDeleteAssignment(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
+
+    deleteAssignment(orgId, classroomNumber, assignmentNumber, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    req.flash('success', 'Assignment was deleted successfully')
+                    message = `/orgs/${orgId}/classrooms/${classroomNumber}/assignments`
+                    break
+                default:
+                    message = 'Failed to delete assignment'
+            }
+
+            res.send({
+                wasDeleted: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasDeleted: false,
+                message: 'Failed to delete assignment'
             })
         })
 }
