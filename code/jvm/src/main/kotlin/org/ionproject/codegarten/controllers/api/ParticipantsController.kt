@@ -416,9 +416,9 @@ class ParticipantsController(
             usersDb.deleteUserFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
         } else {
             if (userClassroom.role != TEACHER) {
-                // TODO: Should be tryGetUserTeamInAssignment to not respond with 404 early, since the user might not have permission
-                val team = teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
-                if (team.tid != participantId) throw AuthorizationException("Not enough permissions to remove team")
+                val team = teamsDb.tryGetUserTeamInAssignment(assignment.aid, user.uid)
+                if (!team.isPresent || team.get().tid != participantId)
+                    throw AuthorizationException("Not enough permissions to remove team")
             }
 
             teamsDb.deleteTeamFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
