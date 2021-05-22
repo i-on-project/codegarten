@@ -337,7 +337,8 @@ class DeliveriesController(
         if (input.tag == null) throw InvalidInputException("Missing tag")
 
         val dueDate = try {
-            OffsetDateTime.parse(input.dueDate)
+            if (input.dueDate != null) OffsetDateTime.parse(input.dueDate)
+            else null
         } catch (ex: DateTimeParseException) {
             throw InvalidInputException("Failed to parse due date")
         }
