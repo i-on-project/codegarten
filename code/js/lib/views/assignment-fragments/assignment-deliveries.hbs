@@ -1,0 +1,80 @@
+<div class="modal fade" id="createDeliveryForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create delivery</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="deliveryTag" class="col-form-label">Tag name:</label>
+                    <input type="search" class="form-control" placeholder="Delivery tag name" id="deliveryTag" maxlength="64">
+                    <div class="invalid-feedback" id="deliveryTagFeedback"><!-- Tag too long or tag not provided --></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="deliveryDueDate" class="col-form-label">Due date:</label>
+                    <input type="datetime-local" class="form-control" id="deliveryDueDate">
+                    <div class="invalid-feedback" id="deliveryDueDateFeedback">Invalid date</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="createDeliveryButton">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if canManage}}
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#createDeliveryForm">
+            <i class="fas fa-plus"></i>
+            Create new delivery
+        </button>
+    </div>
+    <hr>
+{{/if}}
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No deliveries available</h5>
+{{else}}
+    {{#each deliveries}}
+        <div class="row rounded bg-light p-3">
+            <div class="col-md-auto d-flex justify-content-center align-items-center">
+                <span class="fa-stack fa-2x">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fas fa-stack-1x fa-sticky-note"></i>
+                </span>
+            </div>
+            <div class="col-md-8">
+                <h3 class="d-inline-block text-truncate pb-1" style="max-width: 100%;">{{tag}}</h3>
+                <br>
+                <h6 class="text-muted d-inline-block text-truncate pb-1" style="max-width: 100%;">{{dueDate}}</h6>
+            </div>
+            <!-- TODO: This section depends on whether the request is made by a student or a teacher    
+                <div class="col-md d-flex align-items-center">
+                    <a class="btn btn-primary btn-block" href="/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/assignments/{{../assignmentNumber}}/deliveries/{{number}}">View delivery</a>
+                </div>     
+            -->       
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

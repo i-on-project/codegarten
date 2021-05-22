@@ -1,0 +1,74 @@
+<!--
+{{#if canManage}}
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#addUserForm">
+            <i class="fas fa-plus"></i>
+            Add user
+        </button>
+    </div>
+    <hr>
+{{/if}}
+-->
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No participants available</h5>
+{{else}}
+    {{#each participants}}
+        <div class="row rounded bg-light" style="position: relative;">
+            {{#if ../canManage}}
+                <!-- Overlays -->
+                <div id="participant{{id}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="spinner-border"></div>
+                    <h4 class="ml-3">Please wait...</h4>
+                </div>
+                <div id="removeParticipant{{id}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="col-sm-auto">
+                        <h5 class="font-weight-bold">
+                            Are you sure you want to remove the participant from the assignment?
+                        </h5>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveParticipant" data-participant-id="{{id}}">Yes</button>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveParticipant">No</button>
+                    </div>
+                </div>
+            {{/if}}
+
+            <!-- Participant Info -->
+            <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
+                <a href="participants/{{id}}">
+                    <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
+                </a>
+            </div>
+            <div class="col-md-9 p-3">
+                <h3 class="d-inline-block text-truncate pb-1" style="max-width: 100%;">{{name}}</h3>
+                
+                <br>
+                {{#if ../canManage}}
+                    <a class="text-danger removeParticipantButton" href="#">
+                        <h6 class="d-inline" data-participant-id="{{id}}">Remove</h6>
+                    </a>
+                {{/if}}
+            </div>
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

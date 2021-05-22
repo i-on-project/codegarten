@@ -104,8 +104,21 @@ const teamRoutes = {
 const participationRoutes = {
     getUserParticipationInAssignmentUri: (assignmentId: number): string =>
         `${API_HOST}/user/assignments/${assignmentId}/participation`,
+    getPaginatedAssignmentParticipantsUri: (orgId: number, classroomNumber: number, assignmentNumber: number, 
+        page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants?page=${page}&limit=${limit}`,
     getAssignmentParticipantUri: (orgId: number, classroomNumber: number, assignmentNumber: number, participantId: number): string => 
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants/${participantId}`
+}
+
+const deliveryRoutes = {
+    getPaginatedDeliveriesUri: (orgId: number, classroomNumber: number, assignmentNumber: number, 
+        page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/deliveries?page=${page}&limit=${limit}`,
+    getDeliveriesUri: (orgId: number, classroomNumber: number, assignmentNumber: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/deliveries`,
+    getDeliveryUri: (orgId: number, classroomNumber: number, assignmentNumber: number, deliveryNumber: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/deliveries/${deliveryNumber}`,
 }
 
 export {
@@ -120,5 +133,6 @@ export {
     classroomRoutes,
     assignmentRoutes,
     teamRoutes,
-    participationRoutes
+    participationRoutes,
+    deliveryRoutes
 }

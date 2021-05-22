@@ -1,7 +1,7 @@
 import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, hideOverlay, getLocationWithoutQuery } from './common.js'
-import { getAssignments } from './classroom-assignments.js'
-import { getTeams } from './classroom-teams.js'
-import { getUsers } from './classroom-users.js'
+import { getAssignments } from './classroom/classroom-assignments.js'
+import { getTeams } from './classroom/classroom-teams.js'
+import { getUsers } from './classroom/classroom-users.js'
 
 let classroomUri
 

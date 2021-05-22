@@ -76,6 +76,22 @@ function fetchXhr(uri) {
     })
 }
 
+function generateSlug(str) {
+    if (!str) return ''
+    
+    let slug = slugify(str)
+    if (!slug) {
+        slug = '-'
+    }
+    return slug
+}
+
+function slugify(str) {
+    return str.toString().toLowerCase().normalize('NFD')
+        .replace(/\s+/g, '-')          // Replace spaces with -
+        .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+}
+
 export {
     alertMsg,
     dismissAlert,
@@ -86,5 +102,6 @@ export {
     getLocationWithoutQuery,
     showOverlay,
     hideOverlay,
-    fetchXhr
+    fetchXhr,
+    generateSlug
 }

@@ -1,4 +1,6 @@
 import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, hideOverlay, getLocationWithoutQuery } from './common.js'
+import { getParticipants } from './assignment/assignment-participants.js'
+import { getDeliveries } from './assignment/assignment-deliveries.js'
 
 let assignmentUri
 
@@ -64,13 +66,6 @@ function updateState(content, contentOverlay, currentOption, participantsButton,
     }
 }
 
-function getParticipants() {
-    return null
-}
-function getDeliveries() {
-    return null
-}
-
 function setUpEditForm() {
     const overlay = $('#confirmOverlay')[0]
     const yesConfirm = $('#yesConfirm')
@@ -126,8 +121,7 @@ function updatePagination(cb) {
         if (target.classList.contains('disabled')) return
         workWithOverlay($('#loadingAssignmentContentOverlay')[0], 
             cb($('#prevPage').data('page'))
-        )
-        
+        )    
     })
     $('#nextPage').on('click', (event) => {
         const target = event.target
