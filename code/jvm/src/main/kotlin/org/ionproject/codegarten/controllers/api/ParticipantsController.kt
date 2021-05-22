@@ -410,10 +410,19 @@ class ParticipantsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (assignment.isIndividualAssignment()) {
+            if (userClassroom.role != TEACHER && user.uid != participantId) throw AuthorizationException("Not enough permissions to remove user")
 
-        if (assignment.isIndividualAssignment()) usersDb.deleteUserFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
-        else teamsDb.deleteTeamFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
+            usersDb.deleteUserFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
+        } else {
+            if (userClassroom.role != TEACHER) {
+                val team = teamsDb.tryGetUserTeamInAssignment(assignment.aid, user.uid)
+                if (!team.isPresent || team.get().tid != participantId)
+                    throw AuthorizationException("Not enough permissions to remove team")
+            }
+
+            teamsDb.deleteTeamFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
+        }
 
         return ResponseEntity
             .status(HttpStatus.OK)

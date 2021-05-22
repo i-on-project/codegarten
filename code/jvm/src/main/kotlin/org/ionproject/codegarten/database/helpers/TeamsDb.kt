@@ -191,6 +191,16 @@ class TeamsDb(
             )
         )
 
+    fun tryGetUserTeamInAssignment(assignmentId: Int, userId: Int) =
+        jdbi.tryGetOne(
+            GET_TEAM_FROM_USER_IN_ASSIGNMENT_QUERY,
+            Team::class.java,
+            mapOf(
+                "assignmentId" to assignmentId,
+                "userId" to userId,
+            )
+        )
+
     fun editTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, name: String) {
         val teamId = getTeam(orgId, classroomNumber, teamNumber).tid
         editTeam(teamId, name)
