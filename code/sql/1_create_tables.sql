@@ -47,7 +47,8 @@ CREATE TABLE DELIVERY
     number          INT NOT NULL,  -- Number in relation to the assignment
     tag             VARCHAR(64),
     due_date        TIMESTAMP,
-    UNIQUE(aid, number) -- Number is unique per assignment
+    UNIQUE(aid, number), -- Number is unique per assignment
+    UNIQUE(aid, tag) -- Tag is unique per assignment
 );
 
 CREATE TABLE TEAM
