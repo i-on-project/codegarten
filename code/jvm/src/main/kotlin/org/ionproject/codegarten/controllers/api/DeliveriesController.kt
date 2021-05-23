@@ -99,6 +99,7 @@ class DeliveriesController(
             entities = deliveries.map {
                 DeliveryOutputModel(
                     id = it.did,
+                    number = it.number,
                     tag = it.tag,
                     dueDate = it.due_date,
                     assignment = it.assignment_name,
@@ -155,6 +156,7 @@ class DeliveriesController(
 
         return DeliveryOutputModel(
             id = delivery.did,
+            number = delivery.number,
             tag = delivery.tag,
             dueDate = delivery.due_date,
             assignment = delivery.assignment_name,
@@ -219,6 +221,7 @@ class DeliveriesController(
             entities = deliveries.map {
                 ParticipantDeliveryItemOutputModel(
                     id = it.did,
+                    number = it.number,
                     tag = it.tag,
                     dueDate = it.due_date,
                     isDelivered = ghTags.any { tag -> tag.name == it.tag },
@@ -297,6 +300,7 @@ class DeliveriesController(
 
         return ParticipantDeliveryOutputModel(
             id = delivery.did,
+            number = delivery.number,
             tag = delivery.tag,
             dueDate = delivery.due_date,
             isDelivered = tag.isPresent,
