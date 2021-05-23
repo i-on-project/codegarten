@@ -119,6 +119,9 @@ const deliveryRoutes = {
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/deliveries`,
     getDeliveryUri: (orgId: number, classroomNumber: number, assignmentNumber: number, deliveryNumber: number): string =>
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/deliveries/${deliveryNumber}`,
+    getPaginatedParticipantDeliveriesUri: (orgId: number, classroomNumber: number, assignmentNumber: number, participantId: number,
+        page: number, limit: number): string =>
+        `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants/${participantId}/deliveries?page=${page}&limit=${limit}`,
 }
 
 export {

@@ -31,6 +31,7 @@ function handlerGetAssignmentParticipants(req: Request, res: Response, next: Nex
             res.render('assignment-fragments/assignment-participants', {
                 layout: false,
 
+                isGroup: participants.type == 'team',
                 participants: participants.participants,
                 isEmpty: participants.participants.length == 0,
                 page: participants.page,

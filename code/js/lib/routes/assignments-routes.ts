@@ -32,8 +32,6 @@ function handlerGetAssignments(req: Request, res: Response, next: NextFunction) 
     getAssignments(orgId, classroomNumber, page >= 0 ? page : 0, req.user.accessToken.token)
         .then(assignments => {
             if (!assignments) return next()
-            const ewqeqw = page
-            const test = assignments.page > 0 ? assignments.page - 1 : 0
 
             res.render('classroom-fragments/classroom-assignments', {
                 layout: false,
@@ -85,6 +83,7 @@ function handlerGetAssignment(req: Request, res: Response, next: NextFunction) {
             
             res.render('assignment', {
                 assignment: assignment,
+                inviteUri: `${req.protocol}://${req.hostname}/i/${assignment.inviteCode}`,
                 participantId: participation.id,
 
                 classroomNumber: classroomNumber,

@@ -26,6 +26,13 @@ export function setup() {
             history.pushState({}, '', `${assignmentUri}/deliveries`)
             updateState(content, contentOverlay, 'deliveries', participantsButton, deliveriesButton)
         })
+        const inviteUri = $('#inviteUri')[0]
+        $('#inviteButton').on('click', (event) => {
+            inviteUri.select()
+            inviteUri.setSelectionRange(0, 99999)
+            document.execCommand('copy')
+            alertMsg('Invite link copied to clipboard', 'success')
+        })
         setUpEditForm()
 
         window.onpopstate = () => {
@@ -58,7 +65,7 @@ function updateState(content, contentOverlay, currentOption, participantsButton,
             participantsButton.classList.add('disabled')
             participantsButton.classList.remove('active')
 
-            workWithOverlay(contentOverlay, getDeliveries(content, 0, updatePagination))
+            workWithOverlay(contentOverlay, getDeliveries(content, assignmentUri, 0, updatePagination))
                 .finally(() => {
                     participantsButton.classList.remove('disabled')
                 })

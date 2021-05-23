@@ -19,12 +19,15 @@ function getDeliveries(orgId: number, classroomNumber: number, assignmentNumber:
             const sirenActions: SirenAction[] = Array.from(collection.actions || [])
 
             const deliveries = entities.map(entity => {
-                const dueDate = entity.properties.dueDate
+                const dueDate = entity.properties.dueDate == null ? null : new Date(entity.properties.dueDate)
+                const dueDateString = dueDate == null ? null : dueDate.toLocaleString()
+
                 return {
                     id: entity.properties.id,
                     number: entity.properties.number,
                     tag: entity.properties.tag,
-                    dueDate: dueDate == null ? null : new Date(dueDate),
+                    dueDate: dueDateString,
+                    isDue: dueDate == null ? false : new Date() > dueDate,
 
                     canManage: false,
                 } as Delivery
@@ -35,7 +38,46 @@ function getDeliveries(orgId: number, classroomNumber: number, assignmentNumber:
                 page: page,
                 isLastPage: DELIVERIES_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
 
-                canCreate: getSirenAction(sirenActions, 'create-delivery') != null,
+                canManage: getSirenAction(sirenActions, 'create-delivery') != null,
+            } as Deliveries
+        })
+}
+
+function getParticipantDeliveries(orgId: number, classroomNumber: number, assignmentNumber: number, participantId: number,
+    page: number, accessToken: string): Promise<Deliveries> {
+    return fetch(
+        deliveryRoutes.getPaginatedParticipantDeliveriesUri(orgId, classroomNumber, assignmentNumber, participantId, page, DELIVERIES_LIST_LIMIT),
+        getJsonRequestOptions('GET', accessToken)
+    )   
+        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(collection => {
+            if (!collection) return null
+
+            const entities = Array.from(collection.entities) as any[]
+            const sirenActions: SirenAction[] = Array.from(collection.actions || [])
+
+            const deliveries = entities.map(entity => {
+                const dueDate = entity.properties.dueDate == null ? null : new Date(entity.properties.dueDate)
+                const dueDateString = dueDate == null ? null : dueDate.toLocaleString()
+
+                return {
+                    id: entity.properties.id,
+                    number: entity.properties.number,
+                    tag: entity.properties.tag,
+                    dueDate: dueDateString,
+                    isDue: dueDate == null ? false : new Date() > dueDate,
+                    isDelivered: entity.properties.isDelivered,
+
+                    canManage: false,
+                } as Delivery
+            })
+
+            return {
+                deliveries: deliveries,
+                page: page,
+                isLastPage: DELIVERIES_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
+
+                canManage: getSirenAction(sirenActions, 'create-delivery') != null,
             } as Deliveries
         })
 }
@@ -108,6 +150,7 @@ function deleteDelivery(orgId: number, classroomNumber: number, assignmentNumber
 
 export {
     getDeliveries,
+    getParticipantDeliveries,
     createDelivery,
     editDelivery,
     deleteDelivery

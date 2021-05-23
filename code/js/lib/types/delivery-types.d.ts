@@ -2,7 +2,9 @@ type Delivery = {
     id: number,
     number: number,
     tag: string,
-    dueDate?: Date,
+    dueDate?: string,
+    isDue: boolean,
+    isDelivered?: boolean,
 
     canManage: boolean,
 }
@@ -12,5 +14,5 @@ type Deliveries = {
     page: number,
     isLastPage: boolean,
 
-    canCreate: boolean,    
+    canManage: boolean,    
 }

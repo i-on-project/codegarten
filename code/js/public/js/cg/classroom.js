@@ -33,6 +33,13 @@ export function setup() {
             history.pushState({}, '', `${classroomUri}/teams`)
             updateState(content, contentOverlay, 'teams', assignmentsButton, usersButton, teamsButton)
         })
+        const inviteUri = $('#inviteUri')[0]
+        $('#inviteButton').on('click', (event) => {
+            inviteUri.select()
+            inviteUri.setSelectionRange(0, 99999)
+            document.execCommand('copy')
+            alertMsg('Invite link copied to clipboard', 'success')
+        })
         setUpEditForm()
 
         window.onpopstate = () => {

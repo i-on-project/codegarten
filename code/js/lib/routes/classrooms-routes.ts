@@ -61,6 +61,7 @@ function handlerGetClassroom(req: Request, res: Response, next: NextFunction) {
 
             res.render('classroom', {
                 classroom: classroom,
+                inviteUri: `${req.protocol}://${req.hostname}/i/${classroom.inviteCode}`,
 
                 organization: classroom.organization,
                 orgId: orgId,

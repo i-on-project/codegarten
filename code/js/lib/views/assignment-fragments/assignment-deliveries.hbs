@@ -14,9 +14,10 @@
                     <div class="invalid-feedback" id="deliveryTagFeedback"><!-- Tag too long or tag not provided --></div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-inline">
                     <label for="deliveryDueDate" class="col-form-label">Due date:</label>
-                    <input type="datetime-local" class="form-control" id="deliveryDueDate">
+                    <input type="date" class="form-control mx-2" id="deliveryDueDate">
+                    <input type="time" class="form-control" id="deliveryDueTime">
                     <div class="invalid-feedback" id="deliveryDueDateFeedback">Invalid date</div>
                 </div>
             </div>
@@ -41,23 +42,46 @@
     <h5 style="text-align: center;">No deliveries available</h5>
 {{else}}
     {{#each deliveries}}
-        <div class="row rounded bg-light p-3">
-            <div class="col-md-auto d-flex justify-content-center align-items-center">
+        <div class="row rounded bg-light" style="position: relative;">
+            {{#if ../canManage}}
+                <!-- Overlays -->
+                <div id="delivery{{number}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="spinner-border"></div>
+                    <h4 class="ml-3">Please wait...</h4>
+                </div>
+                <div id="deleteDelivery{{number}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center p-3" style="position:absolute; height:100%; width: 100%">
+                    <div class="col-sm-auto">
+                        <h5 class="font-weight-bold">
+                            Are you sure you want to delete this delivery?
+                        </h5>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesDeleteDelivery" data-delivery-number="{{number}}">Yes</button>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-primary btn-lg btn-block mb-2 noDeleteDelivery">No</button>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="col-md-auto d-flex justify-content-center align-items-center p-3">
                 <span class="fa-stack fa-2x">
                     <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
                     <i class="fas fa-stack-1x fa-sticky-note"></i>
                 </span>
             </div>
-            <div class="col-md-8">
-                <h3 class="d-inline-block text-truncate pb-1" style="max-width: 100%;">{{tag}}</h3>
+            <div class="col-md-8 p-3">
+                <h3 class="d-inline-block pb-1" style="max-width: 100%;">
+                    {{tag}}{{#unless ../canManage}}<i class="ml-2 mr-2 fas fa-{{#if isDelivered}}check-circle text-success{{else}}times-circle {{#if isDue}}text-danger{{else}}text-warning{{/if}}{{/if}} fa-sm"></i>
+                    {{/unless}}
+                </h3>
                 <br>
-                <h6 class="text-muted d-inline-block text-truncate pb-1" style="max-width: 100%;">{{dueDate}}</h6>
+                <h6 class="text-{{#if isDue}}danger{{else}}success{{/if}} d-inline-block text-truncate pb-1" style="max-width: 100%;">{{dueDate}}</h6>
             </div>
-            <!-- TODO: This section depends on whether the request is made by a student or a teacher    
+            {{#if ../canManage}}
                 <div class="col-md d-flex align-items-center">
-                    <a class="btn btn-primary btn-block" href="/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/assignments/{{../assignmentNumber}}/deliveries/{{number}}">View delivery</a>
-                </div>     
-            -->       
+                    <a class="deleteDeliveryButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}">Delete</a>
+                </div>
+            {{/if}}
         </div>
     {{/each}}
     <br>

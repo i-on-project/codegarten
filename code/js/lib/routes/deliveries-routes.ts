@@ -1,14 +1,17 @@
 'use strict'
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
-import { createDelivery, deleteDelivery, editDelivery, getDeliveries } from '../repo/services/deliveries'
+import { createDelivery, deleteDelivery, editDelivery, getDeliveries, getParticipantDeliveries } from '../repo/services/deliveries'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
 
 const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries', requiresAuth, handlerGetDeliveries)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId/deliveries', requiresAuth, handlerGetParticipantDeliveries)
+
 router.post('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries', requiresAuth, handlerCreateDelivery)
 router.put('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries/:deliveryNumber', requiresAuth, handlerEditDelivery)
+
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries/:deliveryNumber', requiresAuth, handlerDeleteDelivery)
 
 function handlerGetDeliveries(req: Request, res: Response, next: NextFunction) {
@@ -20,7 +23,6 @@ function handlerGetDeliveries(req: Request, res: Response, next: NextFunction) {
 
     if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber)) return next()
 
-    //TODO: List participant deliveries instead if request is made by a student
     const page = Number(req.query.page) || 0
 
     getDeliveries(orgId, classroomNumber, assignmentNumber, page, req.user.accessToken.token)
@@ -44,11 +46,51 @@ function handlerGetDeliveries(req: Request, res: Response, next: NextFunction) {
                 classroomNumber: classroomNumber,
                 orgId: orgId,
                 
-                canManage: deliveries.canCreate
+                canManage: deliveries.canManage
             })
         })
         .catch(err => next(INTERNAL_ERROR))
 }
+
+function handlerGetParticipantDeliveries(req: Request, res: Response, next: NextFunction) {
+    if (!req.xhr) return next()
+
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+    const participantId = Number(req.params.participantId)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber) || isNaN(participantId)) return next()
+
+    const page = Number(req.query.page) || 0
+
+    getParticipantDeliveries(orgId, classroomNumber, assignmentNumber, participantId, page, req.user.accessToken.token)
+        .then(deliveries => {
+            if (!deliveries) return next()
+
+            res.render('assignment-fragments/assignment-deliveries', {
+                layout: false,
+
+                deliveries: deliveries.deliveries,
+                isEmpty: deliveries.deliveries.length == 0,
+                page: deliveries.page,
+
+                hasPrev: deliveries.page > 0,
+                prevPage: deliveries.page > 0 ? deliveries.page - 1 : 0,
+
+                hasNext: !deliveries.isLastPage,
+                nextPage: deliveries.page + 1,
+
+                assignmentNumber: assignmentNumber,
+                classroomNumber: classroomNumber,
+                orgId: orgId,
+                
+                canManage: deliveries.canManage
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
 
 function handlerCreateDelivery(req: Request, res: Response, next: NextFunction) {
     const orgId = Number(req.params.orgId)

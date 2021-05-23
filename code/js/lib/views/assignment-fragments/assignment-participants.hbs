@@ -38,7 +38,7 @@
 
             <!-- Participant Info -->
             <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
-                <a href="participants/{{id}}">
+                <a href="{{#if ../isGroup}}/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/teams/{{id}}{{else}}/users/{{id}}{{/if}}">
                     <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
                 </a>
             </div>

@@ -84,6 +84,18 @@
     </div>
 </div>
 
+{{#if canManage}}
+    <div class="row">
+        <div class="col-sm-auto input-group text-muted font-weight-light form-inline my-2 d-flex align-items-center">
+            <label for="inviteUri" class="col-form-label">Invite link:</label>
+            <input type="text" class="form-control form-control-sm ml-1 bg-white input-sm" id="inviteUri" value="{{inviteUri}}" readonly="readonly">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary btn-block ml-1" id="inviteButton"><i class="fas fa-clipboard"></i></button>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
 <div class="row mt-2">
     <div class="col btn-group btn-group-toggle flex-wrap" data-toggle="buttons">
         <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
@@ -92,7 +104,7 @@
             <h4 class="my-2 ml-1">Participants</h4>
         </label>
         <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
-            <input type="radio" id="deliveriesOption" autocomplete="off">
+            <input type="radio" id="deliveriesOption" autocomplete="off" data-participant-id="{{participantId}}">
             <i class="fas fa-copy mt-1"></i>
             <h4 class="my-2 ml-1">Deliveries</h4>
         </label>

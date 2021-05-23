@@ -86,10 +86,17 @@ function generateSlug(str) {
     return slug
 }
 
+// Based on: https://gist.github.com/mathewbyrne/1280286
 function slugify(str) {
     return str.toString().toLowerCase().normalize('NFD')
         .replace(/\s+/g, '-')          // Replace spaces with -
         .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+}
+
+// From: https://stackoverflow.com/a/13725869
+function validateTag(str) {
+    if (!str || str.length == 0) return false
+    return str.match(/^(?!\/|.*([/.]\.|\/\/|@\{|\\\\))[^\040\177 ~^:?*[]+(?<!\.lock|[/.]|-)$/) != null
 }
 
 export {
@@ -103,5 +110,6 @@ export {
     showOverlay,
     hideOverlay,
     fetchXhr,
-    generateSlug
+    generateSlug,
+    validateTag
 }

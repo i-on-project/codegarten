@@ -120,7 +120,7 @@ function editName(button, newName) {
             .then(res => {
                 if (!res.wasEdited) alertMsg(res.message)
                 else {
-                    $('#editTeamNamForm').collapse('hide')
+                    $('#editTeamNameForm').collapse('hide')
                     alertMsg(res.message, 'success')
                     newName.value = ''
                     newName.placeholder = name
