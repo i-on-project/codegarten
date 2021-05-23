@@ -6,6 +6,7 @@ import java.time.OffsetDateTime
 
 class DeliveryOutputModel(
     val id: Int,
+    val number: Int,
     val tag: String,
     val dueDate: OffsetDateTime?,
     val assignment: String,
@@ -17,6 +18,7 @@ class DeliveryOutputModel(
 
 class ParticipantDeliveryItemOutputModel(
     val id: Int,
+    val number: Int,
     val tag: String,
     val dueDate: OffsetDateTime?,
     val isDelivered: Boolean,
@@ -29,6 +31,7 @@ class ParticipantDeliveryItemOutputModel(
 
 class ParticipantDeliveryOutputModel(
     val id: Int,
+    val number: Int,
     val tag: String,
     val dueDate: OffsetDateTime?,
     val isDelivered: Boolean,
