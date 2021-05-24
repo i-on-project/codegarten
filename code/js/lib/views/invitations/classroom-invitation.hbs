@@ -1,0 +1,34 @@
+<div class="row text-center mb-2">
+    <div class="col">
+        <h1>You have been invited to join this classroom:</h1>
+    </div>
+</div>
+
+<div class="rounded shadow bg-light">
+    <div class="row p-4 ml-1">
+        <div class="col-lg-5">
+            <div class="row">
+                <h2 class="text-break">
+                    <div style="display: inline-block;">
+                        {{invitation.name}}
+                    </div>
+                </h2>
+            </div>
+            <div class="row">
+                <a href={{invitation.orgUri}} target="_blank"> 
+                    <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                    {{invitation.organization}}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row d-flex justify-content-center align-items-center mt-4">
+    <div class="col-sm">
+        <button class="shadow btn btn-outline-primary btn-lg btn-block" id="acceptInvitation">Accept</button>
+    </div>
+    <div class="col-sm">
+        <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>
+    </div>
+</div>

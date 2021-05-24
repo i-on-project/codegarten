@@ -10,7 +10,7 @@ function getAssignments(orgId: number, classroomNumber: number, page: number, ac
         assignmentRoutes.getPaginatedAssignmentsUri(orgId, classroomNumber, page, ASSIGNMENT_LIST_LIMIT), 
         getJsonRequestOptions('GET', accessToken)
     )
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -53,7 +53,7 @@ function getAssignments(orgId: number, classroomNumber: number, page: number, ac
 
 function getAssignment(orgId: number, classroomNumber: number, assignmentNumber: number, accessToken: string): Promise<Assignment> {
     return fetch(assignmentRoutes.getAssignmentUri(orgId, classroomNumber, assignmentNumber), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(entity => {
             if (!entity) return null
 
@@ -84,7 +84,6 @@ function getAssignment(orgId: number, classroomNumber: number, assignmentNumber:
 function createAssignment(orgId: number, classroomNumber: number, name: string, description: string, 
     type: string, repoPrefix: string, repoTemplate: string, accessToken: string): Promise<ApiResponse> {
         
-    //TODO: Change this when API changes for resource creation go through
     return fetch(
         assignmentRoutes.getAssignmentsUri(orgId, classroomNumber), 
         getJsonRequestOptions('POST', accessToken, { 
@@ -95,41 +94,40 @@ function createAssignment(orgId: number, classroomNumber: number, name: string, 
             repoTemplate: repoTemplate
         })
     )
-        .then(res => {
+        .then(async (res) => {
+            return {
+                status: res.status,
+                json: res.status == 201 ? await res.json() : null
+            }
+        }).then(res => {
+            let content = null
             if (res.status == 201) {
-                // Classroom was created
-                return fetch(res.headers.get('Location'), getJsonRequestOptions('GET', accessToken))
-                    .then(res => res.json())
-                    .then(entity => {
-                        const links: SirenLink[] = Array.from(entity.links)
-                        const orgUri = getSirenLink(links, 'organizationGitHub').href
+                // Assignment was created
+                const entity = res.json
 
-                        const assignment =  {
-                            id: entity.properties.id,
-                            inviteCode: entity.properties.inviteCode,
-                            number: entity.properties.number,
-                            name: entity.properties.name,
-                            description: entity.properties.description,
-                            isGroup: entity.properties.type == 'group',
-        
-                            organization: entity.properties.organization,
-                            organizationUri: orgUri,
-        
-                            classroom: entity.properties.classroom,
-                        
-                            canManage: null,
-                        } as Assignment
+                const links: SirenLink[] = Array.from(entity.links)
+                const orgUri = getSirenLink(links, 'organizationGitHub').href
 
-                        return {
-                            status: res.status,
-                            content: assignment,
-                        } as ApiResponse
-                    })
+                content = {
+                    id: entity.properties.id,
+                    inviteCode: entity.properties.inviteCode,
+                    number: entity.properties.number,
+                    name: entity.properties.name,
+                    description: entity.properties.description,
+                    isGroup: entity.properties.type == 'group',
+
+                    organization: entity.properties.organization,
+                    organizationUri: orgUri,
+
+                    classroom: entity.properties.classroom,
+                
+                    canManage: null,
+                } as Assignment
             }
 
             return {
                 status: res.status,
-                content: null,
+                content: content,
             } as ApiResponse
         })
 }

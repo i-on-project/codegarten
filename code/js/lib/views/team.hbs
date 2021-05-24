@@ -60,7 +60,7 @@
             <div class="row pl-4">
                 <a href={{team.gitHubUri}} target="_blank"> 
                     <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
-                    INSERT GITHUB TEAM NAME HERE
+                    {{team.gitHubName}}
                 </a>
             </div>
         </div>
@@ -70,9 +70,11 @@
                     <button class="btn btn-danger btn-block my-2 border" id="deleteTeamButton">Delete Team</button>
                 </div>
             {{/if}}
-            <div class="row align-items-end">
+            {{#if team.isMember}}
+                <div class="row align-items-end">
                     <button class="btn btn-danger btn-block my-2 border" id="leaveTeamButton" data-user-id={{user.id}}>Leave Team</button>
-            </div>
+                </div>
+            {{/if}}
         </div>
     </div>
 </div>

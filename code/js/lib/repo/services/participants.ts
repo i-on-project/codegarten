@@ -5,24 +5,12 @@ import { getJsonRequestOptions, getSirenAction, getSirenLink, participationRoute
 
 const PARTICIPANTS_LIST_LIMIT = 10
 
-// TODO: Change once API changes go through (when teacher has participation)
 function getUserParticipationInAssignment(assignmentId: number, accessToken: string): Promise<Participation> {
     return fetch(
         participationRoutes.getUserParticipationInAssignmentUri(assignmentId), 
         getJsonRequestOptions('GET', accessToken)
-    ).then(res => {
-        if (res.status == 401) return null
-        if (res.status == 404) {
-            // hard-coded, to be changed later...
-            return {
-                properties: {
-                    type: 'teacher'
-                }  
-            }
-        }
-        if (res.status == 200) return res.json()
-        return null
-    })
+    )
+        .then(res => res.status != 403 ? res.json() : null)
         .then(entity => {
             if (!entity) return null
 
@@ -41,7 +29,7 @@ function getParticipantsOfAssignment(orgId: number, classroomNumber: number,
         participationRoutes.getPaginatedAssignmentParticipantsUri(orgId, classroomNumber, assignmentNumber, page, PARTICIPANTS_LIST_LIMIT),
         getJsonRequestOptions('GET', accessToken)
     )   
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 

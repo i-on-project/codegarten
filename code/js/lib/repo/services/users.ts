@@ -43,7 +43,7 @@ function getUserById(userId: number, accessToken: string): Promise<User>  {
 
 function getClassroomUsers(orgId: number, classroomNumber: number, authUser: AuthenticatedUser, page: number, accessToken: string): Promise<Users>  {
     return fetch(userRoutes.getClassroomUsersUri(orgId, classroomNumber, page, CLASSROOM_USER_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -75,7 +75,7 @@ function getClassroomUsers(orgId: number, classroomNumber: number, authUser: Aut
 
 function getTeamUsers(orgId: number, classroomNumber: number, teamNumber: number, authUser: AuthenticatedUser, page: number, accessToken: string): Promise<Users>  {
     return fetch(userRoutes.getTeamUsersUri(orgId, classroomNumber, teamNumber, page, TEAM_USER_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 

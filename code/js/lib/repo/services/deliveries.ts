@@ -11,7 +11,7 @@ function getDeliveries(orgId: number, classroomNumber: number, assignmentNumber:
         deliveryRoutes.getPaginatedDeliveriesUri(orgId, classroomNumber, assignmentNumber, page, DELIVERIES_LIST_LIMIT),
         getJsonRequestOptions('GET', accessToken)
     )   
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -49,7 +49,7 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
         deliveryRoutes.getPaginatedParticipantDeliveriesUri(orgId, classroomNumber, assignmentNumber, participantId, page, DELIVERIES_LIST_LIMIT),
         getJsonRequestOptions('GET', accessToken)
     )   
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -84,7 +84,7 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
 
 function createDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, 
     tag: string, dueDate: Date, accessToken: string): Promise<ApiResponse> {
-    //TODO: Change this when API changes for resource creation go through
+
     return fetch(
         deliveryRoutes.getDeliveriesUri(orgId, classroomNumber, assignmentNumber), 
         getJsonRequestOptions('POST', accessToken, { 
@@ -92,33 +92,31 @@ function createDelivery(orgId: number, classroomNumber: number, assignmentNumber
             dueDate: dueDate == null ? null : dueDate.toISOString()
         })
     )
-        .then(res => {
+        .then(async (res) => {
+            return {
+                status: res.status,
+                json: res.status == 201 ? await res.json() : null
+            }
+        }).then(res => {
+            let content = null
             if (res.status == 201) {
                 // Delivery was created
-                return fetch(res.headers.get('Location'), getJsonRequestOptions('GET', accessToken))
-                    .then(res => res.json())
-                    .then(entity => {
-                        const sirenActions: SirenAction[] = Array.from(entity.actions || [])
+                const entity = res.json
 
-                        const delivery = {
-                            id: entity.properties.id,
-                            number: entity.properties.number,
-                            tag: entity.properties.tag,
-                            dueDate: entity.properties.dueDate,
-                        
-                            canManage: getSirenAction(sirenActions, 'edit-delivery') != null,
-                        } as Delivery
-
-                        return {
-                            status: res.status,
-                            content: delivery,
-                        } as ApiResponse
-                    })
+                const sirenActions: SirenAction[] = Array.from(entity.actions || [])
+                content = {
+                    id: entity.properties.id,
+                    number: entity.properties.number,
+                    tag: entity.properties.tag,
+                    dueDate: entity.properties.dueDate,
+                
+                    canManage: getSirenAction(sirenActions, 'edit-delivery') != null,
+                } as Delivery
             }
 
             return {
                 status: res.status,
-                content: null,
+                content: content,
             } as ApiResponse
         })
 }
@@ -129,7 +127,7 @@ function editDelivery(orgId: number, classroomNumber: number, assignmentNumber: 
         deliveryRoutes.getDeliveryUri(orgId, classroomNumber, assignmentNumber, deliveryNumber), 
         getJsonRequestOptions('PUT', accessToken, {
             tag: newTag,
-            dueDate: newDueDate.toISOString()
+            dueDate: newDueDate == null ? null : newDueDate.toISOString()
         }))
         .then(res => {
             return {

@@ -104,7 +104,7 @@
             <h4 class="my-2 ml-1">Participants</h4>
         </label>
         <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
-            <input type="radio" id="deliveriesOption" autocomplete="off" data-participant-id="{{participantId}}">
+            <input type="radio" id="deliveriesOption" autocomplete="off" {{#unless canManage}}data-participant-id="{{participantId}}"{{/unless}}>
             <i class="fas fa-copy mt-1"></i>
             <h4 class="my-2 ml-1">Deliveries</h4>
         </label>

@@ -7,7 +7,7 @@ const TEAM_LIST_LIMIT = 10
 
 function getTeams(orgId: number, classroomNumber: number, page: number, accessToken: string): Promise<Teams> {
     return fetch(teamRoutes.getPaginatedTeamsUri(orgId, classroomNumber, page, TEAM_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -46,7 +46,7 @@ function getTeams(orgId: number, classroomNumber: number, page: number, accessTo
 
 function getTeam(orgId: number, classroomNumber: number, teamNumber: number, accessToken: string): Promise<Team> {
     return fetch(teamRoutes.getTeamUri(orgId, classroomNumber, teamNumber), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(entity => {
             if (!entity) return null
 
@@ -60,6 +60,8 @@ function getTeam(orgId: number, classroomNumber: number, teamNumber: number, acc
                 id: entity.properties.id,
                 number: entity.properties.number,
                 name: entity.properties.name,
+                gitHubName: entity.properties.gitHubName,
+                isMember: entity.properties.isMember,
                 classroom: entity.properties.classroom,
                 organization: entity.properties.organization,
                 organizationUri: orgUri,
@@ -72,46 +74,45 @@ function getTeam(orgId: number, classroomNumber: number, teamNumber: number, acc
 }
 
 function createTeam(orgId: number, classroomNumber: number, name: string, accessToken: string): Promise<ApiResponse> {
-    //TODO: Change this when API changes for resource creation go through
+
     return fetch(
         teamRoutes.getTeamsUri(orgId, classroomNumber), 
         getJsonRequestOptions('POST', accessToken, { 
             name: name
         })
     )
-        .then(res => {
+        .then(async (res) => {
+            return {
+                status: res.status,
+                json: res.status == 201 ? await res.json() : null
+            }
+        }).then(res => {
+            let content = null
             if (res.status == 201) {
                 // Team was created
-                return fetch(res.headers.get('Location'), getJsonRequestOptions('GET', accessToken))
-                    .then(res => res.json())
-                    .then(entity => {
-                        const links: SirenLink[] = Array.from(entity.links)
-                        const sirenActions: SirenAction[] = Array.from(entity.actions || [])
-                        const orgUri = getSirenLink(links, 'organizationGitHub').href
-                        const avatarUri = getSirenLink(links, 'avatar').href
+                const entity = res.json
 
-                        const team = {
-                            id: entity.properties.id,
-                            number: entity.properties.number,
-                            name: entity.properties.name,
-                            classroom: entity.properties.classroom,
-                            organization: entity.properties.organization,
-                            organizationUri: orgUri,
-                            avatarUri: avatarUri,
-                        
-                            canManage: getSirenAction(sirenActions, 'edit-team') != null,
-                        } as Team
+                const links: SirenLink[] = Array.from(entity.links)
+                const sirenActions: SirenAction[] = Array.from(entity.actions || [])
+                const orgUri = getSirenLink(links, 'organizationGitHub').href
+                const avatarUri = getSirenLink(links, 'avatar').href
 
-                        return {
-                            status: res.status,
-                            content: team,
-                        } as ApiResponse
-                    })
+                content = {
+                    id: entity.properties.id,
+                    number: entity.properties.number,
+                    name: entity.properties.name,
+                    classroom: entity.properties.classroom,
+                    organization: entity.properties.organization,
+                    organizationUri: orgUri,
+                    avatarUri: avatarUri,
+                
+                    canManage: getSirenAction(sirenActions, 'edit-team') != null,
+                } as Team
             }
 
             return {
                 status: res.status,
-                content: null,
+                content: content,
             } as ApiResponse
         })
 }

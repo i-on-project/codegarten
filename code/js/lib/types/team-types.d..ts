@@ -2,6 +2,8 @@ type Team = {
     id: number,
     number: number,
     name: string,
+    gitHubName?: string,
+    isMember?: boolean,
     classroom: string,
     organization: string,
     organizationUri: string,

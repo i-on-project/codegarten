@@ -7,7 +7,7 @@ const CLASSROOM_LIST_LIMIT = 9
 
 function getClassrooms(orgId: number, page: number, accessToken: string): Promise<Classrooms> {
     return fetch(classroomRoutes.getPaginatedClassroomsUri(orgId, page, CLASSROOM_LIST_LIMIT), getJsonRequestOptions('GET', accessToken))
-        .then(res => res.status != 401 ? res.json() : null)
+        .then(res => res.status != 403 ? res.json() : null)
         .then(collection => {
             if (!collection) return null
 
@@ -44,7 +44,7 @@ function getClassrooms(orgId: number, page: number, accessToken: string): Promis
 
 function getClassroom(orgId: number, classroomNumber: number, accessToken: string): Promise<Classroom> {
     return fetch(classroomRoutes.getClassroomUri(orgId, classroomNumber), getJsonRequestOptions('GET', accessToken))
-        .then(res => (res.status != 404 && res.status != 401) ? res.json() : null)
+        .then(res => (res.status != 404 && res.status != 403) ? res.json() : null)
         .then(entity => {
             if (!entity) return null
 
@@ -67,7 +67,6 @@ function getClassroom(orgId: number, classroomNumber: number, accessToken: strin
 }
 
 function createClassroom(orgId: number, name: string, description: string, accessToken: string): Promise<ApiResponse> {
-    //TODO: Change this when API changes for resource creation go through
     return fetch(
         classroomRoutes.getClassroomsUri(orgId), 
         getJsonRequestOptions('POST', accessToken, { 
@@ -75,37 +74,36 @@ function createClassroom(orgId: number, name: string, description: string, acces
             description: description 
         })
     )
-        .then(res => {
+        .then(async (res) => {
+            return {
+                status: res.status,
+                json: res.status == 201 ? await res.json() : null
+            }
+        }).then(res => {
+            let content = null
             if (res.status == 201) {
                 // Classroom was created
-                return fetch(res.headers.get('Location'), getJsonRequestOptions('GET', accessToken))
-                    .then(res => res.json())
-                    .then(entity => {
-                        const links: SirenLink[] = Array.from(entity.links)
-                        const orgUri = getSirenLink(links, 'organizationGitHub').href
+                const entity = res.json
 
-                        const classroom = {
-                            id: entity.properties.id,
-                            inviteCode: entity.properties.inviteCode,
-                            number: entity.properties.number,
-                            name: entity.properties.name,
-                            description: entity.properties.description,
-                            organization: entity.properties.organization,
-                            organizationUri: orgUri,
-                        
-                            canManage: null,
-                        } as Classroom
+                const links: SirenLink[] = Array.from(entity.links)
+                const orgUri = getSirenLink(links, 'organizationGitHub').href
 
-                        return {
-                            status: res.status,
-                            content: classroom,
-                        } as ApiResponse
-                    })
+                content = {
+                    id: entity.properties.id,
+                    inviteCode: entity.properties.inviteCode,
+                    number: entity.properties.number,
+                    name: entity.properties.name,
+                    description: entity.properties.description,
+                    organization: entity.properties.organization,
+                    organizationUri: orgUri,
+                
+                    canManage: null,
+                } as Classroom
             }
 
             return {
                 status: res.status,
-                content: null,
+                content: content,
             } as ApiResponse
         })
 }

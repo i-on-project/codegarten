@@ -165,6 +165,7 @@ function handlerEditDelivery(req: Request, res: Response, next: NextFunction) {
             switch(result.status) {
                 case 200:
                     message = 'Delivery edited successfully'
+                    req.flash('success', message)
                     break
                 case 409:
                     message = 'Delivery tag already exists'

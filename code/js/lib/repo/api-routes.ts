@@ -124,6 +124,10 @@ const deliveryRoutes = {
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants/${participantId}/deliveries?page=${page}&limit=${limit}`,
 }
 
+const invitationRoutes = {
+    getInvitationUri: (invitationId: string): string => `${API_HOST}/user/invites/${invitationId}`
+}
+
 export {
     getJsonRequestOptions,
     getUrlEncodedRequestOptions,
@@ -137,5 +141,6 @@ export {
     assignmentRoutes,
     teamRoutes,
     participationRoutes,
-    deliveryRoutes
+    deliveryRoutes,
+    invitationRoutes
 }
