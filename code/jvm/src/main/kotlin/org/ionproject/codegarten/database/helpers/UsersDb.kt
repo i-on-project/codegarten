@@ -35,6 +35,8 @@ private const val GET_USER_IN_CLASSROOM_QUERY =
 private const val GET_USERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid IN " +
         "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
+private const val GET_TEACHERS_IN_CLASSROOM_COUNT =
+    "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid = :classroomId AND type = 'teacher'"
 
 private const val ADD_USER_TO_CLASSROOM_QUERY =
     "INSERT INTO USER_CLASSROOM VALUES(:role, :userId, :classroomId)"
@@ -153,6 +155,12 @@ class UsersDb(
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
         )
 
+    fun getTeachersInClassroomCount(classroomId: Int) =
+        jdbi.getOne(
+            GET_TEACHERS_IN_CLASSROOM_COUNT,
+            Int::class.java,
+            mapOf("classroomId" to classroomId)
+        )
 
     fun addOrEditUserInClassroom(orgId: Int, classroomNumber: Int, userId: Int, role: String) {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
@@ -207,7 +215,7 @@ class UsersDb(
         return getUserMembershipInClassroom(classroom, userId)
     }
 
-    fun getUserMembershipInClassroom(classroom: Classroom, userId: Int): UserClassroom {
+    private fun getUserMembershipInClassroom(classroom: Classroom, userId: Int): UserClassroom {
         val maybeUserClassroom = jdbi.tryGetOne(
             GET_USER_CLASSROOM_QUERY,
             UserClassroomDto::class.java,

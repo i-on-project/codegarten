@@ -16,7 +16,7 @@ private const val GET_DELIVERY_BY_ID_QUERY = "$GET_DELIVERIES_BASE WHERE did = :
 
 private const val GET_DELIVERIES_OF_ASSIGNMENT_QUERY =
     "$GET_DELIVERIES_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
-    "assignment_number = :assignmentNumber ORDER BY number"
+    "assignment_number = :assignmentNumber ORDER BY due_date, number"
 private const val GET_DELIVERIES_OF_ASSIGNMENT_COUNT =
     "SELECT COUNT(did) as count from V_DELIVERY WHERE org_id = :orgId AND " +
     "classroom_number = :classroomNumber AND assignment_number = :assignmentNumber"

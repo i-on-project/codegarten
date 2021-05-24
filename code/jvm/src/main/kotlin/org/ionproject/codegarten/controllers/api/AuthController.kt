@@ -11,6 +11,7 @@ import org.ionproject.codegarten.database.helpers.AccessTokensDb
 import org.ionproject.codegarten.database.helpers.AuthCodesDb
 import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.responses.AccessToken
@@ -45,13 +46,13 @@ class AuthController(
 
         val client = clientsDb.getClientById(input.client_id)
         if (!cryptoUtils.validateHash(input.client_secret, client.secret)) {
-            throw AuthorizationException("Invalid client")
+            throw ClientException("Invalid client")
         }
 
         val authCode: AuthCode
         try {
             authCode = codesDb.getAuthCode(input.code)
-            if (authCode.client_id != input.client_id) throw AuthorizationException("Invalid client")
+            if (authCode.client_id != input.client_id) throw ClientException("Invalid client")
 
             if (authCode.expiration_date.isBefore(OffsetDateTime.now())) {
                 codesDb.deleteAuthCode(authCode.code)
@@ -99,14 +100,14 @@ class AuthController(
 
         val client = clientsDb.getClientById(input.client_id)
         if (!cryptoUtils.validateHash(input.client_secret, client.secret)) {
-            throw AuthorizationException("Invalid client")
+            throw ClientException("Invalid client")
         }
 
         val hashedToken = cryptoUtils.hash(input.token)
         val token: org.ionproject.codegarten.database.dto.AccessToken
         try {
             token = accessTokensDb.getAccessToken(hashedToken)
-            if (token.client_id != input.client_id) throw AuthorizationException("Invalid client")
+            if (token.client_id != input.client_id) throw ClientException("Invalid client")
         } catch (ex: NotFoundException) {
             throw AuthorizationException("Invalid token")
         }
