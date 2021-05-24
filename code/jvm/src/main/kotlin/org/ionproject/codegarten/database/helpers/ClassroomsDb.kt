@@ -61,14 +61,12 @@ class ClassroomsDb(val jdbi: Jdbi) {
 
     fun createClassroom(orgId: Int, name: String, description: String?) =
         jdbi.insertAndGet(
-            CREATE_CLASSROOM_QUERY, Int::class.java,
-            GET_CLASSROOM_BY_ID_QUERY, Classroom::class.java,
+            CREATE_CLASSROOM_QUERY, Classroom::class.java,
             mapOf(
                 "orgId" to orgId,
                 "name" to name,
                 "description" to description
-            ),
-            "classroomId"
+            )
         )
 
     fun editClassroom(orgId: Int, classroomNumber: Int, name: String?, description: String?) {

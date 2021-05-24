@@ -58,23 +58,13 @@ fun <T> Jdbi.insertAndGetGeneratedKey(
             .one()
     }
 
-fun <T, V> Jdbi.insertAndGet(insertQuery: String, generatedIdType: Class<V>,
-                             getInsertedQuery: String, mapTo: Class<T>,
-                             insertBinds: Map<String, Any?>? = null, getBindKey: String? = null): T =
+fun <T> Jdbi.insertAndGet(insertQuery: String, mapTo: Class<T>, insertBinds: Map<String, Any?>? = null): T =
     this.withHandle<T, Exception> {
         val insertHandle = it.createUpdate(insertQuery)
         insertBinds?.forEach { entry -> insertHandle.bind(entry.key, entry.value) }
 
-        val key = insertHandle
+        insertHandle
             .executeAndReturnGeneratedKeys()
-            .mapTo(generatedIdType)
-            .one()
-
-        val getHandle = it.createQuery(getInsertedQuery)
-        if (getBindKey != null)
-            getHandle.bind(getBindKey, key)
-
-        getHandle
             .mapTo(mapTo)
             .one()
     }

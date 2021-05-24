@@ -17,3 +17,11 @@ data class Delivery(
     val classroom_number: Int,
     val classroom_name: String,
 )
+
+data class CreatedDelivery(
+    val did: Int,
+    val aid: Int,
+    val number: Int,
+    val tag: String,
+    val due_date: OffsetDateTime?,
+)

@@ -1,5 +1,6 @@
 package org.ionproject.codegarten.database.helpers
 
+import org.ionproject.codegarten.database.dto.CreatedTeam
 import org.ionproject.codegarten.database.dto.Team
 import org.ionproject.codegarten.database.dto.TeamAssignment
 import org.jdbi.v3.core.Jdbi
@@ -145,21 +146,19 @@ class TeamsDb(
             )
         )
 
-    fun createTeam(orgId: Int, classroomNumber: Int, name: String, gitHubId: Int): Team {
+    fun createTeam(orgId: Int, classroomNumber: Int, name: String, gitHubId: Int): CreatedTeam {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return createTeam(classroomId, name, gitHubId)
     }
 
     fun createTeam(classroomId: Int, name: String, gitHubId: Int) =
         jdbi.insertAndGet(
-            CREATE_TEAM_QUERY, Int::class.java,
-            GET_TEAM_BY_ID_QUERY, Team::class.java,
+            CREATE_TEAM_QUERY, CreatedTeam::class.java,
             mapOf(
                 "classroomId" to classroomId,
                 "name" to name,
                 "gitHubId" to gitHubId
-            ),
-            "teamId"
+            )
         )
 
     fun isUserInTeam(teamId: Int, userId: Int) =

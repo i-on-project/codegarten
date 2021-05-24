@@ -178,20 +178,41 @@ class TeamsController(
         userClassroom: UserClassroom,
         installation: Installation,
         @RequestBody input: TeamCreateInputModel?
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<Response> {
         if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
         val gitHubName = generateCodeGartenTeamName(classroomNumber, input.name)
         val ghTeam = gitHub.createTeam(orgId, gitHubName, installation.accessToken)
-        val teamNumber = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id).number
+        val createdTeam = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id)
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location", getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost().toString())
-            .body(null)
+        return TeamOutputModel(
+            id = createdTeam.tid,
+            number = createdTeam.number,
+            name = createdTeam.name,
+            classroom = userClassroom.classroom.name,
+            organization = ghTeam.organization.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditTeamAction(orgId, classroomNumber, createdTeam.number),
+                getDeleteTeamAction(orgId, classroomNumber, createdTeam.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost()),
+                SirenLink(listOf("github"), URI(ghTeam.html_url)),
+                SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(createdTeam.gh_id)),
+                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, createdTeam.number).includeHost()),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED, mapOf(
+            "Location" to listOf(getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost().toString())
+        ))
     }
 
     @RequiresUserInClassroom

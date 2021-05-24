@@ -204,7 +204,7 @@ class AssignmentsController(
         userClassroom: UserClassroom,
         installation: Installation,
         @RequestBody input: AssignmentCreateInputModel?
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<Response> {
         if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
@@ -213,9 +213,10 @@ class AssignmentsController(
         if (!validAssignmentTypes.contains(input.type)) throw InvalidInputException("Invalid type. Must be one of: $validAssignmentTypes")
         if (input.repoPrefix == null) throw InvalidInputException("Missing repoPrefix")
 
-        var repoId: Int? = null
+        val org = gitHub.getOrgById(orgId, installation.accessToken)
+
+        var repoResponse: GitHubRepoResponse? = null
         if (input.repoTemplate != null) {
-            val org = gitHub.getOrgById(orgId, installation.accessToken)
             val repo = try {
                 gitHub.getRepoByName(org.login, input.repoTemplate, installation.accessToken)
             } catch (ex: HttpRequestException) {
@@ -223,19 +224,50 @@ class AssignmentsController(
             }
 
             if (!repo.is_template) throw InvalidInputException("Repository '${repo.name}' is not a template repository")
-            repoId = repo.id
+            repoResponse = repo
         }
 
         val createdAssignment = assignmentsDb.createAssignment(
             orgId, classroomNumber, input.name,
-            input.description, input.type, input.repoPrefix, repoId
+            input.description, input.type, input.repoPrefix, repoResponse?.id
         )
-        inviteCodesDb.generateAndCreateUniqueInviteCode(createdAssignment.classroom_id, createdAssignment.aid)
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location", getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).includeHost().toString())
-            .body(null)
+        val inviteCode = inviteCodesDb.generateAndCreateUniqueInviteCode(createdAssignment.classroom_id, createdAssignment.aid)
+
+        val sirenLinks = mutableListOf(
+            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
+            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
+            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
+            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
+            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+            SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+            SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+        )
+
+        if (repoResponse != null) {
+            sirenLinks.add(1, SirenLink(listOf("templateGitHub"), URI(repoResponse.html_url)))
+        }
+
+        return AssignmentOutputModel(
+            id = createdAssignment.aid,
+            inviteCode = inviteCode.inv_code,
+            number = createdAssignment.number,
+            name = createdAssignment.name,
+            description = createdAssignment.description,
+            type = createdAssignment.type,
+            repoPrefix = createdAssignment.repo_prefix,
+            repoTemplate = repoResponse?.name,
+            classroom = createdAssignment.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditAssignmentAction(orgId, classroomNumber, createdAssignment.number),
+                getDeleteAssignmentAction(orgId, classroomNumber, createdAssignment.number)
+            ),
+            links = sirenLinks
+        ).toResponseEntity(HttpStatus.CREATED, mapOf(
+            "Location" to listOf(getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).includeHost().toString())
+        ))
     }
 
     @RequiresUserInClassroom
