@@ -25,7 +25,6 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination

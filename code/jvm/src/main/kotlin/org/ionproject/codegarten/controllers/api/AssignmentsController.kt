@@ -30,7 +30,6 @@ import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
