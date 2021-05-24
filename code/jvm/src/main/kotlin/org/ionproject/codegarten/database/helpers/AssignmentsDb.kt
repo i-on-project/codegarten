@@ -1,6 +1,7 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Assignment
+import org.ionproject.codegarten.database.dto.CreatedAssignment
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
@@ -98,20 +99,34 @@ class AssignmentsDb(
         repoPrefix: String, repoTemplateId: Int? = null
     ): Assignment {
 
-        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        val classroom = classroomsDb.getClassroomByNumber(orgId, classroomNumber)
 
-        return jdbi.insertAndGet(
-            CREATE_ASSIGNMENT_QUERY, Int::class.java,
-            GET_ASSIGNMENT_BY_ID_QUERY, Assignment::class.java,
+        val createdAssignment = jdbi.insertAndGet(
+            CREATE_ASSIGNMENT_QUERY, CreatedAssignment::class.java,
             mapOf(
-                "classroomId" to classroomId,
+                "classroomId" to classroom.cid,
                 "name" to name,
                 "description" to description,
                 "type" to type,
                 "repoPrefix" to repoPrefix,
                 "repoTemplateId" to repoTemplateId
-            ),
-            "assignmentId"
+            )
+        )
+
+        return Assignment(
+            aid = createdAssignment.aid,
+            number = createdAssignment.number,
+            inv_code = null,
+            name = createdAssignment.name,
+            description = createdAssignment.description,
+            type = createdAssignment.type,
+            repo_prefix = createdAssignment.repo_prefix,
+            repo_template = createdAssignment.repo_template,
+
+            org_id = classroom.org_id,
+            classroom_id = classroom.cid,
+            classroom_number = classroom.number,
+            classroom_name = classroom.name,
         )
     }
 

@@ -11,3 +11,11 @@ data class Team(
     val classroom_number: Int,
     val classroom_name: String,
 )
+
+data class CreatedTeam(
+    val tid: Int,
+    val cid: Int,
+    val number: Int,
+    val name: String,
+    val gh_id: Int,
+)

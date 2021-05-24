@@ -16,5 +16,16 @@ data class Assignment(
     val classroom_name: String,
 )
 
+data class CreatedAssignment(
+    val aid: Int,
+    val cid: Int,
+    val number: Int,
+    val name: String,
+    val description: String?,
+    val type: String,
+    val repo_prefix: String,
+    val repo_template: Int?,
+)
+
 fun Assignment.isGroupAssignment() = this.type == "group"
 fun Assignment.isIndividualAssignment() = this.type == "individual"

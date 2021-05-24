@@ -334,7 +334,7 @@ class DeliveriesController(
         user: User,
         userClassroom: UserClassroom,
         @RequestBody input: DeliveryCreateInputModel?
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<Response> {
         if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
@@ -347,13 +347,36 @@ class DeliveriesController(
             throw InvalidInputException("Failed to parse due date")
         }
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
         val createdDelivery = deliveriesDb.createDelivery(orgId, classroomNumber, assignmentNumber, input.tag, dueDate)
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location",
-                getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
-            .body(null)
+        return DeliveryOutputModel(
+            id = createdDelivery.did,
+            number = createdDelivery.number,
+            tag = createdDelivery.tag,
+            dueDate = createdDelivery.due_date,
+            assignment = createdDelivery.assignment_name,
+            classroom = createdDelivery.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number),
+                getDeleteDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED,
+            mapOf(
+                "Location" to listOf(getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
+            )
+        )
     }
 
     @RequiresUserInAssignment
