@@ -11,6 +11,7 @@ private const val GET_AUTHCODE_QUERY = "$GET_AUTHCODES_BASE WHERE code = :code"
 private const val CREATE_AUTHCODE_QUERY = "INSERT INTO AUTHCODE VALUES(:code, :exp, :userId, :clientId)"
 
 private const val DELETE_AUTHCODE_QUERY = "DELETE FROM AUTHCODE WHERE code = :code"
+private const val DELETE_EXPIRED_AUTHCODES_QUERY = "DELETE FROM AUTHCODE WHERE NOW() >= expiration_date"
 
 @Component
 class AuthCodesDb(val jdbi: Jdbi) {
@@ -37,4 +38,6 @@ class AuthCodesDb(val jdbi: Jdbi) {
             )
         )
     }
+
+    fun deleteExpiredAuthCodes() = jdbi.deleteAndGetCount(DELETE_EXPIRED_AUTHCODES_QUERY)
 }
