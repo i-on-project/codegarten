@@ -26,7 +26,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
@@ -134,7 +134,7 @@ class TeamsController(
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
         val isMember = teamsDb.isUserInTeam(user.uid, team.tid)
         if (userClassroom.role != TEACHER && !isMember)
-            throw AuthorizationException("User is not in team")
+            throw ForbiddenException("User is not in team")
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
         val ghTeam = gitHub.getTeam(orgId, team.gh_id, user.gh_token)
@@ -183,7 +183,7 @@ class TeamsController(
         installation: Installation,
         @RequestBody input: TeamCreateInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -208,7 +208,7 @@ class TeamsController(
         userClassroom: UserClassroom,
         @RequestBody input: TeamEditInputModel?
     ): ResponseEntity<Response> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -231,7 +231,7 @@ class TeamsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
 

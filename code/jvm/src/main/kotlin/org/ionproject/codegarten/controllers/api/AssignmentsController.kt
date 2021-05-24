@@ -30,7 +30,7 @@ import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
@@ -89,7 +89,7 @@ class AssignmentsController(
                 assignmentsCount = assignmentsDb.getAssignmentsOfUserCount(orgId, classroomNumber, user.uid)
                 assignmentsDb.getAssignmentsOfUser(orgId, classroomNumber, user.uid, pagination.page, pagination.limit)
             }
-            else -> throw AuthorizationException("User is not a member of the classroom")
+            else -> throw ForbiddenException("User is not a member of the classroom")
         }
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
@@ -155,7 +155,7 @@ class AssignmentsController(
                 )
             }
             UserClassroomMembership.STUDENT -> { listOf() }
-            else -> throw AuthorizationException("User is not a member of the classroom")
+            else -> throw ForbiddenException("User is not a member of the classroom")
         }
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
@@ -205,7 +205,7 @@ class AssignmentsController(
         installation: Installation,
         @RequestBody input: AssignmentCreateInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != UserClassroomMembership.TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -248,7 +248,7 @@ class AssignmentsController(
         userClassroom: UserClassroom,
         @RequestBody input: AssignmentEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != UserClassroomMembership.TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
@@ -269,7 +269,7 @@ class AssignmentsController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Any> {
-        if (userClassroom.role != UserClassroomMembership.TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != UserClassroomMembership.TEACHER) throw ForbiddenException("User is not a teacher")
 
         assignmentsDb.deleteAssignment(orgId, classroomNumber, assignmentNumber)
 
