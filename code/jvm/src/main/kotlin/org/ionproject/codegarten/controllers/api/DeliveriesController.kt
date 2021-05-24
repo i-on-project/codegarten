@@ -395,7 +395,8 @@ class DeliveriesController(
         if (input == null) throw InvalidInputException("Missing body")
 
         val dueDate = try {
-            OffsetDateTime.parse(input.dueDate)
+            if (input.dueDate != null) OffsetDateTime.parse(input.dueDate)
+            else null
         } catch (ex: DateTimeParseException) {
             throw InvalidInputException("Failed to parse due date")
         }
