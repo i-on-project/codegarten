@@ -35,6 +35,7 @@ import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
@@ -205,10 +206,10 @@ class UsersController(
         userClassroom: UserClassroom,
         @RequestBody input: UserAddInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         // User cannot add itself into the classroom, so it's safe to assume it's an edit request
-        if (user.uid == userId) throw InvalidInputException("Cannot edit user with id '$userId' while authenticated as itself")
+        if (user.uid == userId) throw ForbiddenException("Cannot edit user with id '$userId' while authenticated as itself")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.role == null) throw InvalidInputException("Missing role")
@@ -244,7 +245,7 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         usersDb.deleteUserFromClassroom(orgId, classroomNumber, userId)
 
@@ -265,7 +266,7 @@ class UsersController(
     ): ResponseEntity<Response> {
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
         if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
-            throw AuthorizationException("User is not in team")
+            throw ForbiddenException("User is not in team")
 
         val users = usersDb.getUsersInTeam(team.tid, pagination.page, pagination.limit)
         val usersCount = usersDb.getUsersInTeamCount(team.tid)
@@ -323,7 +324,7 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
         val userToAdd = usersDb.getUserById(userId)
@@ -350,7 +351,7 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER && user.uid != userId) throw AuthorizationException("Not enough permissions to remove another user")
+        if (userClassroom.role != TEACHER && user.uid != userId) throw ForbiddenException("Not enough permissions to remove another user")
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
         val userToRemove = usersDb.getUserById(userId)

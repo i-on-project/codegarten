@@ -27,6 +27,7 @@ import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
@@ -171,7 +172,7 @@ class ClassroomsController(
         orgMembership: GitHubUserOrgRole,
         @RequestBody input: ClassroomCreateInputModel?
     ): ResponseEntity<Any> {
-        if (orgMembership != GitHubUserOrgRole.ADMIN) throw AuthorizationException("User is not an organization admin")
+        if (orgMembership != GitHubUserOrgRole.ADMIN) throw ForbiddenException("User is not an organization admin")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -195,7 +196,7 @@ class ClassroomsController(
         userClassroom: UserClassroom,
         @RequestBody input: ClassroomEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a classroom teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
@@ -215,7 +216,7 @@ class ClassroomsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a classroom teacher")
 
         classroomsDb.deleteClassroom(orgId, classroomNumber)
         return ResponseEntity

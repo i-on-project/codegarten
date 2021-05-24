@@ -15,6 +15,7 @@ import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -89,7 +90,7 @@ class AuthorizationInterceptor(
         )
 
         if (membership.role == GitHubUserOrgRole.NOT_A_MEMBER) {
-            throw AuthorizationException("User is not in the organization")
+            throw ForbiddenException("User is not in the organization")
         }
 
         return membership.role
@@ -127,7 +128,7 @@ class AuthorizationInterceptor(
                         usersDb.getUserMembershipInClassroom(orgId, classroomNumber, user.uid)
 
                     if (userClassroom.role == UserClassroomMembership.NOT_A_MEMBER)
-                        throw AuthorizationException("User is not in classroom")
+                        throw ForbiddenException("User is not in classroom")
 
                     request.setAttribute(CLASSROOM_MEMBERSHIP_ATTRIBUTE, userClassroom)
 
@@ -140,7 +141,7 @@ class AuthorizationInterceptor(
                             if (
                                 assignment.isIndividualAssignment() && !usersDb.isUserInAssignment(assignment.aid, user.uid)
                                 || assignment.isGroupAssignment() && !teamsDb.isUserTeamInAssignment(assignment.aid, user.uid)
-                            ) throw AuthorizationException("User is not in assignment")
+                            ) throw ForbiddenException("User is not in assignment")
                         }
 
                         request.setAttribute(ASSIGNMENT_ATTRIBUTE, assignment)

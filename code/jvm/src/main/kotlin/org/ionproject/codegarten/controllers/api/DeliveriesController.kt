@@ -39,6 +39,7 @@ import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
@@ -194,12 +195,12 @@ class DeliveriesController(
             if (isGroupAssignment) {
                 val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
                 if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
             } else {
                 if (!isTeacher && user.uid != participantId)
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
             }
@@ -284,12 +285,12 @@ class DeliveriesController(
             if (isGroupAssignment) {
                 val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
                 if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
             } else {
                 if (!isTeacher && user.uid != participantId)
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
             }
@@ -335,7 +336,7 @@ class DeliveriesController(
         userClassroom: UserClassroom,
         @RequestBody input: DeliveryCreateInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.tag == null) throw InvalidInputException("Missing tag")
@@ -367,7 +368,7 @@ class DeliveriesController(
         userClassroom: UserClassroom,
         @RequestBody input: DeliveryEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
 
@@ -396,7 +397,7 @@ class DeliveriesController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         deliveriesDb.deleteDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber)
 
