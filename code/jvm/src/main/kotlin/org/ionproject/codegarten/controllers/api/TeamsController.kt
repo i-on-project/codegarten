@@ -152,6 +152,7 @@ class TeamsController(
             number = team.number,
             name = team.name,
             gitHubName = ghTeam.name,
+            isMember = userClassroom.role != TEACHER,
             classroom = team.classroom_name,
             organization = ghTeam.organization.login
         ).toSirenObject(
