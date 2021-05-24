@@ -244,7 +244,13 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER && user.uid != userId)
+            throw AuthorizationException("Not enough permissions to remove another user")
+
+        // Don't allow teachers to leave if they are the only teacher in the classroom
+        val isTeacherLeaving = userClassroom.role == TEACHER && user.uid == userId
+        if (isTeacherLeaving && usersDb.getTeachersInClassroomCount(userClassroom.classroom.cid) == 1)
+            throw AuthorizationException("Unable to leave classroom as there are no other teachers")
 
         usersDb.deleteUserFromClassroom(orgId, classroomNumber, userId)
 
@@ -350,7 +356,8 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER && user.uid != userId) throw AuthorizationException("Not enough permissions to remove another user")
+        if (userClassroom.role != TEACHER && user.uid != userId)
+            throw AuthorizationException("Not enough permissions to remove another user")
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
         val userToRemove = usersDb.getUserById(userId)
