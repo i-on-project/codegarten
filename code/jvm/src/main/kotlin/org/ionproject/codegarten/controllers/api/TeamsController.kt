@@ -132,7 +132,8 @@ class TeamsController(
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
-        if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
+        val isMember = teamsDb.isUserInTeam(user.uid, team.tid)
+        if (userClassroom.role != TEACHER && !isMember)
             throw AuthorizationException("User is not in team")
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
@@ -152,7 +153,7 @@ class TeamsController(
             number = team.number,
             name = team.name,
             gitHubName = ghTeam.name,
-            isMember = userClassroom.role != TEACHER,
+            isMember = isMember,
             classroom = team.classroom_name,
             organization = ghTeam.organization.login
         ).toSirenObject(
