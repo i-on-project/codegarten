@@ -250,7 +250,7 @@ class UsersController(
         // Don't allow teachers to leave if they are the only teacher in the classroom
         val isTeacherLeaving = userClassroom.role == TEACHER && user.uid == userId
         if (isTeacherLeaving && usersDb.getTeachersInClassroomCount(userClassroom.classroom.cid) == 1)
-            throw AuthorizationException("Cannot leave classroom as you are the only teacher")
+            throw AuthorizationException("Unable to leave classroom as there are no other teachers")
 
         usersDb.deleteUserFromClassroom(orgId, classroomNumber, userId)
 
