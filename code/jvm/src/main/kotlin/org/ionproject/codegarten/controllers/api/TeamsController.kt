@@ -18,6 +18,7 @@ import org.ionproject.codegarten.controllers.api.actions.TeamActions.getDeleteTe
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getEditTeamAction
 import org.ionproject.codegarten.controllers.models.TeamCreateInputModel
 import org.ionproject.codegarten.controllers.models.TeamEditInputModel
+import org.ionproject.codegarten.controllers.models.TeamItemOutputModel
 import org.ionproject.codegarten.controllers.models.TeamOutputModel
 import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.database.dto.Installation
@@ -25,7 +26,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
@@ -89,7 +90,7 @@ class TeamsController(
             pageSize = teams.size,
         ).toSirenObject(
             entities = teams.map {
-                TeamOutputModel(
+                TeamItemOutputModel(
                     id = it.tid,
                     number = it.number,
                     name = it.name,
@@ -131,8 +132,9 @@ class TeamsController(
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
-        if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
-            throw AuthorizationException("User is not in team")
+        val isMember = teamsDb.isUserInTeam(user.uid, team.tid)
+        if (userClassroom.role != TEACHER && !isMember)
+            throw ForbiddenException("User is not in team")
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
         val ghTeam = gitHub.getTeam(orgId, team.gh_id, user.gh_token)
@@ -150,6 +152,8 @@ class TeamsController(
             id = team.tid,
             number = team.number,
             name = team.name,
+            gitHubName = ghTeam.name,
+            isMember = isMember,
             classroom = team.classroom_name,
             organization = ghTeam.organization.login
         ).toSirenObject(
@@ -178,20 +182,43 @@ class TeamsController(
         userClassroom: UserClassroom,
         installation: Installation,
         @RequestBody input: TeamCreateInputModel?
-    ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+    ): ResponseEntity<Response> {
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
         val gitHubName = generateCodeGartenTeamName(classroomNumber, input.name)
         val ghTeam = gitHub.createTeam(orgId, gitHubName, installation.accessToken)
-        val teamNumber = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id).number
+        val createdTeam = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id)
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location", getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost().toString())
-            .body(null)
+        return TeamOutputModel(
+            id = createdTeam.tid,
+            number = createdTeam.number,
+            name = createdTeam.name,
+            gitHubName = ghTeam.name,
+            isMember = false,
+            classroom = userClassroom.classroom.name,
+            organization = ghTeam.organization.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditTeamAction(orgId, classroomNumber, createdTeam.number),
+                getDeleteTeamAction(orgId, classroomNumber, createdTeam.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost()),
+                SirenLink(listOf("github"), URI(ghTeam.html_url)),
+                SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(createdTeam.gh_id)),
+                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, createdTeam.number).includeHost()),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED, mapOf(
+            "Location" to listOf(getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost().toString())
+        ))
     }
 
     @RequiresUserInClassroom
@@ -204,7 +231,7 @@ class TeamsController(
         userClassroom: UserClassroom,
         @RequestBody input: TeamEditInputModel?
     ): ResponseEntity<Response> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
@@ -227,7 +254,7 @@ class TeamsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
 

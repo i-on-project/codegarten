@@ -1,6 +1,7 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.PsqlErrorCode
+import org.ionproject.codegarten.database.dto.CreatedInviteCode
 import org.ionproject.codegarten.database.dto.InviteCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.utils.CryptoUtils
@@ -28,12 +29,13 @@ class InviteCodesDb(
             mapOf("invCode" to invCode)
         )
 
-    fun createInviteCode(invCode: String, classroomId: Int, assignmentId: Int? = null) {
+    fun createInviteCode(invCode: String, classroomId: Int, assignmentId: Int? = null): CreatedInviteCode {
         // If assignmentId is null, the invite code is for a classroom
         val type = if (assignmentId == null) "classroom" else "assignment"
 
-        jdbi.insert(
+        return jdbi.insertAndGet(
             CREATE_INVITE_CODE_QUERY,
+            CreatedInviteCode::class.java,
             mapOf(
                 "invCode" to invCode,
                 "type" to type,
@@ -43,12 +45,11 @@ class InviteCodesDb(
         )
     }
 
-    fun generateAndCreateUniqueInviteCode(classroomId: Int, assignmentId: Int? = null) {
+    fun generateAndCreateUniqueInviteCode(classroomId: Int, assignmentId: Int? = null): CreatedInviteCode {
         while (true) {
             val invCode = cryptoUtils.generateInviteCode()
             try {
-                createInviteCode(invCode, classroomId, assignmentId)
-                break
+                return createInviteCode(invCode, classroomId, assignmentId)
             } catch (ex: JdbiException) {
                 if (ex.getPsqlErrorCode() != PsqlErrorCode.UniqueViolation) throw ex
                 // If invite code was not unique, the loop will repeat and generate a new one

@@ -7,6 +7,18 @@ class TeamOutputModel(
     val id: Int,
     val number: Int,
     val name: String,
+    val gitHubName: String,
+    val isMember: Boolean,
+    val classroom: String,
+    val organization: String
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(team)
+}
+
+class TeamItemOutputModel(
+    val id: Int,
+    val number: Int,
+    val name: String,
     val classroom: String,
     val organization: String
 ) : OutputModel() {

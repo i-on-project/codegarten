@@ -26,7 +26,7 @@ import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.UsersDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
@@ -143,7 +143,7 @@ class ClassroomsController(
 
         return ClassroomOutputModel(
             id = classroom.cid,
-            if (isTeacher) classroom.inv_code else null,
+            inviteCode = if (isTeacher) classroom.inv_code else null,
             number = classroom.number,
             name = classroom.name,
             description = classroom.description,
@@ -170,20 +170,45 @@ class ClassroomsController(
         user: User,
         orgMembership: GitHubUserOrgRole,
         @RequestBody input: ClassroomCreateInputModel?
-    ): ResponseEntity<Any> {
-        if (orgMembership != GitHubUserOrgRole.ADMIN) throw AuthorizationException("User is not an organization admin")
+    ): ResponseEntity<Response> {
+        if (orgMembership != GitHubUserOrgRole.ADMIN) throw ForbiddenException("User is not an organization admin")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null) throw InvalidInputException("Missing name")
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
         val createdClassroom = classroomsDb.createClassroom(orgId, input.name, input.description)
-        inviteCodesDb.generateAndCreateUniqueInviteCode(createdClassroom.cid)
+        val inviteCode = inviteCodesDb.generateAndCreateUniqueInviteCode(createdClassroom.cid)
 
         usersDb.addUserToClassroom(createdClassroom.cid, user.uid, TEACHER)
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location", getClassroomByNumberUri(orgId, createdClassroom.number).includeHost().toString())
-            .body(null)
+
+        return ClassroomOutputModel(
+            id = createdClassroom.cid,
+            inviteCode = inviteCode.inv_code,
+            number = createdClassroom.number,
+            name = createdClassroom.name,
+            description = createdClassroom.description,
+            organization = org.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditClassroomAction(orgId, createdClassroom.number),
+                getDeleteClassroomAction(orgId, createdClassroom.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, createdClassroom.number).includeHost()),
+                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, createdClassroom.number).includeHost()),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, createdClassroom.number).includeHost()),
+                SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, createdClassroom.number).includeHost()),
+                SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED,
+            mapOf(
+                "Location" to listOf(getClassroomByNumberUri(orgId, createdClassroom.number).includeHost().toString())
+            )
+        )
     }
 
     @RequiresUserInClassroom
@@ -195,7 +220,7 @@ class ClassroomsController(
         userClassroom: UserClassroom,
         @RequestBody input: ClassroomEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a classroom teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.name == null && input.description == null) throw InvalidInputException("Missing name or description")
@@ -215,7 +240,7 @@ class ClassroomsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a classroom teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a classroom teacher")
 
         classroomsDb.deleteClassroom(orgId, classroomNumber)
         return ResponseEntity

@@ -6,6 +6,7 @@ import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
@@ -50,29 +51,27 @@ class ExceptionHandler {
     private fun handleHttpRequestException(
         ex: HttpRequestException,
         request: HttpServletRequest
-    ): ResponseEntity<Response> {
-        return handleExceptionResponse(
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
             URI("/problems/github-api-error").includeHost(),
             "Error While Processing GitHub API Response",
             HttpStatus.INTERNAL_SERVER_ERROR,
             ex.localizedMessage,
             request.requestURI
         )
-    }
 
     @ExceptionHandler(value = [NotFoundException::class])
     private fun handleNotFoundException(
         ex: NotFoundException,
         request: HttpServletRequest
-    ): ResponseEntity<Response> {
-        return handleExceptionResponse(
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
             URI("/problems/resource-not-found").includeHost(),
             "Resource Not Found",
             HttpStatus.NOT_FOUND,
             ex.localizedMessage,
             request.requestURI
         )
-    }
 
     @ExceptionHandler(value = [AuthorizationException::class])
     private fun handleAuthorizationException(
@@ -92,47 +91,57 @@ class ExceptionHandler {
         )
     }
 
+    @ExceptionHandler(value = [ForbiddenException::class])
+    private fun handleForbiddenException(
+        ex: ForbiddenException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
+            URI("/problems/forbidden-operation").includeHost(),
+            "Forbidden Operation",
+            HttpStatus.FORBIDDEN,
+            ex.localizedMessage,
+            request.requestURI,
+        )
+
     @ExceptionHandler(value = [PaginationException::class])
     private fun handlePaginationException(
         ex: PaginationException,
         request: HttpServletRequest
-    ): ResponseEntity<Response> {
-        return handleExceptionResponse(
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
             URI("/problems/invalid-pagination-parameters").includeHost(),
             "Invalid Pagination Parameters",
             HttpStatus.BAD_REQUEST,
             ex.localizedMessage,
             request.requestURI
         )
-    }
 
     @ExceptionHandler(value = [InvalidInputException::class])
     private fun handleInvalidInputException(
         ex: InvalidInputException,
         request: HttpServletRequest
-    ): ResponseEntity<Response> {
-        return handleExceptionResponse(
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
             URI("/problems/invalid-input").includeHost(),
             "Invalid Input",
             HttpStatus.BAD_REQUEST,
             ex.localizedMessage,
             request.requestURI
         )
-    }
 
     @ExceptionHandler(value = [ClientException::class])
     private fun handleClientException(
         ex: ClientException,
         request: HttpServletRequest
-    ): ResponseEntity<Response> {
-        return handleExceptionResponse(
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
             URI("/problems/invalid-client").includeHost(),
             "Invalid Client",
             HttpStatus.UNAUTHORIZED,
             ex.localizedMessage,
             request.requestURI
         )
-    }
 
     @ExceptionHandler(value = [JdbiException::class])
     private fun handleJdbiException(

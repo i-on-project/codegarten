@@ -1,5 +1,6 @@
 package org.ionproject.codegarten.database.helpers
 
+import org.ionproject.codegarten.database.dto.CreatedDelivery
 import org.ionproject.codegarten.database.dto.Delivery
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
@@ -15,7 +16,7 @@ private const val GET_DELIVERY_BY_ID_QUERY = "$GET_DELIVERIES_BASE WHERE did = :
 
 private const val GET_DELIVERIES_OF_ASSIGNMENT_QUERY =
     "$GET_DELIVERIES_BASE WHERE org_id = :orgId AND classroom_number = :classroomNumber AND " +
-    "assignment_number = :assignmentNumber ORDER BY number"
+    "assignment_number = :assignmentNumber ORDER BY due_date, number"
 private const val GET_DELIVERIES_OF_ASSIGNMENT_COUNT =
     "SELECT COUNT(did) as count from V_DELIVERY WHERE org_id = :orgId AND " +
     "classroom_number = :classroomNumber AND assignment_number = :assignmentNumber"
@@ -62,17 +63,31 @@ class DeliveriesDb(
 
     fun createDelivery(orgId: Int, classroomNumber: Int, assignmentNumber: Int,
                        tag: String, dueDate: OffsetDateTime? = null): Delivery {
-        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
+        val assignment = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber)
 
-        return jdbi.insertAndGet(
-            CREATE_DELIVERY_QUERY, Int::class.java,
-            GET_DELIVERY_BY_ID_QUERY, Delivery::class.java,
+        val createdDelivery = jdbi.insertAndGet(
+            CREATE_DELIVERY_QUERY, CreatedDelivery::class.java,
             mapOf(
-                "assignmentId" to assignmentId,
+                "assignmentId" to assignment.aid,
                 "tag" to tag,
                 "dueDate" to dueDate
-            ),
-            "deliveryId"
+            )
+        )
+
+        return Delivery(
+            did = createdDelivery.did,
+            number = createdDelivery.number,
+            tag = createdDelivery.tag,
+            due_date = createdDelivery.due_date,
+
+            assignment_id = assignment.aid,
+            assignment_number = assignment.number,
+            assignment_name = assignment.name,
+
+            org_id = assignment.org_id,
+            classroom_id = assignment.classroom_id,
+            classroom_number = assignment.classroom_number,
+            classroom_name = assignment.classroom_name,
         )
     }
 

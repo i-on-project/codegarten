@@ -38,7 +38,7 @@ import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
-import org.ionproject.codegarten.exceptions.AuthorizationException
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
@@ -194,12 +194,12 @@ class DeliveriesController(
             if (isGroupAssignment) {
                 val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
                 if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
             } else {
                 if (!isTeacher && user.uid != participantId)
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
             }
@@ -284,12 +284,12 @@ class DeliveriesController(
             if (isGroupAssignment) {
                 val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
                 if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
             } else {
                 if (!isTeacher && user.uid != participantId)
-                    throw AuthorizationException("Not enough permission to see deliveries")
+                    throw ForbiddenException("Not enough permission to see deliveries")
 
                 usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
             }
@@ -334,8 +334,8 @@ class DeliveriesController(
         user: User,
         userClassroom: UserClassroom,
         @RequestBody input: DeliveryCreateInputModel?
-    ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+    ): ResponseEntity<Response> {
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.tag == null) throw InvalidInputException("Missing tag")
@@ -347,13 +347,36 @@ class DeliveriesController(
             throw InvalidInputException("Failed to parse due date")
         }
 
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
         val createdDelivery = deliveriesDb.createDelivery(orgId, classroomNumber, assignmentNumber, input.tag, dueDate)
 
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .header("Location",
-                getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
-            .body(null)
+        return DeliveryOutputModel(
+            id = createdDelivery.did,
+            number = createdDelivery.number,
+            tag = createdDelivery.tag,
+            dueDate = createdDelivery.due_date,
+            assignment = createdDelivery.assignment_name,
+            classroom = createdDelivery.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number),
+                getDeleteDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED,
+            mapOf(
+                "Location" to listOf(getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
+            )
+        )
     }
 
     @RequiresUserInAssignment
@@ -367,7 +390,7 @@ class DeliveriesController(
         userClassroom: UserClassroom,
         @RequestBody input: DeliveryEditInputModel?
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
 
@@ -396,7 +419,7 @@ class DeliveriesController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw AuthorizationException("User is not a teacher")
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         deliveriesDb.deleteDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber)
 
