@@ -114,3 +114,11 @@ fun Jdbi.delete(query: String, binds: Map<String, Any?>? = null) {
         if (handle.execute() == 0) throw NotFoundException("Resource does not exist")
     }
 }
+
+fun Jdbi.deleteAndGetCount(query: String, binds: Map<String, Any?>? = null): Int =
+    this.withHandle<Int, Exception> {
+        val handle = it.createUpdate(query)
+        binds?.forEach { entry -> handle.bind(entry.key, entry.value) }
+
+        handle.execute()
+    }
