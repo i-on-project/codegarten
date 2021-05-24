@@ -215,7 +215,7 @@ class UsersDb(
         return getUserMembershipInClassroom(classroom, userId)
     }
 
-    fun getUserMembershipInClassroom(classroom: Classroom, userId: Int): UserClassroom {
+    private fun getUserMembershipInClassroom(classroom: Classroom, userId: Int): UserClassroom {
         val maybeUserClassroom = jdbi.tryGetOne(
             GET_USER_CLASSROOM_QUERY,
             UserClassroomDto::class.java,

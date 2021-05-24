@@ -20,7 +20,8 @@ class ParticipantItemOutputModel(
 
 enum class ParticipantTypes(val type: String) {
     USER("user"),
-    TEAM("team")
+    TEAM("team"),
+    TEACHER("teacher")
 }
 
 class ParticipantsOutputModel(
