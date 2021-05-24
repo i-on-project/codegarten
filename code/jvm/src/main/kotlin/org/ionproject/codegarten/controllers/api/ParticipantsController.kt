@@ -96,60 +96,83 @@ class ParticipantsController(
         user: User,
     ): ResponseEntity<Response> {
         val assignment = assignmentsDb.getAssignmentById(assignmentId)
+        val membership = usersDb.getUserMembershipInClassroom(assignment.classroom_id, user.uid).role
 
         val participation =
-            if (assignment.isIndividualAssignment()) {
-                val userAssignment = usersDb.getUserAssignment(assignment.aid, user.uid)
-                val repo = gitHub.getRepoById(userAssignment.repo_id, user.gh_token)
+            when {
+                membership == TEACHER -> {
+                    ParticipantOutputModel(
+                        type = ParticipantTypes.TEACHER.type,
+                        id = user.uid,
+                        name = user.name,
+                    ).toSirenObject(
+                        links = listOf(
+                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
+                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                            SirenLink(listOf("assignment"),
+                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            ),
+                            SirenLink(listOf("classroom"),
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                            ),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                        )
+                    )
+                }
+                assignment.isIndividualAssignment() -> {
+                    val userAssignment = usersDb.getUserAssignment(assignment.aid, user.uid)
+                    val repo = gitHub.getRepoById(userAssignment.repo_id, user.gh_token)
 
-                ParticipantOutputModel(
-                    type = ParticipantTypes.USER.type,
-                    id = user.uid,
-                    name = user.name,
-                ).toSirenObject(
-                    links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
-                        SirenLink(listOf("repo"), URI(repo.html_url)),
-                        SirenLink(listOf("deliveries"),
-                            getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, user.uid).includeHost()
-                        ),
-                        SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
-                        SirenLink(listOf("assignment"),
-                            getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
-                        ),
-                        SirenLink(listOf("classroom"),
-                            getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
-                        ),
-                        SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                    ParticipantOutputModel(
+                        type = ParticipantTypes.USER.type,
+                        id = user.uid,
+                        name = user.name,
+                    ).toSirenObject(
+                        links = listOf(
+                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
+                            SirenLink(listOf("repo"), URI(repo.html_url)),
+                            SirenLink(listOf("deliveries"),
+                                getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, user.uid).includeHost()
+                            ),
+                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                            SirenLink(listOf("assignment"),
+                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            ),
+                            SirenLink(listOf("classroom"),
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                            ),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                        )
                     )
-                )
-            } else {
-                // TODO: User may be registered multiple times in an assignment using different teams
-                // Group assignment
-                val team = teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
-                val teamAssignment = teamsDb.getTeamAssignment(assignment.aid, team.tid)
-                val repo = gitHub.getRepoById(teamAssignment.repo_id, user.gh_token)
-                ParticipantOutputModel(
-                    type = ParticipantTypes.TEAM.type,
-                    id = team.tid,
-                    name = team.name,
-                ).toSirenObject(
-                    links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
-                        SirenLink(listOf("repo"), URI(repo.html_url)),
-                        SirenLink(listOf("deliveries"),
-                            getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, team.number).includeHost()
-                        ),
-                        SirenLink(listOf("team"), getTeamByNumberUri(team.org_id, team.classroom_number, team.number).includeHost()),
-                        SirenLink(listOf("assignment"),
-                            getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
-                        ),
-                        SirenLink(listOf("classroom"),
-                            getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
-                        ),
-                        SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                }
+                else -> {
+                    // TODO: User may be registered multiple times in an assignment using different teams
+                    // Group assignment
+                    val team = teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
+                    val teamAssignment = teamsDb.getTeamAssignment(assignment.aid, team.tid)
+                    val repo = gitHub.getRepoById(teamAssignment.repo_id, user.gh_token)
+                    ParticipantOutputModel(
+                        type = ParticipantTypes.TEAM.type,
+                        id = team.tid,
+                        name = team.name,
+                    ).toSirenObject(
+                        links = listOf(
+                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
+                            SirenLink(listOf("repo"), URI(repo.html_url)),
+                            SirenLink(listOf("deliveries"),
+                                getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, team.number).includeHost()
+                            ),
+                            SirenLink(listOf("team"), getTeamByNumberUri(team.org_id, team.classroom_number, team.number).includeHost()),
+                            SirenLink(listOf("assignment"),
+                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            ),
+                            SirenLink(listOf("classroom"),
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                            ),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                        )
                     )
-                )
+                }
             }
 
         return participation.toResponseEntity(HttpStatus.OK)
