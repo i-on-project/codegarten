@@ -9,7 +9,7 @@ import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.InvitationActions
 import org.ionproject.codegarten.controllers.models.AssignmentInvitationOutputModel
 import org.ionproject.codegarten.controllers.models.ClassroomInvitationOutputModel
-import org.ionproject.codegarten.controllers.models.TeamOutputModel
+import org.ionproject.codegarten.controllers.models.TeamItemOutputModel
 import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.isFromClassroom
@@ -114,7 +114,7 @@ class InvitationsController(
             pageSize = teams.size,
         ).toSirenObject(
             entities = teams.map {
-                TeamOutputModel(
+                TeamItemOutputModel(
                     id = it.tid,
                     number = it.number,
                     name = it.name,

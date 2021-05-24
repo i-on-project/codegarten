@@ -18,6 +18,7 @@ import org.ionproject.codegarten.controllers.api.actions.TeamActions.getDeleteTe
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getEditTeamAction
 import org.ionproject.codegarten.controllers.models.TeamCreateInputModel
 import org.ionproject.codegarten.controllers.models.TeamEditInputModel
+import org.ionproject.codegarten.controllers.models.TeamItemOutputModel
 import org.ionproject.codegarten.controllers.models.TeamOutputModel
 import org.ionproject.codegarten.controllers.models.TeamsOutputModel
 import org.ionproject.codegarten.database.dto.Installation
@@ -89,7 +90,7 @@ class TeamsController(
             pageSize = teams.size,
         ).toSirenObject(
             entities = teams.map {
-                TeamOutputModel(
+                TeamItemOutputModel(
                     id = it.tid,
                     number = it.number,
                     name = it.name,
@@ -150,6 +151,7 @@ class TeamsController(
             id = team.tid,
             number = team.number,
             name = team.name,
+            gitHubName = ghTeam.name,
             classroom = team.classroom_name,
             organization = ghTeam.organization.login
         ).toSirenObject(
