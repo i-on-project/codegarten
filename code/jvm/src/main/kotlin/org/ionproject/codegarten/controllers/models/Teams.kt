@@ -8,6 +8,7 @@ class TeamOutputModel(
     val number: Int,
     val name: String,
     val gitHubName: String,
+    val isMember: Boolean,
     val classroom: String,
     val organization: String
 ) : OutputModel() {
