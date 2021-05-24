@@ -197,6 +197,8 @@ class TeamsController(
             id = createdTeam.tid,
             number = createdTeam.number,
             name = createdTeam.name,
+            gitHubName = ghTeam.name,
+            isMember = false,
             classroom = userClassroom.classroom.name,
             organization = ghTeam.organization.login
         ).toSirenObject(
