@@ -2,6 +2,7 @@ package org.ionproject.codegarten.controllers.api
 
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
+import org.ionproject.codegarten.Routes.SEARCH_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.TEAM_PARAM
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
@@ -55,6 +56,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
@@ -146,12 +148,20 @@ class UsersController(
     fun getUsersOfClassroom(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @RequestParam(name = SEARCH_PARAM) search: String?,
         pagination: Pagination,
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        val users = usersDb.getUsersInClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
-        val usersCount = usersDb.getUsersInClassroomCount(orgId, classroomNumber)
+        val usersCount: Int
+
+        val users = if (search.isNullOrEmpty()) {
+            usersCount = usersDb.getUsersInClassroomCount(orgId, classroomNumber)
+            usersDb.getUsersInClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
+        } else {
+            usersCount = usersDb.searchUsersInClassroomCount(orgId, classroomNumber, search)
+            usersDb.searchUsersInClassroom(orgId, classroomNumber, search, pagination.page, pagination.limit)
+        }
 
         val actions =
             if (userClassroom.role == TEACHER)
