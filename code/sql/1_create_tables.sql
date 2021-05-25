@@ -124,3 +124,5 @@ CREATE TABLE INVITECODE
     aid             INT REFERENCES ASSIGNMENT(aid) ON DELETE CASCADE, -- Assignment may be null when the invite code is for the classroom
     cid             INT REFERENCES CLASSROOM(cid) ON DELETE CASCADE NOT NULL
 );
+
+CREATE EXTENSION pg_trgm;

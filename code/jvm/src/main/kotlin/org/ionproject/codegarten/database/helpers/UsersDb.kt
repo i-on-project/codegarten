@@ -30,11 +30,18 @@ private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
 private const val GET_USERS_IN_CLASSROOM_QUERY =
     "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
         "WHERE classroom_id = :classroomId ORDER BY classroom_role DESC, uid"
+private const val SEARCH_USERS_IN_CLASSROOM_QUERY =
+    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
+            "WHERE classroom_id = :classroomId AND SIMILARITY(name, :search) > 0 ORDER BY SIMILARITY(name, :search) DESC"
+
 private const val GET_USER_IN_CLASSROOM_QUERY =
     "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
 private const val GET_USERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid IN " +
         "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
+private const val SEARCH_USERS_IN_CLASSROOM_COUNT =
+    "SELECT COUNT(uid) as count FROM V_USER_CLASSROOM where classroom_id IN " +
+            "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber) AND SIMILARITY(name, :search) > 0"
 private const val GET_TEACHERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid = :classroomId AND type = 'teacher'"
 
@@ -153,6 +160,28 @@ class UsersDb(
             GET_USERS_IN_CLASSROOM_COUNT,
             Int::class.java,
             mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
+        )
+
+    fun searchUsersInClassroom(orgId: Int, classroomNumber: Int, search: String, page: Int, limit: Int): List<UserClassroomDto> {
+        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
+        return jdbi.getList(
+            SEARCH_USERS_IN_CLASSROOM_QUERY,
+            UserClassroomDto::class.java, page, limit,
+            mapOf(
+                "classroomId" to classroomId,
+                "search" to search
+            )
+        )
+    }
+    fun searchUsersInClassroomCount(orgId: Int, classroomNumber: Int, search: String) =
+        jdbi.getOne(
+            SEARCH_USERS_IN_CLASSROOM_COUNT,
+            Int::class.java,
+            mapOf(
+                "orgId" to orgId,
+                "classroomNumber" to classroomNumber,
+                "search" to search
+            )
         )
 
     fun getTeachersInClassroomCount(classroomId: Int) =

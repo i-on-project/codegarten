@@ -26,6 +26,7 @@ object Routes {
     const val ASSIGNMENT_ID_PARAM = "assignmentId"
     const val DELIVERY_PARAM = "deliveryNumber"
     const val USER_PARAM = "userId"
+    const val SEARCH_PARAM = "q"
     const val PARTICIPANT_PARAM = "participantId"
     const val INVITE_CODE_PARAM = "inviteCode"
     const val CLIENT_ID_PARAM = "client_id"
