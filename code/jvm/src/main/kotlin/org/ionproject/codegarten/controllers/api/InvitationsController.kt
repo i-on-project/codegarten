@@ -60,8 +60,10 @@ class InvitationsController(
             if (inviteCode.isFromClassroom()) {
                 ClassroomInvitationOutputModel(
                     id = classroom.cid,
+                    number = classroom.number,
                     name = classroom.name,
                     description = classroom.description,
+                    orgId = org.id,
                     organization = org.login,
                 ).toSirenObject(
                     actions = listOf(InvitationActions.getJoinClassroomInviteAction(inviteCodePath)),
@@ -77,10 +79,14 @@ class InvitationsController(
                 val assignment = assignmentsDb.getAssignmentById(inviteCode.assignment_id)
                 AssignmentInvitationOutputModel(
                     id = assignment.aid,
+                    number = assignment.number,
                     name = assignment.name,
                     description = assignment.description,
                     type = assignment.type,
+                    classroomId = assignment.classroom_id,
+                    classroomNumber = assignment.classroom_number,
                     classroom = assignment.classroom_name,
+                    orgId = org.id,
                     organization = org.login
                 ).toSirenObject(
                     actions = listOf(InvitationActions.getJoinAssignmentInviteAction(inviteCodePath)),
