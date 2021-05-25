@@ -32,6 +32,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
+import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
@@ -62,6 +63,7 @@ import java.net.URI
 class UsersController(
     val usersDb: UsersDb,
     val teamsDb: TeamsDb,
+    val classroomsDb: ClassroomsDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils,
 ) {
@@ -332,8 +334,13 @@ class UsersController(
     ): ResponseEntity<Any> {
         if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
+        val userToAddMembership = usersDb.getUserMembershipInClassroom(orgId, classroomNumber, userId)
+        if (userToAddMembership.role == NOT_A_MEMBER) {
+            throw ForbiddenException("Cannot add a user that's not a classroom member")
+        }
+
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
-        val userToAdd = usersDb.getUserById(userId)
+        val userToAdd = userToAddMembership.user!! // Should not be null since it's a member
 
         val githubUser = gitHub.getUser(userToAdd.gh_id, user.gh_token)
 
