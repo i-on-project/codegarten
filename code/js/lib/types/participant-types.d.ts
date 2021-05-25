@@ -1,7 +1,7 @@
 type Participation = {
-    type: string,
-    id: number,
-    name: string
+    type: 'user' | 'teacher' | 'team' | 'notMember',
+    id?: number,
+    name?: string
 }
 
 type Participant = {

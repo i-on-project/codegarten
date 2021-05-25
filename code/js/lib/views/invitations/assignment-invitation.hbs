@@ -8,6 +8,10 @@
     <div class="row p-4 ml-1">
         <div class="col-lg-5">
             <div class="row">
+                <h5 class='text-muted'>
+                    {{invitation.classroom}}
+                </h5>
+                <div class="w-100"></div>
                 <h2 class="text-break">
                     <div style="display: inline-block;">
                         {{invitation.name}}
@@ -24,9 +28,27 @@
     </div>
 </div>
 
+{{#if isTeam}}
+    <br>
+    <h1>Teams</h1>
+    <hr>
+    <div>
+        <div id="loadingInvitationTeamsContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
+            <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+                <div class="spinner-border"></div>
+                <h4 class="mt-2">Loading...</h4>
+            </div>
+        </div>
+
+        <div id="invitationTeamsContent">
+            <!-- To be filled via javascript with DOM -->
+        </div>
+    </div>
+{{/if}}
+
 <div class="row d-flex justify-content-center align-items-center mt-4">
     <div class="col-sm">
-        <button class="shadow btn btn-outline-primary btn-lg btn-block" id="acceptInvitation">Accept</button>
+        <button class="shadow btn btn-outline-primary btn-lg btn-block" disabled id="acceptInvitation">Accept</button>
     </div>
     <div class="col-sm">
         <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>

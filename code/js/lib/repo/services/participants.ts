@@ -1,17 +1,46 @@
 'use strict'
 
-import fetch from 'node-fetch'
+import fetch, { Response } from 'node-fetch'
 import { getJsonRequestOptions, getSirenAction, getSirenLink, participationRoutes } from '../api-routes'
 
 const PARTICIPANTS_LIST_LIMIT = 10
 
-function getUserParticipationInAssignment(assignmentId: number, accessToken: string): Promise<Participation> {
-    return fetch(
-        participationRoutes.getUserParticipationInAssignmentUri(assignmentId), 
-        getJsonRequestOptions('GET', accessToken)
+function getUserParticipationInClassroom(classroomId: number, accessToken: string): Promise<Participation> {
+    return getUserParticipation(
+        fetch(
+            participationRoutes.getUserParticipationInClassroomUri(classroomId), 
+            getJsonRequestOptions('GET', accessToken)
+        )
     )
-        .then(res => res.status != 403 ? res.json() : null)
-        .then(entity => {
+}
+
+function getUserParticipationInAssignment(assignmentId: number, accessToken: string): Promise<Participation> {
+    return getUserParticipation(
+        fetch(
+            participationRoutes.getUserParticipationInAssignmentUri(assignmentId), 
+            getJsonRequestOptions('GET', accessToken)
+        )
+    )
+}
+
+function getUserParticipation(fetchPromise: Promise<Response>): Promise<Participation> {
+    return fetchPromise        
+        .then(async (res) => {
+            return {
+                isMember: res.status != 404,
+                entity: (res.status != 403 && res.status != 404) ? await res.json() : null
+            }
+        })
+        .then(res => {
+            const isMember = res.isMember
+            const entity = res.entity
+
+            if (!isMember) {
+                return {
+                    type: 'notMember'
+                } as Participation
+            }
+            
             if (!entity) return null
 
             return {
@@ -21,6 +50,7 @@ function getUserParticipationInAssignment(assignmentId: number, accessToken: str
             } as Participation
         })
 }
+
 
 function getParticipantsOfAssignment(orgId: number, classroomNumber: number, 
     assignmentNumber: number, page: number, accessToken: string): Promise<Participants> {
@@ -71,6 +101,7 @@ function removeParticipantFromAssignment(orgId: number, classroomNumber: number,
 }
 
 export {
+    getUserParticipationInClassroom,
     getUserParticipationInAssignment,
     getParticipantsOfAssignment,
     removeParticipantFromAssignment

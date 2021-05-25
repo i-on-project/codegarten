@@ -104,6 +104,8 @@ const teamRoutes = {
 const participationRoutes = {
     getUserParticipationInAssignmentUri: (assignmentId: number): string =>
         `${API_HOST}/user/assignments/${assignmentId}/participation`,
+    getUserParticipationInClassroomUri: (classroomId: number): string =>
+        `${API_HOST}/user/classrooms/${classroomId}/participation`,
     getPaginatedAssignmentParticipantsUri: (orgId: number, classroomNumber: number, assignmentNumber: number, 
         page: number, limit: number): string =>
         `${API_HOST}/orgs/${orgId}/classrooms/${classroomNumber}/assignments/${assignmentNumber}/participants?page=${page}&limit=${limit}`,
@@ -125,7 +127,9 @@ const deliveryRoutes = {
 }
 
 const invitationRoutes = {
-    getInvitationUri: (invitationId: string): string => `${API_HOST}/user/invites/${invitationId}`
+    getInvitationUri: (invitationId: string): string => `${API_HOST}/user/invites/${invitationId}`,
+    getPaginatedInvitationTeamsUri: (invitationId: string, page: number, limit: number): string =>
+        `${API_HOST}/user/invites/${invitationId}/classroom/teams?page=${page}&limit=${limit}`
 }
 
 export {

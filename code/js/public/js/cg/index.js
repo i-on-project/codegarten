@@ -7,7 +7,7 @@ import * as classrooms from './classrooms.js'
 import * as classroom from './classroom.js'
 import * as team from './team.js'
 import * as assignment from './assignment.js'
-import * as invitations from './invitations.js'
+import * as invitation from './invitation.js'
 
 function setup() {
     // Close alert
@@ -22,5 +22,5 @@ function setup() {
     classroom.setup()
     team.setup()
     assignment.setup()
-    invitations.setup()
+    invitation.setup()
 }
