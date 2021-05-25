@@ -15,6 +15,7 @@ import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.LoopDetectedException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
@@ -23,6 +24,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+
+private const val NUMBER_OF_RETRIES = 10 // Used when generating unique auth codes
 
 @RestController
 class AuthCodeController(
@@ -107,7 +110,7 @@ class AuthCodeController(
     }
 
     private fun generateAndCreateUniqueAuthCode(cgUserId: Int, clientId: Int): String {
-        while (true) {
+        for (i in 0 until NUMBER_OF_RETRIES) {
             val cgCodeWrapper = cryptoUtils.generateAuthCode()
             try {
                 authCodesDb.createAuthCode(
@@ -123,5 +126,6 @@ class AuthCodeController(
                 // If code was not unique, the loop will repeat and generate a new one
             }
         }
+        throw LoopDetectedException("The server application found a loop while trying to generate an unique auth code")
     }
 }
