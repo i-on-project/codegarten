@@ -32,7 +32,7 @@ private const val GET_USERS_IN_CLASSROOM_QUERY =
         "WHERE classroom_id = :classroomId ORDER BY classroom_role DESC, uid"
 private const val SEARCH_USERS_IN_CLASSROOM_QUERY =
     "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
-            "WHERE classroom_id = :classroomId AND SIMILARITY(name, :search) > 0 ORDER BY classroom_role DESC, uid"
+            "WHERE classroom_id = :classroomId AND SIMILARITY(name, :search) > 0 ORDER BY SIMILARITY(name, :search) DESC"
 
 private const val GET_USER_IN_CLASSROOM_QUERY =
     "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
