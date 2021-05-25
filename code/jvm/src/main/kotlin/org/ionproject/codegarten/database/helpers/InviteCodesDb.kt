@@ -58,6 +58,6 @@ class InviteCodesDb(
                 // If invite code was not unique, the loop will repeat and generate a new one
             }
         }
-        throw LoopDetectedException("The server application found a loop while trying to generate an unique invite code")
+        throw LoopDetectedException("Number of retries exceeded while trying to generate an unique invite code")
     }
 }
