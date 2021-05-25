@@ -15,7 +15,7 @@ import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.LoopDetectedException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
@@ -126,6 +126,6 @@ class AuthCodeController(
                 // If code was not unique, the loop will repeat and generate a new one
             }
         }
-        throw LoopDetectedException("Number of retries exceeded while trying to generate an unique auth code")
+        throw ServerErrorException("Number of retries exceeded while trying to generate an unique auth code")
     }
 }

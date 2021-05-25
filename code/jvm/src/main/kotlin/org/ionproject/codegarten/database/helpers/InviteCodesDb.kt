@@ -4,7 +4,7 @@ import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.dto.CreatedInviteCode
 import org.ionproject.codegarten.database.dto.InviteCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
-import org.ionproject.codegarten.exceptions.LoopDetectedException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.JdbiException
@@ -58,6 +58,6 @@ class InviteCodesDb(
                 // If invite code was not unique, the loop will repeat and generate a new one
             }
         }
-        throw LoopDetectedException("Number of retries exceeded while trying to generate an unique invite code")
+        throw ServerErrorException("Number of retries exceeded while trying to generate an unique invite code")
     }
 }

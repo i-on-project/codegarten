@@ -13,7 +13,7 @@ import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.LoopDetectedException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.responses.AccessToken
 import org.ionproject.codegarten.responses.Response
@@ -90,7 +90,7 @@ class AuthController(
                 // If token was not unique, the loop will repeat and generate a new one
             }
         }
-        throw LoopDetectedException("Number of retries exceeded while trying to generate an unique access token")
+        throw ServerErrorException("Number of retries exceeded while trying to generate an unique access token")
     }
 
     @PostMapping(AUTH_REVOKE_HREF)

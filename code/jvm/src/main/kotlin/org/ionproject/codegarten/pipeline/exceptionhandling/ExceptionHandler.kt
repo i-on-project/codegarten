@@ -9,7 +9,7 @@ import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.LoopDetectedException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
 import org.ionproject.codegarten.responses.ProblemJson
@@ -105,15 +105,15 @@ class ExceptionHandler {
             request.requestURI,
         )
 
-    @ExceptionHandler(value = [LoopDetectedException::class])
-    private fun handleForbiddenException(
-        ex: LoopDetectedException,
+    @ExceptionHandler(value = [ServerErrorException::class])
+    private fun handleServerErrorException(
+        ex: ServerErrorException,
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/loop-detected").includeHost(),
-            "Loop Detected",
-            HttpStatus.LOOP_DETECTED,
+            URI("/problems/internal-server-error").includeHost(),
+            "Internal Server Error",
+            HttpStatus.INTERNAL_SERVER_ERROR,
             ex.localizedMessage,
             request.requestURI,
         )
