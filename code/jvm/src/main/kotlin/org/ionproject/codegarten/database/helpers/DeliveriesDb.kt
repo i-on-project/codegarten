@@ -92,16 +92,18 @@ class DeliveriesDb(
     }
 
     fun editDelivery(orgId: Int, classroomNumber: Int, assignmentNumber: Int, deliveryNumber: Int,
-                     tag: String? = null, dueDate: OffsetDateTime? = null) {
-        if (tag == null && dueDate == null) {
+                     tag: String? = null, dueDate: OffsetDateTime? = null, deleteDate: Boolean = false) {
+        if (tag == null && dueDate == null && !deleteDate) {
             return
         }
 
         val deliveryId = getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber).did
 
-        val updateFields = mutableMapOf<String, Any>()
+        val updateFields = mutableMapOf<String, Any?>()
         if (tag != null) updateFields["tag"] = tag
-        if (dueDate != null) updateFields["due_date"] = dueDate
+
+        if (deleteDate) updateFields["due_date"] = null
+        else if (dueDate != null) updateFields["due_date"] = dueDate
 
         return jdbi.update(
             UPDATE_DELIVERY_START,

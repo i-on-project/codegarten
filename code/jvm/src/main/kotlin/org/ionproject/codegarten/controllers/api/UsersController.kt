@@ -2,6 +2,7 @@ package org.ionproject.codegarten.controllers.api
 
 import org.ionproject.codegarten.Routes.CLASSROOM_PARAM
 import org.ionproject.codegarten.Routes.ORG_PARAM
+import org.ionproject.codegarten.Routes.SEARCH_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.TEAM_PARAM
 import org.ionproject.codegarten.Routes.USERS_OF_CLASSROOM_HREF
@@ -32,6 +33,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.NOT_A_MEMBER
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
+import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
@@ -55,6 +57,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
@@ -62,6 +65,7 @@ import java.net.URI
 class UsersController(
     val usersDb: UsersDb,
     val teamsDb: TeamsDb,
+    val classroomsDb: ClassroomsDb,
     val gitHub: GitHubInterface,
     val cryptoUtils: CryptoUtils,
 ) {
@@ -146,12 +150,20 @@ class UsersController(
     fun getUsersOfClassroom(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @RequestParam(name = SEARCH_PARAM) search: String?,
         pagination: Pagination,
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        val users = usersDb.getUsersInClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
-        val usersCount = usersDb.getUsersInClassroomCount(orgId, classroomNumber)
+        val usersCount: Int
+
+        val users = if (search.isNullOrEmpty()) {
+            usersCount = usersDb.getUsersInClassroomCount(orgId, classroomNumber)
+            usersDb.getUsersInClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
+        } else {
+            usersCount = usersDb.searchUsersInClassroomCount(orgId, classroomNumber, search)
+            usersDb.searchUsersInClassroom(orgId, classroomNumber, search, pagination.page, pagination.limit)
+        }
 
         val actions =
             if (userClassroom.role == TEACHER)
@@ -332,8 +344,13 @@ class UsersController(
     ): ResponseEntity<Any> {
         if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
+        val userToAddMembership = usersDb.getUserMembershipInClassroom(orgId, classroomNumber, userId)
+        if (userToAddMembership.role == NOT_A_MEMBER) {
+            throw ForbiddenException("Cannot add a user that's not a classroom member")
+        }
+
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
-        val userToAdd = usersDb.getUserById(userId)
+        val userToAdd = userToAddMembership.user!! // Should not be null since it's a member
 
         val githubUser = gitHub.getUser(userToAdd.gh_id, user.gh_token)
 

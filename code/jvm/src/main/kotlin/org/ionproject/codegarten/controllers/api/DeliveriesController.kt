@@ -394,13 +394,21 @@ class DeliveriesController(
 
         if (input == null) throw InvalidInputException("Missing body")
 
+        val deleteDate: Boolean
         val dueDate = try {
-            OffsetDateTime.parse(input.dueDate)
+            if (input.dueDate != null) {
+                deleteDate = input.dueDate.isBlank()
+                if (deleteDate) null else OffsetDateTime.parse(input.dueDate)
+            } else {
+                deleteDate = false
+                null
+            }
         } catch (ex: DateTimeParseException) {
             throw InvalidInputException("Failed to parse due date")
         }
 
-        deliveriesDb.editDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber, input.tag, dueDate)
+        deliveriesDb.editDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber,
+            input.tag, dueDate, deleteDate)
 
         return ResponseEntity
             .status(HttpStatus.OK)

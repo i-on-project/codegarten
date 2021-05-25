@@ -13,6 +13,7 @@ import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.responses.AccessToken
 import org.ionproject.codegarten.responses.Response
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RestController
 import java.time.OffsetDateTime
 import java.time.temporal.ChronoUnit
+
+private const val NUMBER_OF_RETRIES = 10 // Used when generating unique access tokens
 
 @RestController
 class AuthController(
@@ -71,7 +74,7 @@ class AuthController(
     }
 
     private fun generateAndCreateUniqueAccessToken(authCode: AuthCode): CodeWrapper {
-        while (true) {
+        for (i in 0 until NUMBER_OF_RETRIES) {
             val accessToken = cryptoUtils.generateAccessToken()
             try {
                 accessTokensDb.createAccessToken(
@@ -87,6 +90,7 @@ class AuthController(
                 // If token was not unique, the loop will repeat and generate a new one
             }
         }
+        throw ServerErrorException("Number of retries exceeded while trying to generate an unique access token")
     }
 
     @PostMapping(AUTH_REVOKE_HREF)

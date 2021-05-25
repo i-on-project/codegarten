@@ -5,6 +5,10 @@ import org.ionproject.codegarten.Routes.INVITE_CODE_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.USER_INVITE_CLASSROOM_TEAMS_HREF
 import org.ionproject.codegarten.Routes.USER_INVITE_HREF
+import org.ionproject.codegarten.Routes.getAssignmentByNumberUri
+import org.ionproject.codegarten.Routes.getClassroomByNumberUri
+import org.ionproject.codegarten.Routes.getUserInviteClassroomTeamsUri
+import org.ionproject.codegarten.Routes.getUserInviteUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.InvitationActions
 import org.ionproject.codegarten.controllers.models.AssignmentInvitationOutputModel
@@ -62,9 +66,10 @@ class InvitationsController(
                 ).toSirenObject(
                     actions = listOf(InvitationActions.getJoinClassroomInviteAction(inviteCodePath)),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), Routes.getUserInviteUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("teams"), Routes.getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("classroom"), Routes.getClassroomByNumberUri(classroom.org_id, classroom.number))
+                        SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCodePath).includeHost()),
+                        SirenLink(listOf("teams"), getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(classroom.org_id, classroom.number).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), GitHubRoutes.getGithubLoginUri(org.login))
                     )
                 )
             } else {
@@ -80,11 +85,12 @@ class InvitationsController(
                 ).toSirenObject(
                     actions = listOf(InvitationActions.getJoinAssignmentInviteAction(inviteCodePath)),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), Routes.getUserInviteUri(inviteCodePath).includeHost()),
-                        SirenLink(listOf("teams"), Routes.getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCodePath).includeHost()),
+                        SirenLink(listOf("teams"), getUserInviteClassroomTeamsUri(inviteCodePath).includeHost()),
                         SirenLink(listOf("assignment"),
-                            Routes.getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number)
-                        )
+                            getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                        ),
+                        SirenLink(listOf("organizationGitHub"), GitHubRoutes.getGithubLoginUri(org.login))
                     )
                 )
             }
@@ -128,12 +134,12 @@ class InvitationsController(
                 )
             },
             links = Routes.createSirenLinkListForPagination(
-                Routes.getUserInviteClassroomTeamsUri(inviteCodePath).includeHost(),
+                getUserInviteClassroomTeamsUri(inviteCodePath).includeHost(),
                 pagination.page,
                 pagination.limit,
                 teamsCount
             ) + listOf(
-                SirenLink(listOf("invite"), Routes.getUserInviteUri(inviteCodePath).includeHost()),
+                SirenLink(listOf("invite"), getUserInviteUri(inviteCodePath).includeHost()),
             )
         ).toResponseEntity(HttpStatus.OK)
     }
