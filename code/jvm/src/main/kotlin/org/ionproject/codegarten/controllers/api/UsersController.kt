@@ -336,7 +336,7 @@ class UsersController(
 
         val userToAddMembership = usersDb.getUserMembershipInClassroom(orgId, classroomNumber, userId)
         if (userToAddMembership.role == NOT_A_MEMBER) {
-            throw InvalidInputException("Cannot add a user that's not a classroom member")
+            throw ForbiddenException("Cannot add a user that's not a classroom member")
         }
 
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
