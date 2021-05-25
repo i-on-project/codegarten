@@ -9,6 +9,7 @@ import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
 import org.ionproject.codegarten.responses.ProblemJson
@@ -100,6 +101,19 @@ class ExceptionHandler {
             URI("/problems/forbidden-operation").includeHost(),
             "Forbidden Operation",
             HttpStatus.FORBIDDEN,
+            ex.localizedMessage,
+            request.requestURI,
+        )
+
+    @ExceptionHandler(value = [ServerErrorException::class])
+    private fun handleServerErrorException(
+        ex: ServerErrorException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
+            URI("/problems/internal-server-error").includeHost(),
+            "Internal Server Error",
+            HttpStatus.INTERNAL_SERVER_ERROR,
             ex.localizedMessage,
             request.requestURI,
         )
