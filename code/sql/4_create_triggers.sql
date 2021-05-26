@@ -1,3 +1,4 @@
+-- Triggers for sequences
 CREATE TRIGGER trig_create_installation_seq
 AFTER INSERT ON INSTALLATION
 FOR EACH ROW 
@@ -37,3 +38,10 @@ CREATE TRIGGER trig_get_delivery_number
 BEFORE INSERT ON DELIVERY
 FOR EACH ROW 
 EXECUTE PROCEDURE func_get_delivery_number();
+
+
+-- Remove user dependencies when leaving a classroom
+CREATE TRIGGER trig_cleanup_user_dependencies
+BEFORE DELETE ON USER_CLASSROOM
+FOR EACH ROW
+EXECUTE PROCEDURE func_cleanup_user_dependencies();
