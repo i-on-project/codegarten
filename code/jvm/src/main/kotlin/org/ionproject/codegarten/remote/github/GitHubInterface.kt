@@ -221,6 +221,15 @@ class GitHubInterface(
         return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
     }
 
+    fun deleteRepo(repoId: Int, installationToken: String) {
+        val req = Request.Builder()
+            .from(getGitHubRepoByIdUri(repoId), clientName, installationToken)
+            .delete()
+            .build()
+
+        return httpClient.call(req)
+    }
+
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
             .from(getGitHubRepoCollaboratorUri(repoId, username), clientName, installationToken)

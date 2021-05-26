@@ -15,8 +15,8 @@ import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.JdbiException

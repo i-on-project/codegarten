@@ -2,6 +2,7 @@ package org.ionproject.codegarten.controllers.models
 
 import org.ionproject.codegarten.responses.siren.SirenClass.assignmentInvitation
 import org.ionproject.codegarten.responses.siren.SirenClass.classroomInvitation
+import org.ionproject.codegarten.responses.siren.SirenClass.joinInvitation
 
 data class ClassroomInvitationOutputModel(
     val id: Int,
@@ -30,6 +31,12 @@ data class AssignmentInvitationOutputModel(
     val organization: String
 ) : OutputModel() {
     override fun getSirenClasses() = listOf(assignmentInvitation)
+}
+
+data class JoinInviteOutputModel(
+    val isOrgInvitePending: Boolean
+) : OutputModel() {
+    override fun getSirenClasses() = listOf(joinInvitation)
 }
 
 data class UserInvitationInputModel(

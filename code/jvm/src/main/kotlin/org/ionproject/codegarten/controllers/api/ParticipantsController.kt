@@ -23,8 +23,10 @@ import org.ionproject.codegarten.Routes.getParticipationInAssignmentOfUserUri
 import org.ionproject.codegarten.Routes.getParticipationInClassroomOfUserUri
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
+import org.ionproject.codegarten.Routes.getUserInviteUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.ParticipantActions
+import org.ionproject.codegarten.controllers.models.JoinInviteOutputModel
 import org.ionproject.codegarten.controllers.models.OutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantItemOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantOutputModel
@@ -61,6 +63,7 @@ import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.GitHubRoutes.generateCodeGartenRepoName
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamAvatarUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserAvatarUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubOrgInviteUri
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubUserOrgRole
 import org.ionproject.codegarten.responses.Response
@@ -91,28 +94,80 @@ class ParticipantsController(
 
     @RequiresUserAuth
     @GetMapping(PARTICIPATION_IN_ASSIGNMENT_OF_USER_HREF)
-    fun getUserParticipationInAssignment(
+    fun getAuthUserParticipationInAssignment(
         @PathVariable(name = ASSIGNMENT_ID_PARAM) assignmentId: Int,
         user: User,
     ): ResponseEntity<Response> {
         val assignment = assignmentsDb.getAssignmentById(assignmentId)
         val membership = usersDb.getUserMembershipInClassroom(assignment.classroom_id, user.uid).role
 
+        val participant: Any =
+            if (membership == TEACHER || assignment.isIndividualAssignment()) {
+                user
+            } else {
+                //TODO: User can be in more than one team per assignment
+                teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
+            }
+
+        return getAssignmentParticipant(membership, assignment, participant, user)
+    }
+
+    @RequiresUserInAssignment
+    @GetMapping(PARTICIPANT_OF_ASSIGNMENT_HREF)
+    fun getParticipantInAssignment(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment,
+    ): ResponseEntity<Response> {
+        if (userClassroom.role != TEACHER) {
+            throw ForbiddenException("User is not a teacher")
+        }
+
+        val participant: Any =
+            if (assignment.isIndividualAssignment()) {
+                usersDb.getUserById(participantId)
+            } else {
+                teamsDb.getTeam(userClassroom.classroom.cid, participantId)
+            }
+
+        return getAssignmentParticipant(STUDENT, assignment, participant, user)
+    }
+
+    private fun getAssignmentParticipant(
+        membership: UserClassroomMembership,
+        assignment: Assignment,
+        participant: Any,
+        authUser: User
+    ): ResponseEntity<Response> {
         val participation =
             when {
                 membership == TEACHER -> {
+                    val user = participant as User
                     ParticipantOutputModel(
                         type = ParticipantTypes.TEACHER.type,
                         id = user.uid,
                         name = user.name,
                     ).toSirenObject(
                         links = listOf(
-                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
-                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
-                            SirenLink(listOf("assignment"),
-                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            SirenLink(
+                                listOf(SELF_PARAM),
+                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
                             ),
-                            SirenLink(listOf("classroom"),
+                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                            SirenLink(
+                                listOf("assignment"),
+                                getAssignmentByNumberUri(
+                                    assignment.org_id,
+                                    assignment.classroom_number,
+                                    assignment.number
+                                ).includeHost()
+                            ),
+                            SirenLink(
+                                listOf("classroom"),
                                 getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
                             ),
                             SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
@@ -120,8 +175,14 @@ class ParticipantsController(
                     )
                 }
                 assignment.isIndividualAssignment() -> {
+                    val user = participant as User
                     val userAssignment = usersDb.getUserAssignment(assignment.aid, user.uid)
-                    val repo = gitHub.getRepoById(userAssignment.repo_id, user.gh_token)
+                    val repo = try {
+                        gitHub.getRepoById(userAssignment.repo_id, authUser.gh_token)
+                    } catch (e: HttpRequestException) {
+                        if (e.status != HttpStatus.NOT_FOUND.value()) throw e
+                        throw NotFoundException("Repository does not exist")
+                    }
 
                     ParticipantOutputModel(
                         type = ParticipantTypes.USER.type,
@@ -129,16 +190,31 @@ class ParticipantsController(
                         name = user.name,
                     ).toSirenObject(
                         links = listOf(
-                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
+                            SirenLink(
+                                listOf(SELF_PARAM),
+                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
+                            ),
                             SirenLink(listOf("repo"), URI(repo.html_url)),
-                            SirenLink(listOf("deliveries"),
-                                getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, user.uid).includeHost()
+                            SirenLink(
+                                listOf("deliveries"),
+                                getDeliveriesOfParticipantUri(
+                                    assignment.org_id,
+                                    assignment.classroom_number,
+                                    assignment.number,
+                                    user.uid
+                                ).includeHost()
                             ),
                             SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
-                            SirenLink(listOf("assignment"),
-                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            SirenLink(
+                                listOf("assignment"),
+                                getAssignmentByNumberUri(
+                                    assignment.org_id,
+                                    assignment.classroom_number,
+                                    assignment.number
+                                ).includeHost()
                             ),
-                            SirenLink(listOf("classroom"),
+                            SirenLink(
+                                listOf("classroom"),
                                 getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
                             ),
                             SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
@@ -146,27 +222,49 @@ class ParticipantsController(
                     )
                 }
                 else -> {
-                    // TODO: User may be registered multiple times in an assignment using different teams
-                    // Group assignment
-                    val team = teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
+                    val team = participant as Team
                     val teamAssignment = teamsDb.getTeamAssignment(assignment.aid, team.tid)
-                    val repo = gitHub.getRepoById(teamAssignment.repo_id, user.gh_token)
+                    val repo = try {
+                        gitHub.getRepoById(teamAssignment.repo_id, authUser.gh_token)
+                    } catch (e: HttpRequestException) {
+                        if (e.status != HttpStatus.NOT_FOUND.value()) throw e
+                        throw NotFoundException("Repository does not exist")
+                    }
+
                     ParticipantOutputModel(
                         type = ParticipantTypes.TEAM.type,
-                        id = team.tid,
+                        id = team.number,
                         name = team.name,
                     ).toSirenObject(
                         links = listOf(
-                            SirenLink(listOf(SELF_PARAM), getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()),
+                            SirenLink(
+                                listOf(SELF_PARAM),
+                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
+                            ),
                             SirenLink(listOf("repo"), URI(repo.html_url)),
-                            SirenLink(listOf("deliveries"),
-                                getDeliveriesOfParticipantUri(assignment.org_id, assignment.classroom_number, assignment.number, team.number).includeHost()
+                            SirenLink(
+                                listOf("deliveries"),
+                                getDeliveriesOfParticipantUri(
+                                    assignment.org_id,
+                                    assignment.classroom_number,
+                                    assignment.number,
+                                    team.number
+                                ).includeHost()
                             ),
-                            SirenLink(listOf("team"), getTeamByNumberUri(team.org_id, team.classroom_number, team.number).includeHost()),
-                            SirenLink(listOf("assignment"),
-                                getAssignmentByNumberUri(assignment.org_id, assignment.classroom_number, assignment.number).includeHost()
+                            SirenLink(
+                                listOf("team"),
+                                getTeamByNumberUri(team.org_id, team.classroom_number, team.number).includeHost()
                             ),
-                            SirenLink(listOf("classroom"),
+                            SirenLink(
+                                listOf("assignment"),
+                                getAssignmentByNumberUri(
+                                    assignment.org_id,
+                                    assignment.classroom_number,
+                                    assignment.number
+                                ).includeHost()
+                            ),
+                            SirenLink(
+                                listOf("classroom"),
                                 getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
                             ),
                             SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
@@ -423,27 +521,34 @@ class ParticipantsController(
     }
 
     @RequiresUserInAssignment
+    @RequiresGhAppInstallation
     @DeleteMapping(PARTICIPANT_OF_ASSIGNMENT_HREF)
     fun removeParticipantFromAssignment(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
         @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
-        assignment: Assignment,
         user: User,
-        userClassroom: UserClassroom
+        userClassroom: UserClassroom,
+        assignment: Assignment,
+        installation: Installation
     ): ResponseEntity<Any> {
         if (assignment.isIndividualAssignment()) {
             if (userClassroom.role != TEACHER && user.uid != participantId) throw ForbiddenException("Not enough permissions to remove user")
 
+            val userAssignment = usersDb.getUserAssignment(assignment.aid, participantId)
+
+            gitHub.deleteRepo(userAssignment.repo_id, installation.accessToken)
             usersDb.deleteUserFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
         } else {
             if (userClassroom.role != TEACHER) {
                 val team = teamsDb.tryGetUserTeamInAssignment(assignment.aid, user.uid)
-                if (!team.isPresent || team.get().tid != participantId)
+                if (!team.isPresent || team.get().number != participantId)
                     throw ForbiddenException("Not enough permissions to remove team")
             }
 
+            val teamAssignment = teamsDb.getTeamAssignment(orgId, classroomNumber, assignmentNumber, participantId)
+            gitHub.deleteRepo(teamAssignment.repo_id, installation.accessToken)
             teamsDb.deleteTeamFromAssignment(orgId, classroomNumber, assignmentNumber, participantId)
         }
 
@@ -461,9 +566,10 @@ class ParticipantsController(
         inviteCode: InviteCode,
         user: User,
         @RequestBody input: UserInvitationInputModel?
-    ): ResponseEntity<Any> {
-        val isUserInClassroom = usersDb.getUserMembershipInClassroom(inviteCode.classroom_id, user.uid).role != UserClassroomMembership.NOT_A_MEMBER
+    ): ResponseEntity<Response> {
+        val isUserInClassroom = usersDb.getUserMembershipInClassroom(inviteCode.classroom_id, user.uid).role != NOT_A_MEMBER
         val ghUser = gitHub.getUser(user.gh_id, user.gh_token)
+        val org = gitHub.getOrgById(inviteCode.org_id, user.gh_token)
 
         val team =
             if (input?.teamId != null) {
@@ -480,9 +586,13 @@ class ParticipantsController(
             }
 
         // Invite user to organization if needed
-        if (gitHub.getUserOrgMembership(inviteCode.org_id, user.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
-            gitHub.inviteUserToOrg(inviteCode.org_id, user.gh_id, team?.gh_id, installation.accessToken)
-        }
+        val wasInvitedToOrg =
+            if (gitHub.getUserOrgMembership(inviteCode.org_id, user.gh_token).role == GitHubUserOrgRole.NOT_A_MEMBER) {
+                gitHub.inviteUserToOrg(inviteCode.org_id, user.gh_id, team?.gh_id, installation.accessToken)
+                true
+            } else {
+                false
+            }
 
         // Add user to classroom if needed
         if (!isUserInClassroom) {
@@ -490,11 +600,11 @@ class ParticipantsController(
         }
 
         // Add user/team to assignment
-        var locationHeader: String? = null
+        var repoUri: String? = null
         if (inviteCode.isFromAssignment()) {
             val assignment = assignmentsDb.getAssignmentById(inviteCode.assignment_id)
             if (assignment.isIndividualAssignment()) {
-                locationHeader =
+                repoUri =
                     addUserToAssignment(inviteCode.org_id, assignment, user, installation.accessToken, user.gh_token).html_url
             } else if (assignment.isGroupAssignment()) {
                 if (team == null) throw InvalidInputException("Missing teamId")
@@ -505,7 +615,7 @@ class ParticipantsController(
 
                 // Check if team is already in assignment (repo already created)
                 val maybeTeamAssignment = teamsDb.tryGetTeamAssignment(assignment.aid, team.tid)
-                locationHeader =
+                repoUri =
                     if (maybeTeamAssignment.isPresent) {
                         val repoId = maybeTeamAssignment.get().repo_id
                         gitHub.getRepoById(repoId, installation.accessToken).html_url
@@ -526,12 +636,18 @@ class ParticipantsController(
             }
         }
 
-        val toReturn = ResponseEntity
-            .status(HttpStatus.CREATED)
+        val headers = if (repoUri != null) mapOf("Location" to listOf(repoUri)) else null
 
-        if (locationHeader != null)
-            toReturn.header("Location", locationHeader)
+        val links = listOfNotNull(
+            SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCode.inv_code).includeHost()),
+            SirenLink(listOf("organizationInviteGitHub"), getGithubOrgInviteUri(org.login)),
+            if (repoUri != null) SirenLink(listOf("repositoryInviteGitHub"), URI(repoUri)) else null
+        )
 
-        return toReturn.body(null)
+        return JoinInviteOutputModel(
+            isOrgInvitePending = wasInvitedToOrg
+        ).toSirenObject(
+            links = links
+        ).toResponseEntity(HttpStatus.CREATED, headers)
     }
 }

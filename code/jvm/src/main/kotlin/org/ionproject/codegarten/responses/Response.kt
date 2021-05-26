@@ -17,9 +17,13 @@ fun Response.toResponseEntity(status: HttpStatus) = ResponseEntity
     .contentType(MediaType.parseMediaType(this.getContentType()))
     .body(this)
 
-fun Response.toResponseEntity(status: HttpStatus, headers: Map<String, List<String>>) =
-    ResponseEntity
+fun Response.toResponseEntity(status: HttpStatus, headers: Map<String, List<String>>?) : ResponseEntity<Response> {
+    val toReturn = ResponseEntity
         .status(status)
         .contentType(MediaType.parseMediaType(this.getContentType()))
-        .headers(HttpHeaders(CollectionUtils.toMultiValueMap(headers)))
-        .body(this)
+    if (headers != null) {
+        toReturn.headers(HttpHeaders(CollectionUtils.toMultiValueMap(headers)))
+    }
+    return toReturn.body(this)
+}
+

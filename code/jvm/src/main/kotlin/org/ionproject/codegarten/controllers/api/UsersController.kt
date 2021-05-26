@@ -283,7 +283,7 @@ class UsersController(
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
         val team = teamsDb.getTeam(orgId, classroomNumber, teamNumber)
-        if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(user.uid, team.tid))
+        if (userClassroom.role != TEACHER && !teamsDb.isUserInTeam(team.tid, user.uid))
             throw ForbiddenException("User is not in team")
 
         val users = usersDb.getUsersInTeam(team.tid, pagination.page, pagination.limit)

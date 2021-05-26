@@ -13,8 +13,8 @@ import org.ionproject.codegarten.database.helpers.ClientsDb
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.responses.AccessToken
 import org.ionproject.codegarten.responses.Response
 import org.ionproject.codegarten.responses.toResponseEntity

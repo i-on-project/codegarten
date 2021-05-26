@@ -38,11 +38,13 @@ object GitHubRoutes {
 
     // HTML
     const val GITHUB_LOGIN_URI = "$GITHUB_HOST/{$LOGIN_PARAM}"
+    const val GITHUB_ORG_INVITE_URI = "$GITHUB_HOST/orgs/{$LOGIN_PARAM}/invitation"
 
     val GITHUB_LOGIN_URI_TEMPLATE = UriTemplate(GITHUB_LOGIN_URI)
+    val GITHUB_ORG_INVITE_URI_TEMPLATE = UriTemplate(GITHUB_ORG_INVITE_URI)
 
     fun getGithubLoginUri(login: String) = GITHUB_LOGIN_URI_TEMPLATE.expand(login)
-
+    fun getGithubOrgInviteUri(login: String) = GITHUB_ORG_INVITE_URI_TEMPLATE.expand(login)
 
     // User
     const val GITHUB_USER_URI = "$GITHUB_API_HOST/user"

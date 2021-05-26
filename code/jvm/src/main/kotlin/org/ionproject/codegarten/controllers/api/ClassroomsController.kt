@@ -23,6 +23,7 @@ import org.ionproject.codegarten.controllers.models.ClassroomsOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
+import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.ClassroomsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.database.helpers.UsersDb
@@ -52,6 +53,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ClassroomsController(
     val classroomsDb: ClassroomsDb,
+    val assignmentsDb: AssignmentsDb,
     val inviteCodesDb: InviteCodesDb,
     val usersDb: UsersDb,
     val gitHub: GitHubInterface,
