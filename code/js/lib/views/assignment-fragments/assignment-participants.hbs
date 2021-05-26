@@ -42,7 +42,7 @@
                     <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
                 </a>
             </div>
-            <div class="col-md-9 p-3">
+            <div class="col-md-8 p-3">
                 <h3 class="d-inline-block text-truncate pb-1" style="max-width: 100%;">{{name}}</h3>
                 
                 <br>
@@ -52,6 +52,11 @@
                     </a>
                 {{/if}}
             </div>
+            {{#if ../canManage}}
+                <div class="col-md d-flex align-items-center">
+                    <a class="btn btn-primary btn-block" href="/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/assignments/{{../assignmentNumber}}/participants/{{id}}">View participation</a>
+                </div>
+            {{/if}}
         </div>
     {{/each}}
     <br>

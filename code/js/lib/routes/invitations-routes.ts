@@ -136,7 +136,10 @@ function handlerJoinInvitation(req: Request, res: Response, next: NextFunction) 
             }
             res.send({
                 wasAccepted: joinInvite.joinRes.status == 201,
-                message: message
+                message: message,
+                isOrgInvitePending: joinInvite.joinRes.isOrgInvitePending,
+                orgUri: joinInvite.joinRes.orgUri,
+                repoUri: joinInvite.joinRes.repoUri
             })
         })
         .catch(err => {

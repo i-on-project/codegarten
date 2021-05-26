@@ -25,6 +25,13 @@ type AssignmentInvitation = {
     orgUri: string,
 }
 
+type JoinInvitation = {
+    status: number,
+    isOrgInvitePending: boolean,
+    orgUri: string,
+    repoUri?: string
+}
+
 type Invitation = {
     type: 'classroomInvitation' | 'assignmentInvitation'
     invitation: ClassroomInvitation | AssignmentInvitation

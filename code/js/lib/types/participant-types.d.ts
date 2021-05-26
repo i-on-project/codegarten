@@ -1,7 +1,8 @@
 type Participation = {
     type: 'user' | 'teacher' | 'team' | 'notMember',
     id?: number,
-    name?: string
+    name?: string,
+    repoUri?: string
 }
 
 type Participant = {

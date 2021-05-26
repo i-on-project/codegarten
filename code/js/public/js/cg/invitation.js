@@ -2,13 +2,16 @@ import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocati
 
 export function setup() {
     const content = $('#invitationTeamsContent')[0]
+    const acceptInvite = $('#acceptInvitation')
+    const rejectInvite = $('#rejectInvitation')
     if (content) {
         const overlay = $('#loadingInvitationTeamsContentOverlay')[0]
         workWithOverlay(overlay, getInvitationTeams(content, 0, updatePagination))
+    } else {
+        acceptInvite.removeAttr('disabled')
     }
 
-    const acceptInvite = $('#acceptInvitation')
-    const rejectInvite = $('#rejectInvitation')
+
 
     acceptInvite.on('click', () => joinInvitation(content != null))
     rejectInvite.on('click', () => location.href = '/')
@@ -55,7 +58,16 @@ function joinInvitation(isTeam) {
             .then(res => {
                 if (!res.wasAccepted) alertMsg(res.message)
                 else {
-                    window.location.href = res.message
+                    if (res.isOrgInvitePending) {
+                        $('#invite').addClass('slide-out')
+
+                        $('#acceptInvites').removeClass('d-none').addClass('slide-in')
+                        $('#orgInvite').attr('href', res.orgUri)
+                        $('#repoInvite').attr('href', res.repoUri)
+                        $('#continueUri').attr('href', res.message)
+                    } else {
+                        window.location.href = res.message
+                    }
                 }
             })
             .catch(err => alertMsg('Could not accept invitation')))

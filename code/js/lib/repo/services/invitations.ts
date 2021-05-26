@@ -101,16 +101,30 @@ function getInvitationTeams(invitationId: string, page: number, accessToken: str
         })
 }
 
-function joinInvitation(invitationId: string, teamId: number, accessToken: string): Promise<ApiResponse> {
+function joinInvitation(invitationId: string, teamId: number, accessToken: string): Promise<JoinInvitation> {
     const body = {
         teamId: teamId
     }
 
     return fetch(invitationRoutes.getInvitationUri(invitationId), getJsonRequestOptions('PUT', accessToken, body))
-        .then(res => {
+        .then(async res => {
             return {
-                status: res.status
+                status: res.status,
+                content: await res.json()
             } as ApiResponse
+        })
+        .then(resp => {
+            const links: SirenLink[] = Array.from(resp.content.links)
+            const orgUri = getSirenLink(links, 'organizationInviteGitHub').href
+            const repoUri = getSirenLink(links, 'repositoryInviteGitHub')?.href
+
+
+            return {
+                status: resp.status,
+                isOrgInvitePending: resp.content.properties.isOrgInvitePending,
+                orgUri: orgUri,
+                repoUri: repoUri
+            } as JoinInvitation
         })
 }
 

@@ -88,6 +88,41 @@ function getParticipantsOfAssignment(orgId: number, classroomNumber: number,
         })
 }
 
+function getParticipantOfAssignment(orgId: number, classroomNumber: number, 
+    assignmentNumber: number, participantId: number, accessToken: string): Promise<Participation> {
+    
+    return fetch(
+        participationRoutes.getAssignmentParticipantUri(orgId, classroomNumber, assignmentNumber, participantId),
+        getJsonRequestOptions('GET', accessToken)
+    )   
+        .then(async (res) => {
+            return {
+                isMember: res.status != 404,
+                entity: (res.status != 403 && res.status != 404) ? await res.json() : null
+            }
+        })
+        .then(res => {
+            const isMember = res.isMember
+            const entity = res.entity
+
+            if (!isMember) {
+                return {
+                    type: 'notMember'
+                } as Participation
+            }
+            
+            if (!entity) return null
+            
+            const links: SirenLink[] = Array.from(entity.links)
+            return {
+                type: entity.properties.type,
+                id: entity.properties.id,
+                name: entity.properties.name,
+                repoUri: getSirenLink(links, 'repo').href
+            } as Participation
+        })
+}
+
 function removeParticipantFromAssignment(orgId: number, classroomNumber: number, assignmentNumber: number, 
     participantId: number, accessToken: string): Promise<ApiResponse> {
 
@@ -104,5 +139,6 @@ export {
     getUserParticipationInClassroom,
     getUserParticipationInAssignment,
     getParticipantsOfAssignment,
+    getParticipantOfAssignment,
     removeParticipantFromAssignment
 }

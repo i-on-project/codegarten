@@ -1,56 +1,88 @@
-<div class="row text-center mb-2">
-    <div class="col">
-        <h1>You have been invited to join this assignment:</h1>
+<div id="invite">
+    <div class="row text-center mb-2">
+        <div class="col">
+            <h1>You have been invited to join this assignment:</h1>
+        </div>
     </div>
-</div>
 
-<div class="rounded shadow bg-light">
-    <div class="row p-4 ml-1">
-        <div class="col-lg-5">
-            <div class="row">
-                <h5 class='text-muted'>
-                    {{invitation.classroom}}
-                </h5>
-                <div class="w-100"></div>
-                <h2 class="text-break">
-                    <div style="display: inline-block;">
-                        {{invitation.name}}
-                    </div>
-                </h2>
+    <div class="rounded shadow bg-light">
+        <div class="row p-4 ml-1">
+            <div class="col-lg-5">
+                <div class="row">
+                    <h5 class='text-muted'>
+                        {{invitation.classroom}}
+                    </h5>
+                    <div class="w-100"></div>
+                    <h2 class="text-break">
+                        <div style="display: inline-block;">
+                            {{invitation.name}}
+                        </div>
+                    </h2>
+                </div>
+                <div class="row">
+                    <a href={{invitation.orgUri}} target="_blank"> 
+                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                        {{invitation.organization}}
+                    </a>
+                </div>
             </div>
-            <div class="row">
-                <a href={{invitation.orgUri}} target="_blank"> 
-                    <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
-                    {{invitation.organization}}
-                </a>
+        </div>
+    </div>
+
+    {{#if isTeam}}
+        <br>
+        <h1>Teams</h1>
+        <hr>
+        <div>
+            <div id="loadingInvitationTeamsContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
+                <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+                    <div class="spinner-border"></div>
+                    <h4 class="mt-2">Loading...</h4>
+                </div>
             </div>
+
+            <div id="invitationTeamsContent">
+                <!-- To be filled via javascript with DOM -->
+            </div>
+        </div>
+    {{/if}}
+
+    <div class="row d-flex justify-content-center align-items-center mt-4">
+        <div class="col-sm">
+            <button class="shadow btn btn-outline-primary btn-lg btn-block" disabled id="acceptInvitation">Accept</button>
+        </div>
+        <div class="col-sm">
+            <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>
         </div>
     </div>
 </div>
 
-{{#if isTeam}}
-    <br>
-    <h1>Teams</h1>
-    <hr>
-    <div>
-        <div id="loadingInvitationTeamsContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
-            <div class="w-100 d-flex flex-column justify-content-center align-items-center">
-                <div class="spinner-border"></div>
-                <h4 class="mt-2">Loading...</h4>
-            </div>
-        </div>
-
-        <div id="invitationTeamsContent">
-            <!-- To be filled via javascript with DOM -->
+<div id="acceptInvites" class="d-none">
+    <div class="row text-center mb-2">
+        <div class="col">
+            <h1>Almost there!</h1>
         </div>
     </div>
-{{/if}}
 
-<div class="row d-flex justify-content-center align-items-center mt-4">
-    <div class="col-sm">
-        <button class="shadow btn btn-outline-primary btn-lg btn-block" disabled id="acceptInvitation">Accept</button>
+    <div class="row">
+        <div class="col text-center">
+            <h4>To complete the process, please accept the following GitHub invites</h4>
+        </div>
     </div>
-    <div class="col-sm">
-        <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>
+
+    <div class="row d-flex justify-content-center align-items-center my-4">
+        <div class="col-sm">
+            <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="orgInvite">Organization</a>
+        </div>
+        <div class="col-sm">
+            <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="repoInvite">Repository</a>
+        </div>
     </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <h5>After accepting the invites, you may <a id="continueUri">proceed to the assignment<a></h5>
+        </div>
+    </div>
+
 </div>

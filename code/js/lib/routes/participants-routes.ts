@@ -1,7 +1,7 @@
 'use strict'
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
-import { getParticipantsOfAssignment, removeParticipantFromAssignment } from '../repo/services/participants'
+import { getParticipantOfAssignment, getParticipantsOfAssignment, removeParticipantFromAssignment } from '../repo/services/participants'
 
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
 
@@ -9,6 +9,8 @@ const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants',
     requiresAuth, handlerGetAssignmentParticipants)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId',
+    requiresAuth, handlerGetAssignmentParticipant)
 
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId', 
     requiresAuth, handlerRemoveAssignmentParticipant)
@@ -47,6 +49,25 @@ function handlerGetAssignmentParticipants(req: Request, res: Response, next: Nex
                 orgId: orgId,
                 
                 canManage: participants.canManage
+            })
+        })
+        .catch(err => next(INTERNAL_ERROR))
+}
+
+function handlerGetAssignmentParticipant(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+    const participantId = Number(req.params.participantId)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber) || isNaN(participantId)) return next()
+
+    getParticipantOfAssignment(orgId, classroomNumber, assignmentNumber, participantId, req.user.accessToken.token)
+        .then(participant => {
+            if (!participant) return next()
+
+            res.render('assignment-participant', {
+                participant: participant
             })
         })
         .catch(err => next(INTERNAL_ERROR))
