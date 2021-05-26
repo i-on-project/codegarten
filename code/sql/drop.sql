@@ -21,6 +21,7 @@ DROP TRIGGER IF EXISTS trig_get_assignment_number ON ASSIGNMENT;
 DROP TRIGGER IF EXISTS trig_cleanup_assignment_seq ON ASSIGNMENT;
 DROP TRIGGER IF EXISTS trig_get_team_number ON TEAM;
 DROP TRIGGER IF EXISTS trig_get_delivery_number ON DELIVERY;
+DROP TRIGGER IF EXISTS trig_cleanup_user_dependencies ON USER_CLASSROOM;
 
 DROP FUNCTION IF EXISTS func_create_installation_seq;
 DROP FUNCTION IF EXISTS func_cleanup_installation_seq;
@@ -30,6 +31,7 @@ DROP FUNCTION IF EXISTS func_get_assignment_number;
 DROP FUNCTION IF EXISTS func_cleanup_assignment_seq;
 DROP FUNCTION IF EXISTS func_get_team_number;
 DROP FUNCTION IF EXISTS func_get_delivery_number;
+DROP FUNCTION IF EXISTS func_cleanup_user_dependencies();
 
 DROP VIEW IF EXISTS V_DELIVERY;
 DROP VIEW IF EXISTS V_INVITECODE;

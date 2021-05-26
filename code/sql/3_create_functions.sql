@@ -1,3 +1,4 @@
+-- Triggers for sequences
 CREATE FUNCTION func_create_installation_seq()
 RETURNS TRIGGER AS
 $$
@@ -78,6 +79,19 @@ $$
     BEGIN
         NEW.number = nextval('delivery_number_seq_' || NEW.aid);
         RETURN NEW;
+    END
+$$
+LANGUAGE 'plpgsql';
+
+
+-- Remove user dependencies when leaving a classroom
+CREATE FUNCTION func_cleanup_user_dependencies()
+RETURNS TRIGGER AS
+$$
+    BEGIN
+        DELETE FROM USER_ASSIGNMENT WHERE uid = OLD.uid;
+        DELETE FROM USER_TEAM WHERE uid = OLD.uid;
+        RETURN OLD;
     END
 $$
 LANGUAGE 'plpgsql';
