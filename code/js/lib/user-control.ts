@@ -3,7 +3,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { getAuthenticatedUser } from './repo/services/users'
 import { authRoutes } from './repo/api-routes'
-import { INTERNAL_ERROR } from './routes/common-routes'
 import { revokeAccessToken } from './repo/services/auth'
 
 const ACCESS_TOKEN_VALIDITY_THRESHOLD = 1000 * 60 * 60 * 24 // 1 day
@@ -16,7 +15,7 @@ export = function(req: Request, res: Response, next: NextFunction): void {
         return Promise.resolve(true)
     }
     req.logout = function(): Promise<boolean> {
-        const username = req.user.username
+        const username = req.user?.username
         const token = req.session.accessToken
 
         return revokeAccessToken(token.token)
@@ -46,6 +45,9 @@ export = function(req: Request, res: Response, next: NextFunction): void {
         getAuthenticatedUser(accessToken)
             .then(user => req.user = user)
             .then(() => next())
-            .catch((err) => next(INTERNAL_ERROR))
+            .catch((err) => {
+                req.logout()
+                    .then(() => next())
+            })
     } else next()
 }

@@ -11,17 +11,19 @@
                                 <div class="spinner-border"></div>
                                 <h4 class="ml-3">Please wait...</h4>
                         </div>
-                        <div id="removeUser{{id}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
-                            <div class="row-sm-auto">
-                                <h5 class="font-weight-bold">
-                                    Are you sure you want to remove the user from the team?
-                                </h5>
-                            </div>
-                            <div class="row-sm">
-                                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveUser" data-user-id="{{id}}">Yes</button>
-                            </div>
-                            <div class="row-sm">
-                                <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveUser">No</button>
+                        <div id="removeUser{{id}}Overlay" class="overlay-fixed align-items-center text-center" style="position:absolute; height:100%; width: 100%">
+                            <div class="row-md-auto">
+                                <div class="col mb-4">
+                                    <h5 class="font-weight-bold">
+                                        Are you sure you want to remove the user from the team?
+                                    </h5>
+                                </div>
+                                <div class="col">
+                                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveUser" data-user-id="{{id}}">Yes</button>
+                                </div>
+                                <div class="col">
+                                    <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveUser" data-user-id="{{id}}">No</button>
+                                </div>
                             </div>
                         </div>
                     {{/if}}

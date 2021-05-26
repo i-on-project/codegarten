@@ -85,6 +85,7 @@ function handlerGetAssignment(req: Request, res: Response, next: NextFunction) {
                 assignment: assignment,
                 inviteUri: `${req.protocol}://${req.hostname}/i/${assignment.inviteCode}`,
                 participantId: participation.id,
+                repoUri: participation.repoUri,
 
                 classroomNumber: classroomNumber,
 

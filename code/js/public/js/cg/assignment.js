@@ -122,19 +122,19 @@ function setUpEditForm() {
     })
 }
 
-function updatePagination(cb) {
-    $('#prevPage').on('click', (event) => {
+function updatePagination(prevPageId, nextPageId, cb) {
+    $(`#${prevPageId}`).on('click', (event) => {
         const target = event.target
         if (target.classList.contains('disabled')) return
         workWithOverlay($('#loadingAssignmentContentOverlay')[0], 
-            cb($('#prevPage').data('page'))
+            cb($(`#${prevPageId}`).data('page'))
         )    
     })
-    $('#nextPage').on('click', (event) => {
+    $(`#${nextPageId}`).on('click', (event) => {
         const target = event.target
         if (target.classList.contains('disabled')) return
         workWithOverlay($('#loadingAssignmentContentOverlay')[0], 
-            cb($('#nextPage').data('page'))
+            cb($(`#${nextPageId}`).data('page'))
         )
     })
 }

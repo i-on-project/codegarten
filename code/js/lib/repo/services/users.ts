@@ -126,15 +126,20 @@ function deleteUser(accessToken: string) : Promise<ApiResponse> {
 
 function removeUserFromClassroom(orgId: number, classroomNumber: number, userId: number, accessToken: string) : Promise<ApiResponse> {
     return fetch(userRoutes.getClassroomUserUri(orgId, classroomNumber, userId), getJsonRequestOptions('DELETE', accessToken))
-        .then(res => {
-            return { status: res.status } as ApiResponse
+        .then(async res => {
+            return { 
+                status: res.status,
+                content: await res.json()
+            } as ApiResponse
         })
 }
 
 function removeUserFromTeam(orgId: number, classroomNumber: number, teamNumber: number, userId: number, accessToken: string) : Promise<ApiResponse> {
     return fetch(userRoutes.getTeamUserUri(orgId, classroomNumber, teamNumber, userId), getJsonRequestOptions('DELETE', accessToken))
         .then(res => {
-            return { status: res.status } as ApiResponse
+            return { 
+                status: res.status,
+            } as ApiResponse
         })
 }
 

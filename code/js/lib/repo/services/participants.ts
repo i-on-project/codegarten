@@ -43,10 +43,12 @@ function getUserParticipation(fetchPromise: Promise<Response>): Promise<Particip
             
             if (!entity) return null
 
+            const links: SirenLink[] = Array.from(entity.links)
             return {
                 type: entity.properties.type,
                 id: entity.properties.id,
-                name: entity.properties.name
+                name: entity.properties.name,
+                repoUri: getSirenLink(links, 'repo')?.href
             } as Participation
         })
 }
@@ -118,7 +120,7 @@ function getParticipantOfAssignment(orgId: number, classroomNumber: number,
                 type: entity.properties.type,
                 id: entity.properties.id,
                 name: entity.properties.name,
-                repoUri: getSirenLink(links, 'repo').href
+                repoUri: getSirenLink(links, 'repo')?.href
             } as Participation
         })
 }

@@ -182,7 +182,6 @@ function handlerEditClassroomUserMembership(req: Request, res: Response, next: N
 }
 
 function handlerDeleteUser(req: Request, res: Response, next: NextFunction) {
-    // TODO secure this route against CSRF
     deleteUser(req.user.accessToken.token)
         .then(result => {
             let message: string
@@ -229,7 +228,7 @@ function handlerRemoveClassroomUser(req: Request, res: Response, next: NextFunct
                     }
                     break
                 default:
-                    message = 'Failed to remove user'
+                    message = result.content.detail
             }
 
             res.send({
@@ -240,7 +239,7 @@ function handlerRemoveClassroomUser(req: Request, res: Response, next: NextFunct
         .catch(err => {
             res.send({
                 wasRemoved: false,
-                message: 'Failed to remove user'
+                message: userId == req.user.id ? 'Failed to leave classroom' : 'Failed to remove user'
             })
         })
 }
@@ -265,7 +264,7 @@ function handlerRemoveTeamUser(req: Request, res: Response, next: NextFunction) 
                     }
                     break
                 default:
-                    message = 'Failed to remove user'
+                    message = userId == req.user.id ? 'Failed to leave team' : 'Failed to remove user'
             }
 
             res.send({
@@ -276,7 +275,7 @@ function handlerRemoveTeamUser(req: Request, res: Response, next: NextFunction) 
         .catch(err => {
             res.send({
                 wasRemoved: false,
-                message: 'Failed to remove user'
+                message: userId == req.user.id ? 'Failed to leave team' : 'Failed to remove user'
             })
         })
 }

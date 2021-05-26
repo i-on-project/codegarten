@@ -14,42 +14,43 @@
     </div>
 </div>
 
+{{#if canManage}}
+    <div class="modal fade" id="editAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit assignment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <input tabindex="-1" aria-hidden="true" style="display: none;">
 
-<div class="modal fade" id="editAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit assignment</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="form-group">
-                        <input tabindex="-1" aria-hidden="true" style="display: none;">
+                            <label for="assignmentName" class="col-form-label">Name:</label>
+                            <input type="search" class="form-control" placeholder="{{assignment.name}}" id="editAssignmentName" maxlength="64" autocomplete="off">
+                            <div class="invalid-feedback" id="assignmentNameFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <input tabindex="-1" aria-hidden="true" style="display: none;">
 
-                        <label for="assignmentName" class="col-form-label">Name:</label>
-                        <input type="search" class="form-control" placeholder="{{assignment.name}}" id="editAssignmentName" maxlength="64" autocomplete="off">
-                        <div class="invalid-feedback" id="assignmentNameFeedback"></div>
-                    </div>
-                    <div class="form-group">
-                        <input tabindex="-1" aria-hidden="true" style="display: none;">
-
-                        <label for="assignmentDescription" class="col-form-label">Description:</label>
-                        <input type="search" class="form-control" placeholder="{{assignment.description}}" id="editAssignmentDescription" maxlength="256" autocomplete="off">
-                        <div class="invalid-feedback" id="assignmentDescriptionFeedback"></div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger mr-auto" id="deleteAssignmentButton">Delete Assignment</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="editAssignmentButton">Edit</button>
+                            <label for="assignmentDescription" class="col-form-label">Description:</label>
+                            <input type="search" class="form-control" placeholder="{{assignment.description}}" id="editAssignmentDescription" maxlength="256" autocomplete="off">
+                            <div class="invalid-feedback" id="assignmentDescriptionFeedback"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger mr-auto" id="deleteAssignmentButton">Delete Assignment</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editAssignmentButton">Edit</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+{{/if}}
 
 <div class="row d-flex align-items-center mb-2">
     <div class="col-lg-8">
@@ -80,6 +81,11 @@
             <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editAssignmentForm">Edit assignment</button>
         {{else}}
             <button id="leaveAssignmentButton" type="button" class="btn btn-outline-danger btn-lg btn-block" data-participant-id="{{participantId}}">Leave assignment</button>
+            <a class="btn btn-outline-primary btn-lg btn-block" target="_blank" href="{{repoUri}}">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                Go to repo
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
         {{/if}}  
     </div>
 </div>

@@ -98,14 +98,14 @@
                     </div>
                 </div>
             {{/if}}
-            <div class="col-md-auto d-flex justify-content-center align-items-center p-3">
+            <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
                 <span class="fa-stack fa-2x">
                     <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
                     <i class="fas fa-stack-1x fa-sticky-note"></i>
                 </span>
             </div>
-            <div class="col-md-8 p-3">
-                <h3 class="d-inline-block pb-1" style="max-width: 100%;">
+            <div class="col-sm-8 p-3">
+                <h3 class="d-inline-block pb-1 text-break" style="max-width: 100%;">
                     {{tag}}{{#unless ../canManage}}<i class="ml-2 mr-2 fas fa-{{#if isDelivered}}check-circle text-success{{else}}times-circle {{#if isDue}}text-danger{{else}}text-warning{{/if}}{{/if}} fa-sm"></i>
                     {{/unless}}
                 </h3>
@@ -126,12 +126,12 @@
     <nav>
         <ul class="pagination pagination-lg justify-content-end">
             <li>
-                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{prevPage}}">
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPageDeliveries" data-page="{{prevPage}}">
                     <a class="page-link" href="#">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 </li>
-                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPageDeliveries" data-page="{{nextPage}}">
                     <a class="page-link" href="#">
                         <i class="fas fa-chevron-right"></i>
                     </a>

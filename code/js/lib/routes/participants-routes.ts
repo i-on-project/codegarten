@@ -9,8 +9,8 @@ const router = expressRouter()
 
 router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants',
     requiresAuth, handlerGetAssignmentParticipants)
-router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId',
-    requiresAuth, handlerGetAssignmentParticipant)
+router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId/repo',
+    requiresAuth, handlerGetAssignmentParticipantRepo)
 
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId', 
     requiresAuth, handlerRemoveAssignmentParticipant)
@@ -54,7 +54,7 @@ function handlerGetAssignmentParticipants(req: Request, res: Response, next: Nex
         .catch(err => next(INTERNAL_ERROR))
 }
 
-function handlerGetAssignmentParticipant(req: Request, res: Response, next: NextFunction) {
+function handlerGetAssignmentParticipantRepo(req: Request, res: Response, next: NextFunction) {
     const orgId = Number(req.params.orgId)
     const classroomNumber = Number(req.params.classroomNumber)
     const assignmentNumber = Number(req.params.assignmentNumber)
@@ -64,11 +64,8 @@ function handlerGetAssignmentParticipant(req: Request, res: Response, next: Next
 
     getParticipantOfAssignment(orgId, classroomNumber, assignmentNumber, participantId, req.user.accessToken.token)
         .then(participant => {
-            if (!participant) return next()
-
-            res.render('assignment-participant', {
-                participant: participant
-            })
+            if (!participant || participant.type == 'notMember') return next()
+            res.redirect(participant.repoUri)
         })
         .catch(err => next(INTERNAL_ERROR))
 }

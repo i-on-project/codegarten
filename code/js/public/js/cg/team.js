@@ -83,10 +83,12 @@ function getTeamUsers(content, page) {
                 showOverlay(overlay[0])
             })
             $('.noRemoveUser').on('click', (event) => {
-                hideOverlay(event.target.parentElement.parentElement)
+                const overlay = $(`#removeUser${event.target.dataset.userId}Overlay`)
+                hideOverlay(overlay[0])
             })
             $('.yesRemoveUser').on('click', (event) => {
-                hideOverlay(event.target.parentElement.parentElement)
+                const overlay = $(`#removeUser${event.target.dataset.userId}Overlay`)
+                hideOverlay(overlay[0])
                 removeTeamUser(event.target.dataset.userId)
             })
         })

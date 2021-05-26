@@ -19,7 +19,9 @@ function getDeliveries(content, assignmentUri, page, updatePaginationFn) {
                 $('#editDeliveryForm').modal('show')
             })
 
-            updatePaginationFn(nextPage => getDeliveries(content, nextPage, updatePaginationFn))
+            updatePaginationFn('prevPageDeliveries', 'nextPageDeliveries', 
+                nextPage => getDeliveries(content, assignmentUri, nextPage, updatePaginationFn)
+            )
 
             $('.deleteDeliveryButton').on('click', (event) => {
                 const overlay = $(`#deleteDelivery${event.target.dataset.deliveryNumber}Overlay`)
