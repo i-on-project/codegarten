@@ -1,0 +1,123 @@
+<!-- Overlay used to confirm classroom deletion or to leave classroom -->
+<div id="confirmOverlay" class="overlay">
+    <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id="confirmOverlayMessage" class="font-weight-bold" style="text-align: center;"><!-- To be filled with DOM--></h1>
+        <br>
+        <div class="row">
+            <div class="col-sm">
+                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesConfirm">Yes</button>
+            </div>
+            <div class="col-sm">
+                <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noConfirm">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="editClassroomForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit classroom</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                        <label for="classroomName" class="col-form-label">Name:</label>
+                        <input type="search" class="form-control" placeholder="{{classroom.name}}" id="editClassroomName" maxlength="64" autocomplete="off">
+                        <div class="invalid-feedback" id="classroomNameFeedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                        <label for="classroomDescription" class="col-form-label">Description:</label>
+                        <input type="search" class="form-control" placeholder="{{classroom.description}}" id="editClassroomDescription" maxlength="256" autocomplete="off">
+                        <div class="invalid-feedback" id="classroomDescriptionFeedback"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger mr-auto" id="deleteClassroomButton">Delete Classroom</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="editClassroomButton">Edit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row d-flex align-items-center">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms">
+            <i class="fas fa-angle-double-left"></i>
+            Classrooms
+        </a>
+        <h4 class="text-muted mt-1">
+            <a href="{{orgUri}}" target="_blank" style="color: inherit;">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                {{organization}}
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+        </h4>
+        <h1 id="classroomName">{{classroom.name}}</h1>
+        <h5 class="text-muted font-weight-light" id="classroomDescription">{{classroom.description}}</h5>
+    </div>
+    <div class="col-md d-flex flex-column">
+        {{#if canManage}}
+            <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editClassroomForm">Edit classroom</button>
+        {{/if}}
+        <button id="leaveClassroomButton" type="button" class="btn btn-outline-danger btn-lg btn-block" data-user-id="{{user.id}}">Leave classroom</button>
+    </div>
+</div>
+
+{{#if canManage}}
+    <div class="row">
+        <div class="col-sm-auto input-group text-muted font-weight-light form-inline my-2 d-flex align-items-center">
+            <label for="inviteUri" class="col-form-label">Invite link:</label>
+            <input type="text" class="form-control form-control-sm ml-1 bg-white input-sm" id="inviteUri" value="{{inviteUri}}" readonly="readonly">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary btn-block ml-1" id="inviteButton"><i class="fas fa-clipboard"></i></button>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+<div class="row mt-2">
+    <div class="col btn-group btn-group-toggle flex-wrap" data-toggle="buttons">
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="assignmentsOption" autocomplete="off">
+            <i class="fas fa-book mt-1"></i>
+            <h4 class="my-2 ml-1">Assignments</h4>
+        </label>
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="usersOption" autocomplete="off">
+            <i class="fas fa-user mt-1"></i>
+            <h4 class="my-2 ml-1">Users</h4>
+        </label>
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="teamsOption" autocomplete="off">
+            <i class="fas fa-users mt-1"></i>
+            <h4 class="my-2 ml-1">Teams</h4>
+        </label>
+    </div>
+</div>
+
+<br>
+
+<div>
+    <div id="loadingClassroomContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border"></div>
+            <h4 class="mt-2">Loading...</h4>
+        </div>
+    </div>
+
+    <div id="classroomContent">
+        <!-- To be filled via javascript with DOM -->
+    </div>
+</div>

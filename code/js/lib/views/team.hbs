@@ -1,0 +1,99 @@
+<div id="deleteAndLeaveOverlay" class="overlay position-fixed">
+    <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id="overlayMessage" class="font-weight-bold" style="text-align: center;"></h1>
+        <br>
+        <div class="row">
+            <div class="col-sm">
+                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesDeleteOrLeaveTeam">Yes</button>
+            </div>
+            <div class="col-sm">
+                <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noDeleteOrLeaveTeam">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row d-flex align-items-center mb-2">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms/{{classroomNumber}}/teams">
+            <i class="fas fa-angle-double-left"></i>
+            Classroom Teams
+        </a>
+    </div>
+</div>
+
+<div class="rounded shadow bg-light">
+    <div class="row py-4">
+        <div class="col-md-3 d-flex justify-content-center">
+            <div class="row px-4">
+                <img src={{team.avatarUri}} class="rounded-circle img-thumbnail" width="256">
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="row px-4">
+                <h2 class="text-break">
+                    <div id="teamName" style="display: inline-block;">
+                        {{team.name}}
+                    </div>
+                    {{#if team.canManage}}
+                        <button class="btn btn-outline-secondary btn-sm" type="button" data-toggle="collapse" data-target="#editTeamNameForm" aria-expanded="false" aria-controls="editNameForm">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    {{/if}}
+                </h2>
+            </div>
+            {{#if team.canManage}}
+                <div class="row-auto px-2">
+                    <div class="collapse" id="editTeamNameForm">
+                        <div class="row">
+                            <div class="col-md mb-2">
+                                <input type="search" class="form-control" placeholder="{{team.name}}" maxlength="64" autocomplete="off" id="editTeamName">
+                                <div class="invalid-feedback" id="teamNameFeedback"></div>
+                            </div>
+                            <div class="col-md">
+                                <button class="btn btn-primary btn-block mb-2">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="row pl-4">
+                <a href={{team.gitHubUri}} target="_blank"> 
+                    <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                    {{team.gitHubName}}
+                </a>
+            </div>
+        </div>
+        <div class="col-md-3 pl-3 mx-4">
+            {{#if team.canManage}}
+                <div class="row align-items-end">
+                    <button class="btn btn-danger btn-block my-2 border" id="deleteTeamButton">Delete Team</button>
+                </div>
+            {{/if}}
+            {{#if team.isMember}}
+                <div class="row align-items-end">
+                    <button class="btn btn-danger btn-block my-2 border" id="leaveTeamButton" data-user-id={{user.id}}>Leave Team</button>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-lg-8">
+        <h1>Users</h1>
+    </div>
+</div>
+<hr>
+<div>
+    <div id="loadingTeamUsersOverlay" class="slide-in overlay-fixed text-muted" style="display: flex; ">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border"></div>
+            <h4 class="mt-2">Loading...</h4>
+        </div>
+    </div>
+
+    <div id="teamUsers">
+        <!-- To be filled via javascript with DOM -->
+    </div>
+</div>

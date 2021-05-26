@@ -1,0 +1,62 @@
+<div id="invite">
+    <div class="row text-center mb-2">
+        <div class="col">
+            <h1>You have been invited to join this classroom</h1>
+        </div>
+    </div>
+
+    <div class="rounded shadow bg-light">
+        <div class="row p-4 ml-1">
+            <div class="col-lg">
+                <div class="row">
+                    <h2 class="text-break">
+                        <div style="display: inline-block;">
+                            {{invitation.name}}
+                        </div>
+                    </h2>
+                </div>
+                <div class="row">
+                    <a href={{invitation.orgUri}} target="_blank"> 
+                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                        {{invitation.organization}}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row d-flex justify-content-center align-items-center mt-4">
+        <div class="col-sm">
+            <button class="shadow btn btn-outline-primary btn-lg btn-block" id="acceptInvitation">Accept</button>
+        </div>
+        <div class="col-sm">
+            <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>
+        </div>
+    </div>
+</div>
+
+<div id="acceptInvites" class="d-none">
+    <div class="row text-center mb-2">
+        <div class="col">
+            <h1>Almost there!</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <h4>To complete the process, please accept the following GitHub invite</h4>
+        </div>
+    </div>
+
+    <div class="row d-flex justify-content-center align-items-center my-4">
+        <div class="col-sm">
+            <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="orgInvite">Organization</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col text-center">
+            <h5>After accepting the invites, you may <a id="continueUri">proceed to the classroom<a></h5>
+        </div>
+    </div>
+</div>

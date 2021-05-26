@@ -1,0 +1,91 @@
+<div class="modal fade" id="createClassroomForm" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Create classroom</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="classroomName" class="col-form-label">Name:</label>
+            <input type="search" class="form-control" placeholder="Classroom name" id="classroomName" maxlength="64">
+            <div class="invalid-feedback" id="classroomNameFeedback"></div>
+          </div>
+          <div class="form-group">
+            <label for="classroomDescription" class="col-form-label">Description:</label>
+            <input type="search" class="form-control" placeholder="Classroom description" id="classroomDescription" maxlength="256">
+            <div class="invalid-feedback" id="classroomDescriptionFeedback">Description too long</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="createClassroomButton">Create</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs">
+            <i class="fas fa-angle-double-left"></i>
+            Organizations
+        </a>
+        <h4 class="text-muted mt-1">
+            <a href="{{orgUri}}" target="_blank" style="color: inherit;">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                {{organization}}
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+        </h4>
+        <h1>Classrooms</h1>
+    </div>
+    {{#if canCreate}}
+        <div class="col-md d-flex align-items-center">
+            <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#createClassroomForm">Create new classroom</button>
+        </div>
+    {{/if}}
+</div>
+
+<hr>
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No classrooms available</h5>
+{{else}}
+    <div class="row">
+        {{#each classrooms}}
+            <div class="col-md-4 py-4 slide-in">
+                <div class="card h-100 shadow">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="card-title">{{name}}</h3>
+                        <p class="card-text">{{description}}</p>
+                        <div class="mt-auto">
+                            <a class="btn btn-primary card-link" href="/orgs/{{../orgId}}/classrooms/{{id}}">View classroom</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{prevPage}}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}
+

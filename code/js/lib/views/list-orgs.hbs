@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-md-7">
+        <h1>Organizations</h1>
+    </div>
+    <div class="col d-flex">
+        <div class="align-self-center">Don't see your organization?</div>
+        <button id="installGitHubAppButton" type="button" class="btn btn-outline-primary btn-lg btn-block" href="{{orgInstallUri}}">Install to other organizations</button>
+    </div>
+</div>
+
+<hr>
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No organizations available</h5>
+{{else}}
+    <div class="row">
+        {{#each orgs}}
+            <div class="col-md-4 py-4 slide-in">
+                <div class="card h-100 shadow">
+                    <img class="card-img-top border-bottom border-dark" style="border-width:2px !important" src="{{avatarUri}}">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="card-title">{{name}}</h3>
+                        <p class="card-text">{{description}}</p>
+                        <div class="mt-auto d-flex">
+                            <a class="btn btn-primary card-link px-4" href="/orgs/{{id}}/classrooms">View classrooms</a>
+                            <a class="card-link align-self-center ml-auto" href="{{gitHubUri}}" target="_blank">
+                                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                                GitHub
+                                <i class="fas fa-external-link-alt fa-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{prevPage}}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}">
+                    <a class="page-link" href="?page={{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}
+

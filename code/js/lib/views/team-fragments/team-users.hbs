@@ -1,0 +1,64 @@
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No users available</h5>
+{{else}}
+    <div class="row">
+        {{#each users}}
+            <div class="col-md-3 py-2 slide-in">
+                <div class="card h-100 shadow" style="position: relative;">
+                    {{#if ../canManage}}
+                        <!-- Overlays -->
+                        <div id="user{{id}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                                <div class="spinner-border"></div>
+                                <h4 class="ml-3">Please wait...</h4>
+                        </div>
+                        <div id="removeUser{{id}}Overlay" class="overlay-fixed align-items-center text-center" style="position:absolute; height:100%; width: 100%">
+                            <div class="row-md-auto">
+                                <div class="col mb-4">
+                                    <h5 class="font-weight-bold">
+                                        Are you sure you want to remove the user from the team?
+                                    </h5>
+                                </div>
+                                <div class="col">
+                                    <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveUser" data-user-id="{{id}}">Yes</button>
+                                </div>
+                                <div class="col">
+                                    <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveUser" data-user-id="{{id}}">No</button>
+                                </div>
+                            </div>
+                        </div>
+                    {{/if}}
+                    <img class="card-img-top" src="{{avatarUri}}">
+                    <div class="card-body d-flex flex-column">
+                        <h3 class="card-title mb-4">{{username}}</h3>
+                        <div class="mt-auto d-flex">
+                            <a class="btn btn-primary card-link px-4" href="/users/{{id}}">View profile</a>
+                            {{#if ../canManage}}
+                                {{#unless isAuthUser}}
+                                <a class="removeUserButton card-link align-self-center ml-auto text-danger" href="#" data-user-id="{{id}}">
+                                    Remove
+                                </a>
+                                {{/unless}}
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPage" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPage" data-page="{{nextPage}}">
+                    <a class="page-link" href="#" page="{{nextPage}}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

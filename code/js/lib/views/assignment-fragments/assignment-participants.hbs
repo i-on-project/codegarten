@@ -1,0 +1,117 @@
+<!--
+{{#if canManage}}
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#addUserForm">
+            <i class="fas fa-plus"></i>
+            Add user
+        </button>
+    </div>
+    <hr>
+{{/if}}
+-->
+
+{{#if canManage}}
+<div class="modal fade" id="checkDeliveriesModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="text-break">
+                        <div id="deliveriesModalTitle">
+                            <!-- To be filled via javascript with DOM -->
+                        </div>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="position: relative;">
+                    <div id="checkDeliveriesLoading" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                        <div class="spinner-border"></div>
+                        <h4 class="ml-3">Please wait...</h4>
+                    </div>
+                    <div id="deliveriesContent">
+                        <!-- To be filled via javascript with DOM -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No participants available</h5>
+{{else}}
+    {{#each participants}}
+        <div class="row rounded bg-light" style="position: relative;">
+            {{#if ../canManage}}
+                <!-- Overlays -->
+                <div id="participant{{id}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="spinner-border"></div>
+                    <h4 class="ml-3">Please wait...</h4>
+                </div>
+                <div id="removeParticipant{{id}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="col-sm-auto">
+                        <h5 class="font-weight-bold">
+                            Are you sure you want to remove the participant from the assignment?
+                        </h5>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesRemoveParticipant" data-participant-id="{{id}}">Yes</button>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-primary btn-lg btn-block mb-2 noRemoveParticipant">No</button>
+                    </div>
+                </div>
+            {{/if}}
+
+            <!-- Participant Info -->
+            <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
+                <a href="{{#if ../isGroup}}/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/teams/{{id}}{{else}}/users/{{id}}{{/if}}">
+                    <img src={{avatarUri}} class="rounded-circle img-thumbnail" width="90"/>
+                </a>
+            </div>
+            <div class="col-md-7 p-3">
+                <h3 class="d-inline-block text-truncate pb-1" style="max-width: 100%;">{{name}}</h3>
+                
+                <br>
+                {{#if ../canManage}}
+                    <a class="text-danger removeParticipantButton" href="#">
+                        <h6 class="d-inline" data-participant-id="{{id}}">Remove</h6>
+                    </a>
+                {{/if}}
+            </div>
+            {{#if ../canManage}}
+                <div class="col-lg d-flex align-items-center my-1">
+                    <button class="checkDeliveriesButton btn btn-primary btn-block" href="#" data-participant-id="{{id}}" data-participant-name="{{name}}">Check Deliveries</a>
+                </div>
+                <div class="col-lg d-flex align-items-center">
+                    <a class="btn btn-outline-primary btn-block" target="_blank" href="/orgs/{{../orgId}}/classrooms/{{../classroomNumber}}/assignments/{{../assignmentNumber}}/participants/{{id}}/repo">
+                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                        Go to repo
+                        <i class="fas fa-external-link-alt fa-xs"></i>
+                    </a>
+                </div>
+            {{/if}}
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPageParticipants" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPageParticipants" data-page="{{nextPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}

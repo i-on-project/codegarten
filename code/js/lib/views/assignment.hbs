@@ -1,0 +1,133 @@
+<!-- Overlay used to confirm assignment deletion or to leave assignment -->
+<div id="confirmOverlay" class="overlay">
+    <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+        <h1 id="confirmOverlayMessage" class="font-weight-bold" style="text-align: center;"><!-- To be filled with DOM--></h1>
+        <br>
+        <div class="row">
+            <div class="col-sm">
+                <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2" id="yesConfirm">Yes</button>
+            </div>
+            <div class="col-sm">
+                <button class="shadow btn btn-primary btn-lg btn-block mb-2" id="noConfirm">No</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{#if canManage}}
+    <div class="modal fade" id="editAssignmentForm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit assignment</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                            <label for="assignmentName" class="col-form-label">Name:</label>
+                            <input type="search" class="form-control" placeholder="{{assignment.name}}" id="editAssignmentName" maxlength="64" autocomplete="off">
+                            <div class="invalid-feedback" id="assignmentNameFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <input tabindex="-1" aria-hidden="true" style="display: none;">
+
+                            <label for="assignmentDescription" class="col-form-label">Description:</label>
+                            <input type="search" class="form-control" placeholder="{{assignment.description}}" id="editAssignmentDescription" maxlength="256" autocomplete="off">
+                            <div class="invalid-feedback" id="assignmentDescriptionFeedback"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger mr-auto" id="deleteAssignmentButton">Delete Assignment</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editAssignmentButton">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+<div class="row d-flex align-items-center mb-2">
+    <div class="col-lg-8">
+        <a class="text-muted font-weight-light" href="/orgs/{{orgId}}/classrooms/{{classroomNumber}}/assignments">
+            <i class="fas fa-angle-double-left"></i>
+            Classroom Assignments
+        </a>
+        <h4 class="text-muted mt-1">
+            <a href="{{orgUri}}" target="_blank" style="color: inherit;">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                {{organization}}
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+        </h4>
+        <div class="row d-flex align-items-center">
+            <div class="col-md-auto pr-1">
+                <i class="fas fa-2x fa-{{#if assignment.isGroup}}users{{else}}user{{/if}}"></i>
+            </div>
+            <div class="col-md">
+                <h1 id="assignmentName">{{assignment.name}}</h1>
+            </div>
+        </div>
+        
+        <h5 class="text-muted font-weight-light" id="assignmentDescription">{{assignment.description}}</h5>
+    </div>
+    <div class="col-md d-flex flex-column">
+        {{#if canManage}}
+            <button type="button" class="btn btn-outline-primary btn-lg btn-block" data-toggle="modal" data-target="#editAssignmentForm">Edit assignment</button>
+        {{else}}
+            <button id="leaveAssignmentButton" type="button" class="btn btn-outline-danger btn-lg btn-block" data-participant-id="{{participantId}}">Leave assignment</button>
+            <a class="btn btn-outline-primary btn-lg btn-block" target="_blank" href="{{repoUri}}">
+                <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1">
+                Go to repo
+                <i class="fas fa-external-link-alt fa-xs"></i>
+            </a>
+        {{/if}}  
+    </div>
+</div>
+
+{{#if canManage}}
+    <div class="row">
+        <div class="col-sm-auto input-group text-muted font-weight-light form-inline my-2 d-flex align-items-center">
+            <label for="inviteUri" class="col-form-label">Invite link:</label>
+            <input type="text" class="form-control form-control-sm ml-1 bg-white input-sm" id="inviteUri" value="{{inviteUri}}" readonly="readonly">
+            <div class="input-group-append">
+                <button type="button" class="btn btn-outline-secondary btn-block ml-1" id="inviteButton"><i class="fas fa-clipboard"></i></button>
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+<div class="row mt-2">
+    <div class="col btn-group btn-group-toggle flex-wrap" data-toggle="buttons">
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="participantsOption" autocomplete="off">
+            <i class="fas fa-users mt-1"></i>
+            <h4 class="my-2 ml-1">Participants</h4>
+        </label>
+        <label class="d-flex btn btn-outline-secondary align-items-center justify-content-center">
+            <input type="radio" id="deliveriesOption" autocomplete="off" {{#unless canManage}}data-participant-id="{{participantId}}"{{/unless}}>
+            <i class="fas fa-copy mt-1"></i>
+            <h4 class="my-2 ml-1">Deliveries</h4>
+        </label>
+    </div>
+</div>
+
+<br>
+
+<div>
+    <div id="loadingAssignmentContentOverlay" class="slide-in overlay-fixed text-muted" style="display: flex;">
+        <div class="w-100 d-flex flex-column justify-content-center align-items-center">
+            <div class="spinner-border"></div>
+            <h4 class="mt-2">Loading...</h4>
+        </div>
+    </div>
+
+    <div id="assignmentContent">
+        <!-- To be filled via javascript with DOM -->
+    </div>
+</div>

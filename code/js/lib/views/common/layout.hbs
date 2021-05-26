@@ -1,0 +1,88 @@
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+        <title>i-on CodeGarten</title>
+        <link rel="stylesheet" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="/css/fontawesome.css">
+        <script type='module' src='/js/cg/index.js'></script>
+        <script type='module' src='/js/cg/common.js'></script>
+    </head>
+    <body>
+        <nav class="navbar shadow-sm sticky-top navbar-expand-md navbar-dark" style="background-color: #222222;">
+            <button class="navbar-toggler mr-3" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand align-self-center" href="/">
+                <img src="/res/codegarten-nav.png" height="19px">
+            </a>
+
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                {{#if user}}
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown d-flex flex-column">
+                            <a class="nav-link align-self-center" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="d-inline-block text-truncate align-middle pb-1" id="usernameNavbar" style="max-width: 200;">
+                                    {{user.username}}
+                                </div>
+                                <img src={{user.avatarUri}} width="32" height="32" class="rounded-circle ml-2 mr-1 border">
+                                <i class="fas fa-caret-down"></i>
+                            </a>
+                            <div class="dropdown-menu collapse dropdown-menu-right slide-in shadow-sm">
+                                <div>
+                                    <a class="dropdown-item" href="/user">View Profile</a>
+                                    <a class="dropdown-item" href="{{user.gitHubUri}}" target="_blank">
+                                        <i class="fas fa-external-link-alt fa-xs"></i>
+                                        GitHub Profile
+                                        <img src="/res/github-32px.png" width="20" height="20" class="rounded-circle mb-1 ml-1">
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item text-danger" href="/logout">Log Out</a>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                {{else}}
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item d-flex flex-column">
+                            <a class="nav-link align-self-center" href="/login">
+                                <img src="/res/github-32x-light.png" width="24" height="24" class="rounded-circle mr-1">
+                                Login with GitHub
+                            </a>
+                        </li>
+                    </ul>
+                {{/if}}
+            </div>
+        </nav>
+        <br>
+        <div class="container">
+            <div id="loadingOverlay" class="overlay">
+                <div class="w-100 d-flex justify-content-center align-items-center">
+                <div class="spinner-border"></div>
+                </div>
+            </div>
+            <div class="messages sticky-top alert-message">
+                {{#if messages.error}}
+                    <div class="alert alert-warning slide-in" role="alert" style="z-index: 2;">
+                        <button type="button" id="closeAlertButton" class="close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {{messages.error}}
+                    </div>
+                {{/if}}
+                {{#if messages.success}}
+                    <div class="alert alert-success slide-in" role="alert">
+                        <button type="button" id="closeAlertButton" class="close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {{messages.success}}
+                    </div>
+                {{/if}}
+            </div>
+
+            {{{body}}}
+        </div>
+        <script type='text/javascript' src='/js/jquery-3.5.1.slim.min.js'></script>
+        <script type='text/javascript' src='/js/bootstrap.bundle.min.js'></script>
+    </body>
+</html>

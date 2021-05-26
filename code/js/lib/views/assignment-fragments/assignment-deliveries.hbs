@@ -1,0 +1,142 @@
+{{#if canManage}}
+    <!-- Create Delivery form -->
+    <div class="modal fade" id="createDeliveryForm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create delivery</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="deliveryTag" class="col-form-label">Tag name:</label>
+                        <input type="search" class="form-control" placeholder="Delivery tag name" id="deliveryTag" maxlength="64">
+                        <div class="invalid-feedback" id="deliveryTagFeedback"><!-- Tag too long or tag not provided --></div>
+                    </div>
+
+                    <div class="form-inline">
+                        <label for="deliveryDueDate" class="col-form-label">Due date:</label>
+                        <input type="date" class="form-control mx-2" id="deliveryDueDate">
+                        <input type="time" class="form-control" id="deliveryDueTime">
+                        <div class="invalid-feedback" id="deliveryDueDateFeedback">Invalid date</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="createDeliveryButton">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Delivery form -->
+    <div class="modal fade" id="editDeliveryForm" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit delivery</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editDeliveryTag" class="col-form-label">Tag name:</label>
+                        <input type="search" class="form-control" placeholder="Delivery tag name" id="editDeliveryTag" maxlength="64">
+                        <div class="invalid-feedback" id="editDeliveryTagFeedback"><!-- Tag too long or tag not provided --></div>
+                    </div>
+
+                    <div class="form-inline">
+                        <label for="editDeliveryDueDate" class="col-form-label">Due date:</label>
+                        <input type="date" class="form-control mx-2" id="editDeliveryDueDate">
+                        <input type="time" class="form-control" id="editDeliveryDueTime">
+                        <div class="invalid-feedback" id="editDeliveryDueDateFeedback">Invalid date</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="editDeliveryButton">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Delivery Button -->
+    <div class="d-flex flex-row-reverse mb-2">
+        <button type="button" class="btn btn-outline-primary btn-lg" data-toggle="modal" data-target="#createDeliveryForm">
+            <i class="fas fa-plus"></i>
+            Create new delivery
+        </button>
+    </div>
+    <hr>
+{{/if}}
+
+{{#if isEmpty}}
+    <h5 style="text-align: center;">No deliveries available</h5>
+{{else}}
+    {{#each deliveries}}
+        <div class="row rounded bg-light" style="position: relative;">
+            {{#if ../canManage}}
+                <!-- Overlays -->
+                <div id="delivery{{number}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                    <div class="spinner-border"></div>
+                    <h4 class="ml-3">Please wait...</h4>
+                </div>
+                <div id="deleteDelivery{{number}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center p-3" style="position:absolute; height:100%; width: 100%">
+                    <div class="col-sm-auto">
+                        <h5 class="font-weight-bold">
+                            Are you sure you want to delete this delivery?
+                        </h5>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-outline-danger btn-lg btn-block mb-2 yesDeleteDelivery" data-delivery-number="{{number}}">Yes</button>
+                    </div>
+                    <div class="col-sm">
+                        <button class="shadow btn btn-primary btn-lg btn-block mb-2 noDeleteDelivery">No</button>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="col-sm-auto d-flex justify-content-center align-items-center p-3">
+                <span class="fa-stack fa-2x">
+                    <i class="fas fa-circle fa-stack-2x fa-inverse"></i>
+                    <i class="fas fa-stack-1x fa-sticky-note"></i>
+                </span>
+            </div>
+            <div class="col-sm-8 p-3">
+                <h3 class="d-inline-block pb-1 text-break" style="max-width: 100%;">
+                    {{tag}}{{#unless ../canManage}}<i class="ml-2 mr-2 fas fa-{{#if isDelivered}}check-circle text-success{{else}}times-circle {{#if isDue}}text-danger{{else}}text-warning{{/if}}{{/if}} fa-sm"></i>
+                    {{/unless}}
+                </h3>
+                <br>
+                <h6 class="text-{{#if isDue}}danger{{else}}success{{/if}} d-inline-block text-truncate pb-1" style="max-width: 100%;">{{dueDate}}</h6>
+            </div>
+            {{#if ../canManage}}
+                <div class="col-lg d-flex align-items-center my-1">
+                    <a class="editDeliveryButton btn btn-primary btn-block" href="#" data-delivery-number="{{number}}" data-tag="{{tag}}" data-due-date="{{dueDate}}">Edit</a>
+                </div>
+                <div class="col-lg d-flex align-items-center my-1">
+                    <a class="deleteDeliveryButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}">Delete</a>
+                </div>
+            {{/if}}
+        </div>
+    {{/each}}
+    <br>
+    <nav>
+        <ul class="pagination pagination-lg justify-content-end">
+            <li>
+                <li class="page-item {{#unless hasPrev}}disabled{{/unless}}" id="prevPageDeliveries" data-page="{{prevPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item {{#unless hasNext}}disabled{{/unless}}" id="nextPageDeliveries" data-page="{{nextPage}}">
+                    <a class="page-link" href="#">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </li>
+        </ul>
+    </nav>
+{{/if}}
