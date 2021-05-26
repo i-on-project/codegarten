@@ -12,4 +12,5 @@ enum class SirenClass {
     collection,
     assignmentInvitation,
     classroomInvitation,
+    joinInvitation
 }

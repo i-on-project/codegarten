@@ -9,9 +9,9 @@ import org.ionproject.codegarten.exceptions.ClientException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
+import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.responses.ProblemJson
 import org.ionproject.codegarten.responses.Response
 import org.jdbi.v3.core.JdbiException
