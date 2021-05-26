@@ -129,7 +129,7 @@ function removeUserFromClassroom(orgId: number, classroomNumber: number, userId:
         .then(async res => {
             return { 
                 status: res.status,
-                content: await res.json()
+                content: res.status != 200 ? await res.json() : null
             } as ApiResponse
         })
 }
