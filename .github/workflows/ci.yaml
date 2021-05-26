@@ -16,7 +16,7 @@ jobs:
         env:
           CODEGARTEN_DB_CONNECTION_STRING: jdbc:postgresql://localhost:5432/db?user=codegarten&password=changeit
           CODEGARTEN_TEST_DB_CONNECTION_STRING: jdbc:postgresql://localhost:5433/db?user=codegarten&password=changeit
-          CODEGARTEN_GITHUB_APP_PROPERTIES_PATH: code/jvm/secrets-example/github-app-properties.json
-          CODEGARTEN_GITHUB_APP_PRIVATE_KEY_PATH: code/jvm/secrets-example/gh-app-private-key.pem
-          CODEGARTEN_CIPHER_KEY_PATH: code/jvm/secrets-example/cipher-key.txt
+          CODEGARTEN_GITHUB_APP_PROPERTIES_PATH: secrets-example/github-app-properties.json
+          CODEGARTEN_GITHUB_APP_PRIVATE_KEY_PATH: secrets-example/gh-app-private-key.pem
+          CODEGARTEN_CIPHER_KEY_PATH: secrets-example/cipher-key.txt
         run: code/jvm/gradlew -p code/jvm test
