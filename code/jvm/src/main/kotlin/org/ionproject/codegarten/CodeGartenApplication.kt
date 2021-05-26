@@ -1,5 +1,6 @@
 package org.ionproject.codegarten
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.ionproject.codegarten.pipeline.argumentresolvers.AssignmentResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.GitHubUserOrgRoleResolver
 import org.ionproject.codegarten.pipeline.argumentresolvers.InstallationResolver
@@ -23,29 +24,38 @@ import org.springframework.stereotype.Component
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.io.File
 
 @ConfigurationPropertiesScan
 @EnableScheduling
 @SpringBootApplication
 class CodeGartenApplication(private val configProperties: ConfigProperties) {
 
-	private val cryptoUtils = CryptoUtils(configProperties.cipherKeyPath)
+	private val cryptoUtils = CryptoUtils(System.getenv(configProperties.cipherKeyEnv)!!)
 
 	@Bean
 	fun getJdbi() = Jdbi
-		.create(configProperties.dbConnectionString)
+		.create(System.getenv(configProperties.dbConnectionStringEnv)!!)
 		.installPlugin(KotlinPlugin())
 
 	@Bean
-	fun getGithubInterface() =
-		GitHubInterface(
-			configProperties.gitHubAppId,
-			configProperties.gitHubAppClientId,
-			configProperties.gitHubAppName,
-			configProperties.gitHubAppClientSecret,
-			cryptoUtils.readRsaPrivateKey(configProperties.gitHubAppPrivateKeyPemPath),
-			Jackson2ObjectMapperBuilder().build()
+	fun getGithubInterface(): GitHubInterface {
+		val mapper: ObjectMapper = Jackson2ObjectMapperBuilder().build()
+
+		val ghAppProperties = mapper.readValue(
+			File(System.getenv(configProperties.gitHubAppPropertiesPathEnv)!!),
+			GitHubAppProperties::class.java
 		)
+
+		return GitHubInterface(
+			ghAppProperties,
+			cryptoUtils.readRsaPrivateKey(
+				System.getenv(configProperties.gitHubAppPrivateKeyPemPath)!!
+			),
+			mapper
+		)
+	}
+
 
 	@Bean
 	fun getCryptoUtils() = cryptoUtils

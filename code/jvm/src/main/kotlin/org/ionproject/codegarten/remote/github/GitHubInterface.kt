@@ -8,6 +8,7 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.ionproject.codegarten.GitHubAppProperties
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.remote.MEDIA_TYPE_JSON
 import org.ionproject.codegarten.remote.call
@@ -65,24 +66,21 @@ import java.time.Instant
 import java.util.*
 
 class GitHubInterface(
-    val appId: Int,
-    val clientId: String,
-    val clientName: String,
-    val clientSecret: String,
+    val ghAppProperties: GitHubAppProperties,
     val clientPrivateKey: Key,
     val mapper: ObjectMapper
 ) {
 
     private val httpClient = OkHttpClient()
 
-    fun getAuthUri(state: String) = getGitHubAuthUri(clientId, state)
-    fun getInstallationUri() = getGitHubNewInstallationUri(clientName.toLowerCase().replace(' ', '-'))
+    fun getAuthUri(state: String) = getGitHubAuthUri(ghAppProperties.clientId, state)
+    fun getInstallationUri() = getGitHubNewInstallationUri(ghAppProperties.name.toLowerCase().replace(' ', '-'))
 
     private fun getGitHubAppJwt(): String {
         val currTimeInSeconds = Instant.now().epochSecond
 
         return Jwts.builder()
-            .claim("iss", appId)
+            .claim("iss", ghAppProperties.id)
             .claim("iat", currTimeInSeconds - 60)
             .claim("exp", currTimeInSeconds + (10 * 60))
             .signWith(clientPrivateKey, SignatureAlgorithm.RS256)
@@ -91,12 +89,12 @@ class GitHubInterface(
 
     fun getAccessTokenFromAuthCode(authCode: String): GitHubUserAccessTokenResponse {
         val req = Request.Builder()
-            .from(GITHUB_TOKEN_URI, clientName)
+            .from(GITHUB_TOKEN_URI, ghAppProperties.name)
             .post(
                 FormBody.Builder()
                     .add("code", authCode)
-                    .add("client_id", clientId)
-                    .add("client_secret", clientSecret)
+                    .add("client_id", ghAppProperties.clientId)
+                    .add("client_secret", ghAppProperties.clientSecret)
                     .build()
             )
             .build()
@@ -106,7 +104,7 @@ class GitHubInterface(
 
     fun getUserInfo(accessToken: String): GitHubLoginResponse {
         val req = Request.Builder()
-            .from(GITHUB_USER_URI, clientName, accessToken)
+            .from(GITHUB_USER_URI, ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
@@ -115,7 +113,7 @@ class GitHubInterface(
     fun getInstallationOrg(installationId: Int): GitHubInstallationResponse {
         val gitHubAppJwt = getGitHubAppJwt()
         val req = Request.Builder()
-            .from(getGitHubInstallationUri(installationId), clientName, gitHubAppJwt)
+            .from(getGitHubInstallationUri(installationId), ghAppProperties.name, gitHubAppJwt)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
@@ -124,7 +122,7 @@ class GitHubInterface(
     fun getOrgInstallation(orgId: Int): GitHubInstallationResponse {
         val gitHubAppJwt = getGitHubAppJwt()
         val req = Request.Builder()
-            .from(getGitHubInstallationOfOrgUri(orgId), clientName, gitHubAppJwt)
+            .from(getGitHubInstallationOfOrgUri(orgId), ghAppProperties.name, gitHubAppJwt)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
@@ -133,7 +131,7 @@ class GitHubInterface(
     fun getInstallationToken(installationId: Int): GitHubInstallationAccessTokenResponse {
         val gitHubAppJwt = getGitHubAppJwt()
         val req = Request.Builder()
-            .from(getGitHubInstallationAccessTokenUri(installationId), clientName, gitHubAppJwt)
+            .from(getGitHubInstallationAccessTokenUri(installationId), ghAppProperties.name, gitHubAppJwt)
             .post(FormBody.Builder().build())
             .build()
 
@@ -142,7 +140,7 @@ class GitHubInterface(
 
     fun getUser(userId: Int, accessToken: String): GitHubLoginResponse {
         val req = Request.Builder()
-            .from(getGitHubUserByIdUri(userId), clientName, accessToken)
+            .from(getGitHubUserByIdUri(userId), ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
@@ -150,7 +148,7 @@ class GitHubInterface(
 
     fun getUserOrgMembership(orgId: Int, accessToken: String): GitHubOrgMembershipResponse {
         val req = Request.Builder()
-            .from(getGitHubMembershipUri(orgId), clientName, accessToken)
+            .from(getGitHubMembershipUri(orgId), ghAppProperties.name, accessToken)
             .build()
 
         return try {
@@ -162,7 +160,7 @@ class GitHubInterface(
 
     fun getUserOrgs(accessToken: String, page: Int, limit: Int): List<GitHubOrganizationResponse> {
         val req = Request.Builder()
-            .from(getGithubUserOrgsUri(page, limit), clientName, accessToken)
+            .from(getGithubUserOrgsUri(page, limit), ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMapList(req, mapper, GitHubOrganizationResponse::class.java, USER_ORGS_CACHE)
@@ -170,7 +168,7 @@ class GitHubInterface(
 
     fun getOrgById(orgId: Int, accessToken: String): GitHubOrganizationResponse {
         val req = Request.Builder()
-            .from(getGitHubOrgUri(orgId), clientName, accessToken)
+            .from(getGitHubOrgUri(orgId), ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java, ORG_INFO_CACHE)
@@ -178,7 +176,7 @@ class GitHubInterface(
 
     fun getRepoById(repoId: Int, accessToken: String): GitHubRepoResponse {
         val req = Request.Builder()
-            .from(getGitHubRepoByIdUri(repoId), clientName, accessToken)
+            .from(getGitHubRepoByIdUri(repoId), ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
@@ -186,7 +184,7 @@ class GitHubInterface(
 
     fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse {
         val req = Request.Builder()
-            .from(getGitHubRepoByNameUri(login, repoName), clientName, accessToken)
+            .from(getGitHubRepoByNameUri(login, repoName), ghAppProperties.name, accessToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
@@ -199,7 +197,7 @@ class GitHubInterface(
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()
-            .from(getGitHubReposOfOrgUri(orgId), clientName, installationToken)
+            .from(getGitHubReposOfOrgUri(orgId), ghAppProperties.name, installationToken)
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
@@ -214,7 +212,7 @@ class GitHubInterface(
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()
-            .from(getGitHubRepoGenerateByIdUri(repoTemplateId), clientName, installationToken)
+            .from(getGitHubRepoGenerateByIdUri(repoTemplateId), ghAppProperties.name, installationToken)
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
@@ -223,7 +221,7 @@ class GitHubInterface(
 
     fun deleteRepo(repoId: Int, installationToken: String) {
         val req = Request.Builder()
-            .from(getGitHubRepoByIdUri(repoId), clientName, installationToken)
+            .from(getGitHubRepoByIdUri(repoId), ghAppProperties.name, installationToken)
             .delete()
             .build()
 
@@ -232,7 +230,7 @@ class GitHubInterface(
 
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
-            .from(getGitHubRepoCollaboratorUri(repoId, username), clientName, installationToken)
+            .from(getGitHubRepoCollaboratorUri(repoId, username), ghAppProperties.name, installationToken)
             .put(FormBody.Builder().build())
             .build()
 
@@ -241,7 +239,7 @@ class GitHubInterface(
 
     fun getAllTagsFromRepo(repoId: Int, ghToken: String): List<GitHubTag> {
         val req = Request.Builder()
-            .from(getGitHubRefsTagsUri(repoId), clientName, ghToken)
+            .from(getGitHubRefsTagsUri(repoId), ghAppProperties.name, ghToken)
             .build()
 
         return try {
@@ -258,7 +256,7 @@ class GitHubInterface(
 
     fun tryGetTagFromRepo(repoId: Int, tag: String, ghToken: String): Optional<GitHubTag> {
         var req = Request.Builder()
-            .from(getGitHubRefTagUri(repoId, tag), clientName, ghToken)
+            .from(getGitHubRefTagUri(repoId, tag), ghAppProperties.name, ghToken)
             .build()
 
         return try {
@@ -268,7 +266,7 @@ class GitHubInterface(
                 if (ref.obj.type == "tag") {
                     // If ref is a tag, get the tag's last commit
                     req = Request.Builder()
-                        .from(ref.obj.url, clientName, ghToken)
+                        .from(ref.obj.url, ghAppProperties.name, ghToken)
                         .build()
 
                     val ghTag = httpClient.callAndMap(req, mapper, GitHubTagResponse::class.java, REPO_TAG_CACHE)
@@ -279,7 +277,7 @@ class GitHubInterface(
                 }
 
             req = Request.Builder()
-                .from(commitUri, clientName, ghToken)
+                .from(commitUri, ghAppProperties.name, ghToken)
                 .build()
             val commit = httpClient.callAndMap(req, mapper, GitHubCommitResponse::class.java, REPO_TAG_CACHE)
 
@@ -300,7 +298,7 @@ class GitHubInterface(
 
     fun getTeam(orgId: Int, teamId: Int, installationToken: String): GitHubTeamResponse {
         val req = Request.Builder()
-            .from(getGitHubTeamByIdUri(orgId, teamId), clientName, installationToken)
+            .from(getGitHubTeamByIdUri(orgId, teamId), ghAppProperties.name, installationToken)
             .build()
 
         return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java, TEAM_INFO_CACHE)
@@ -313,7 +311,7 @@ class GitHubInterface(
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()
-            .from(getGitHubTeamsUri(orgId), clientName, installationToken)
+            .from(getGitHubTeamsUri(orgId), ghAppProperties.name, installationToken)
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
@@ -322,7 +320,7 @@ class GitHubInterface(
 
     fun deleteTeam(orgId: Int, teamId: Int, installationToken: String) {
         val req = Request.Builder()
-            .from(getGitHubTeamByIdUri(orgId, teamId), clientName, installationToken)
+            .from(getGitHubTeamByIdUri(orgId, teamId), ghAppProperties.name, installationToken)
             .delete()
             .build()
 
@@ -331,7 +329,7 @@ class GitHubInterface(
 
     fun addUserToTeam(orgId: Int, teamId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
-            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), clientName, installationToken)
+            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), ghAppProperties.name, installationToken)
             .put(FormBody.Builder().build())
             .build()
 
@@ -340,7 +338,7 @@ class GitHubInterface(
 
     fun removeUserFromTeam(orgId: Int, teamId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
-            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), clientName, installationToken)
+            .from(getGitHubTeamUserMembershipUri(orgId, teamId, username), ghAppProperties.name, installationToken)
             .delete()
             .build()
 
@@ -353,7 +351,7 @@ class GitHubInterface(
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()
-            .from(getGitHubTeamRepoUri(orgId, teamId, orgName, repoName), clientName, installationToken)
+            .from(getGitHubTeamRepoUri(orgId, teamId, orgName, repoName), ghAppProperties.name, installationToken)
             .put(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
@@ -369,7 +367,7 @@ class GitHubInterface(
         val body = mapper.writeValueAsString(json)
 
         val req = Request.Builder()
-            .from(getGitHubOrgInvitationsUri(orgId), clientName, installationToken)
+            .from(getGitHubOrgInvitationsUri(orgId), ghAppProperties.name, installationToken)
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
