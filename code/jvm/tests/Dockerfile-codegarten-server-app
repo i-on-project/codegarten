@@ -1,0 +1,7 @@
+FROM adoptopenjdk/openjdk11:alpine
+
+WORKDIR /app
+
+COPY ./jvm ./jvm
+
+ENTRYPOINT [ "./jvm/gradlew", "-p", "jvm", "bootRun", "-x", "dbWait", "-x", "dbStop" ]
