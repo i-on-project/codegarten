@@ -80,7 +80,7 @@ task<Exec>("dbTestsWait") {
 }
 
 task<Exec>("dbTestsDown") {
-	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "rm", "-fsv", "codegarten-db-tests")
+	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "-f", "../../.docker/compose-server.yml", "rm", "-fsv", "codegarten-db-tests")
 }
 
 tasks {
