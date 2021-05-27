@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  codegarten-web-app:
+    container_name: codegarten-web-app
+    build:
+      context: ../code/js
+      dockerfile:  tests/Dockerfile-codegarten-web-app
+    ports:
+      - 80:80
+    environment: 
+      - CG_CLIENT_ID=1
+      - CG_CLIENT_SECRET=secret
+      - CG_SERVER_API_HOST=http://codegarten-server-app:8080
+      - CG_SERVER_IM_HOST=http://localhost:8080

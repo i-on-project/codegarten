@@ -30,7 +30,7 @@ export function init(portArg: number, done: () => void = null): void {
 
     const app = express()
     app.set('view engine', 'hbs')
-    app.set('views', './lib/views')
+    app.set('views', './views')
     app.set('view options', { layout: 'common/layout' })
 
     app.use(express.static('public'))

@@ -3,7 +3,7 @@ services:
   codegarten-db:
     container_name: codegarten-db
     build:
-      context: ..
+      context: ../code
       dockerfile: jvm/tests/Dockerfile-codegarten-db
     environment:
       - POSTGRES_USER=codegarten
@@ -14,7 +14,7 @@ services:
   codegarten-db-tests:
     container_name: codegarten-db-tests
     build:
-      context: ..
+      context: ../code
       dockerfile: jvm/tests/Dockerfile-codegarten-db-tests
     environment:
       - POSTGRES_USER=codegarten
@@ -25,13 +25,13 @@ services:
   codegarten-server-app:
     container_name: codegarten-server-app
     build:
-      context: ..
+      context: ../code
       dockerfile:  jvm/tests/Dockerfile-codegarten-server-app
     depends_on: [ codegarten-db ]
     ports:
       - 8080:8080
     environment: 
       - CODEGARTEN_DB_CONNECTION_STRING=jdbc:postgresql://codegarten-db:5432/db?user=codegarten&password=changeit
-      - CODEGARTEN_GITHUB_APP_PROPERTIES_PATH=secrets-example/github-app-properties.json
-      - CODEGARTEN_GITHUB_APP_PRIVATE_KEY_PATH=secrets-example/gh-app-private-key.pem
-      - CODEGARTEN_CIPHER_KEY_PATH=secrets-example/cipher-key.txt
+      - CODEGARTEN_GITHUB_APP_PROPERTIES_PATH=secrets/github-app-properties.json
+      - CODEGARTEN_GITHUB_APP_PRIVATE_KEY_PATH=secrets/gh-app-private-key.pem
+      - CODEGARTEN_CIPHER_KEY_PATH=secrets/cipher-key.txt
