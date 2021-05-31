@@ -7,6 +7,7 @@ import org.ionproject.codegarten.database.helpers.InstallationsDb
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.remote.github.responses.GitHubAccountType.ORGANIZATION
 import org.ionproject.codegarten.utils.CryptoUtils
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -22,7 +23,7 @@ class GhAppInstallationController(
     @GetMapping(GH_INSTALLATIONS_HREF)
     fun installToOrg() : ResponseEntity<Any> {
         return ResponseEntity
-            .status(302)
+            .status(HttpStatus.FOUND)
             .header("Location", gitHub.getInstallationUri().toString())
             .body(null)
     }

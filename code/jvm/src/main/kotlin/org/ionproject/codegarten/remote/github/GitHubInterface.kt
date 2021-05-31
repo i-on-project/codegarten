@@ -39,6 +39,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoByNameUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoCollaboratorUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoGenerateByIdUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubRepoReleasesByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubReposOfOrgUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTagNameFromRef
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamByIdUri
@@ -294,6 +295,29 @@ class GitHubInterface(
 
             Optional.empty()
         }
+    }
+
+    fun createReleaseInRepo(repoId: Int, tag: String, ghToken: String) {
+        val json = mapper.createObjectNode()
+        json.put("tag_name", tag)
+        json.put("body", "Delivery of '$tag'")
+        val body = mapper.writeValueAsString(json)
+
+        val req = Request.Builder()
+            .from(getGitHubRepoReleasesByIdUri(repoId), ghAppProperties.name, ghToken)
+            .post(body.toRequestBody(MEDIA_TYPE_JSON))
+            .build()
+
+        httpClient.call(req)
+    }
+
+    fun deleteTagFromRepo(repoId: Int, tag: String, ghToken: String) {
+        val req = Request.Builder()
+            .from(getGitHubRefTagUri(repoId, tag), ghAppProperties.name, ghToken)
+            .delete()
+            .build()
+
+        httpClient.call(req)
     }
 
     fun getTeam(orgId: Int, teamId: Int, installationToken: String): GitHubTeamResponse {
