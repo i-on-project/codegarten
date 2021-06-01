@@ -27,8 +27,9 @@ fun Request.Builder.from(uri: String, clientName: String, token: String? = null)
 }
 
 fun OkHttpClient.call(request: Request) {
-    val res = this.newCall(request).execute()
-    if (!res.isSuccessful) throw HttpRequestException(res.code, res.body?.string())
+    this.newCall(request).execute().use {
+        if (!it.isSuccessful) throw HttpRequestException(it.code, it.body?.string())
+    }
 }
 
 fun <T> OkHttpClient.callAndMap(request: Request, mapper: ObjectMapper, mapTo: Class<T>, cacheExpiresIn: Long? = null): T {

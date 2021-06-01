@@ -7,6 +7,7 @@ COPY ./sql/1_create_tables.sql /docker-entrypoint-initdb.d/1_create_tables.sql
 COPY ./sql/2_create_views.sql /docker-entrypoint-initdb.d/2_create_views.sql
 COPY ./sql/3_create_functions.sql /docker-entrypoint-initdb.d/3_create_functions.sql
 COPY ./sql/4_create_triggers.sql /docker-entrypoint-initdb.d/4_create_triggers.sql
+COPY ./sql/5_fill.sql /docker-entrypoint-initdb.d/5_fill.sql
 
 COPY --chown=postgres:postgres ./jvm/tests/scripts/wait-for-postgres.sh ./bin/wait-for-postgres.sh
 RUN chmod +x ./bin/wait-for-postgres.sh

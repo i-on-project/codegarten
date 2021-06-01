@@ -2,8 +2,11 @@
 
 import { RequestInit } from 'node-fetch'
 
-const API_HOST = 'http://localhost:8080/api'
-const IM_HOST = 'http://localhost:8080/im'
+const SERVER_API_HOST = process.env.CG_SERVER_API_HOST
+const SERVER_IM_HOST = process.env.CG_SERVER_IM_HOST != null ? process.env.CG_SERVER_IM_HOST : SERVER_API_HOST
+
+const API_HOST = `${SERVER_API_HOST}/api`
+const IM_HOST = `${SERVER_IM_HOST}/im`
 const CLIENT_ID = process.env.CG_CLIENT_ID
 const CLIENT_SECRET = process.env.CG_CLIENT_SECRET
 
