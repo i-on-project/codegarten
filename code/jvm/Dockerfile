@@ -14,4 +14,4 @@ ENV CODEGARTEN_CIPHER_KEY_PATH=secrets/cipher-key.txt
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-server", "-cp", "server:server/lib/*", "org.ionproject.codegarten.CodeGartenApplicationKt"]
+ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-Xmx256m", "-cp", "server:server/lib/*", "org.ionproject.codegarten.CodeGartenApplicationKt"]
