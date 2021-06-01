@@ -29,6 +29,7 @@ export function init(portArg: number, done: () => void = null): void {
     }
 
     const app = express()
+    app.enable('trust proxy')
     app.set('view engine', 'hbs')
     app.set('views', './views')
     app.set('view options', { layout: 'common/layout' })

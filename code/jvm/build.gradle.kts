@@ -57,8 +57,14 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+task<Copy>("extractUberJar") {
+	dependsOn("build")
+	from(zipTree("$buildDir/libs/${rootProject.name}-$version.jar"))
+	into("build/extracted")
+}
+
 task<Exec>("dbUp") {
-	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "-f", "../../.docker/compose-server.yml", "up", "-d", "codegarten-db")
+	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "up", "-d", "codegarten-db")
 }
 
 task<Exec>("dbWait") {
@@ -71,7 +77,7 @@ task<Exec>("dbStop") {
 }
 
 task<Exec>("dbTestsUp") {
-	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "-f", "../../.docker/compose-server.yml", "up", "-d", "codegarten-db-tests")
+	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "up", "-d", "codegarten-db-tests")
 }
 
 task<Exec>("dbTestsWait") {
@@ -80,7 +86,7 @@ task<Exec>("dbTestsWait") {
 }
 
 task<Exec>("dbTestsDown") {
-	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "-f", "../../.docker/compose-server.yml", "rm", "-fsv", "codegarten-db-tests")
+	commandLine("docker-compose", "-p", DOCKER_PROJECT_NAME, "rm", "-fsv", "codegarten-db-tests")
 }
 
 tasks {

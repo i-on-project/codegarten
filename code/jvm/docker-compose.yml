@@ -1,0 +1,24 @@
+version: "3.3"
+services:
+  codegarten-db:
+    container_name: codegarten-db
+    build:
+      context: ..
+      dockerfile: jvm/tests/Dockerfile-codegarten-db
+    environment:
+      - POSTGRES_USER=codegarten
+      - POSTGRES_PASSWORD=changeit
+      - POSTGRES_DB=db
+    ports:
+      - 5432:5432
+  codegarten-db-tests:
+    container_name: codegarten-db-tests
+    build:
+      context: ..
+      dockerfile: jvm/tests/Dockerfile-codegarten-db-tests
+    environment:
+      - POSTGRES_USER=codegarten
+      - POSTGRES_PASSWORD=changeit
+      - POSTGRES_DB=db
+    ports:
+      - 5433:5432

@@ -67,15 +67,16 @@ fun Call.executeCached(cache: RequestCache, expiresIn: Long?): CachedResponse {
         }
     }
 
-    val response = this.execute()
-    val cachedResponse = CachedResponse(
-        body = response.body?.string(),
-        code = response.code,
-        isSuccessful = response.isSuccessful
-    )
-    if (response.isSuccessful && expiresIn != null) {
-        cache.cache(request, cachedResponse, expiresIn)
-    }
+    this.execute().use {
+        val cachedResponse = CachedResponse(
+            body = it.body?.string(),
+            code = it.code,
+            isSuccessful = it.isSuccessful
+        )
+        if (it.isSuccessful && expiresIn != null) {
+            cache.cache(request, cachedResponse, expiresIn)
+        }
 
-    return cachedResponse
+        return cachedResponse
+    }
 }

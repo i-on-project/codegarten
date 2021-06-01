@@ -25,6 +25,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.io.File
+import java.net.URI
 
 @ConfigurationPropertiesScan
 @EnableScheduling
@@ -34,9 +35,25 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	private val cryptoUtils = CryptoUtils(System.getenv(configProperties.cipherKeyEnv)!!)
 
 	@Bean
-	fun getJdbi() = Jdbi
-		.create(System.getenv(configProperties.dbConnectionStringEnv)!!)
-		.installPlugin(KotlinPlugin())
+	fun getJdbi(): Jdbi {
+		val jdbcConnectionString = System.getenv(configProperties.dbJdbcConnectionStringEnv)
+		val connectionUrl = System.getenv(configProperties.dbUrlConnectionStringEnv)
+
+		val connectionString: String =
+			if (jdbcConnectionString != null)
+				jdbcConnectionString
+			else {
+				val dbUri = URI(connectionUrl!!)
+
+				val username: String = dbUri.userInfo.split(":")[0]
+				val password: String = dbUri.userInfo.split(":")[1]
+				"jdbc:postgresql://${dbUri.host}:${dbUri.port}${dbUri.path}?user=$username&password=$password"
+			}
+
+		return Jdbi
+			.create(connectionString)
+			.installPlugin(KotlinPlugin())
+	}
 
 	@Bean
 	fun getGithubInterface(): GitHubInterface {
@@ -84,6 +101,5 @@ class MvcConfig(
 }
 
 fun main(args: Array<String>) {
-	System.setProperty("server.port", Routes.PORT)
 	runApplication<CodeGartenApplication>(*args)
 }

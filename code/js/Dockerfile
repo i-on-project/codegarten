@@ -2,12 +2,10 @@ FROM node:16-alpine
 
 WORKDIR /app
 
+COPY ./node_modules ./node_modules
 COPY ./public ./public
 COPY ./dist ./dist
-COPY ./package.json ./package.json
 COPY ./views ./views
-
-RUN npm install
 
 EXPOSE 80
 

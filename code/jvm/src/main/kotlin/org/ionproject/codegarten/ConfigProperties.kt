@@ -6,7 +6,8 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 @ConfigurationProperties("cg-server")
 data class ConfigProperties(
-    val dbConnectionStringEnv: String,
+    val dbUrlConnectionStringEnv: String,
+    val dbJdbcConnectionStringEnv: String,
 
     // GitHub App Info
     val gitHubAppPropertiesPathEnv: String,

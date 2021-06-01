@@ -6,4 +6,4 @@ if(process.argv.length > 2) {
 }
 
 import { init as initServer } from './lib/server'
-initServer(port)
+initServer(port || Number(process.env.PORT))
