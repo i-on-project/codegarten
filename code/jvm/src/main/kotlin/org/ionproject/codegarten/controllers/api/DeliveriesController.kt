@@ -38,8 +38,11 @@ import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -175,155 +178,6 @@ class DeliveriesController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
-    @RequiresUserInAssignment
-    @GetMapping(DELIVERIES_OF_PARTICIPANT_HREF)
-    fun getAllUserDeliveries(
-        @PathVariable(name = ORG_PARAM) orgId: Int,
-        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
-        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
-        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
-        pagination: Pagination,
-        user: User,
-        userClassroom: UserClassroom,
-        assignment: Assignment
-    ): ResponseEntity<Response> {
-        val isGroupAssignment = assignment.isGroupAssignment()
-        val isTeacher = userClassroom.role == TEACHER
-
-        val repoId =
-            if (isGroupAssignment) {
-                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
-                if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw ForbiddenException("Not enough permission to see deliveries")
-
-                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
-            } else {
-                if (!isTeacher && user.uid != participantId)
-                    throw ForbiddenException("Not enough permission to see deliveries")
-
-                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
-            }
-
-        val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
-
-        val ghTags = gitHub.getAllTagsFromRepo(repoId, user.gh_token)
-        val org = gitHub.getOrgById(orgId, user.gh_token)
-
-        return DeliveriesOutputModel(
-            assignment = assignment.name,
-            classroom = userClassroom.classroom.name,
-            organization = org.login,
-            collectionSize = deliveriesCount,
-            pageIndex = pagination.page,
-            pageSize = deliveries.size
-        ).toSirenObject(
-            entities = deliveries.map {
-                ParticipantDeliveryItemOutputModel(
-                    id = it.did,
-                    number = it.number,
-                    tag = it.tag,
-                    dueDate = it.due_date,
-                    isDelivered = ghTags.any { tag -> tag.name == it.tag },
-                    assignment = it.assignment_name,
-                    classroom = it.classroom_name,
-                    organization = org.login
-                ).toSirenObject(
-                    rel = listOf("item"),
-                    links = listOf(
-                        SirenLink(listOf(SELF_PARAM),
-                            getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, it.number).includeHost()),
-                        SirenLink(listOf("participant-deliveries"),
-                            getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId).includeHost()),
-                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
-                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
-                        SirenLink(listOf("participant"),
-                            if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
-                            else getTeamByNumberUri(orgId, classroomNumber, participantId)
-                        )
-                    )
-                )
-            },
-            links = Routes.createSirenLinkListForPagination(
-                Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
-                pagination.page,
-                pagination.limit,
-                deliveriesCount
-            ) + listOf(
-                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
-                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
-                SirenLink(listOf("participant"),
-                    if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
-                    else getTeamByNumberUri(orgId, classroomNumber, participantId))
-            )
-        ).toResponseEntity(HttpStatus.OK)
-    }
-
-    @RequiresUserInAssignment
-    @GetMapping(DELIVERY_OF_PARTICIPANT_HREF)
-    fun getUserDelivery(
-        @PathVariable(name = ORG_PARAM) orgId: Int,
-        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
-        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
-        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
-        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
-        user: User,
-        userClassroom: UserClassroom,
-        assignment: Assignment
-    ): ResponseEntity<Response> {
-        val isGroupAssignment = assignment.isGroupAssignment()
-        val isTeacher = userClassroom.role == TEACHER
-
-        val repoId =
-            if (isGroupAssignment) {
-                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
-                if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
-                    throw ForbiddenException("Not enough permission to see deliveries")
-
-                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
-            } else {
-                if (!isTeacher && user.uid != participantId)
-                    throw ForbiddenException("Not enough permission to see deliveries")
-
-                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
-            }
-
-        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
-        val tag = gitHub.tryGetTagFromRepo(repoId, delivery.tag, user.gh_token)
-        val org = gitHub.getOrgById(orgId, user.gh_token)
-
-        return ParticipantDeliveryOutputModel(
-            id = delivery.did,
-            number = delivery.number,
-            tag = delivery.tag,
-            dueDate = delivery.due_date,
-            isDelivered = tag.isPresent,
-            deliverDate = if (tag.isEmpty) null else tag.get().date,
-            assignment = delivery.assignment_name,
-            classroom = delivery.classroom_name,
-            organization = org.login
-        ).toSirenObject(
-            links = listOf(
-                SirenLink(listOf(SELF_PARAM), getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber).includeHost()),
-                SirenLink(listOf("participant-deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId).includeHost()),
-                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
-                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
-                SirenLink(listOf("participant"),
-                    if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
-                    else getTeamByNumberUri(orgId, classroomNumber, participantId)
-                )
-            )
-        ).toResponseEntity(HttpStatus.OK)
-    }
 
     @RequiresUserInAssignment
     @PostMapping(DELIVERIES_HREF)
@@ -430,6 +284,247 @@ class DeliveriesController(
         if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         deliveriesDb.deleteDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(null)
+    }
+
+    @RequiresUserInAssignment
+    @GetMapping(DELIVERIES_OF_PARTICIPANT_HREF)
+    fun getAllParticipantDeliveries(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
+        pagination: Pagination,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Response> {
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val isTeacher = userClassroom.role == TEACHER
+
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("Not enough permission to see deliveries")
+
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
+            } else {
+                if (!isTeacher && user.uid != participantId)
+                    throw ForbiddenException("Not enough permission to see deliveries")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
+            }
+
+        val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
+        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
+
+        val ghTags = gitHub.getAllTagsFromRepo(repoId, user.gh_token)
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        return DeliveriesOutputModel(
+            assignment = assignment.name,
+            classroom = userClassroom.classroom.name,
+            organization = org.login,
+            collectionSize = deliveriesCount,
+            pageIndex = pagination.page,
+            pageSize = deliveries.size
+        ).toSirenObject(
+            entities = deliveries.map {
+                ParticipantDeliveryItemOutputModel(
+                    id = it.did,
+                    number = it.number,
+                    tag = it.tag,
+                    dueDate = it.due_date,
+                    isDelivered = ghTags.any { tag -> tag.name == it.tag },
+                    assignment = it.assignment_name,
+                    classroom = it.classroom_name,
+                    organization = org.login
+                ).toSirenObject(
+                    rel = listOf("item"),
+                    links = listOf(
+                        SirenLink(listOf(SELF_PARAM),
+                            getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, it.number).includeHost()),
+                        SirenLink(listOf("participant-deliveries"),
+                            getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId).includeHost()),
+                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
+                        SirenLink(listOf("participant"),
+                            if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
+                            else getTeamByNumberUri(orgId, classroomNumber, participantId)
+                        )
+                    )
+                )
+            },
+            links = Routes.createSirenLinkListForPagination(
+                Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
+                pagination.page,
+                pagination.limit,
+                deliveriesCount
+            ) + listOf(
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
+                SirenLink(listOf("participant"),
+                    if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
+                    else getTeamByNumberUri(orgId, classroomNumber, participantId))
+            )
+        ).toResponseEntity(HttpStatus.OK)
+    }
+
+    @RequiresUserInAssignment
+    @GetMapping(DELIVERY_OF_PARTICIPANT_HREF)
+    fun getParticipantDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Response> {
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val isTeacher = userClassroom.role == TEACHER
+
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!isTeacher && !teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("Not enough permission to see deliveries")
+
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
+            } else {
+                if (!isTeacher && user.uid != participantId)
+                    throw ForbiddenException("Not enough permission to see deliveries")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
+            }
+
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+        val tag = gitHub.tryGetTagFromRepo(repoId, delivery.tag, user.gh_token)
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        return ParticipantDeliveryOutputModel(
+            id = delivery.did,
+            number = delivery.number,
+            tag = delivery.tag,
+            dueDate = delivery.due_date,
+            isDelivered = tag.isPresent,
+            deliverDate = if (tag.isEmpty) null else tag.get().date,
+            assignment = delivery.assignment_name,
+            classroom = delivery.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber).includeHost()),
+                SirenLink(listOf("participant-deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
+                SirenLink(listOf("participant"),
+                    if (isGroupAssignment) getUserByIdUri(participantId).includeHost()
+                    else getTeamByNumberUri(orgId, classroomNumber, participantId)
+                )
+            )
+        ).toResponseEntity(HttpStatus.OK)
+    }
+
+    @RequiresUserInAssignment
+    @PutMapping(DELIVERY_OF_PARTICIPANT_HREF)
+    fun submitParticipantDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Any> {
+        if (userClassroom.role == TEACHER)
+            throw ForbiddenException("No permission to submit a delivery for a participant")
+
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("No permission to submit a delivery for another participant")
+
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
+            } else {
+                if (user.uid != participantId)
+                    throw ForbiddenException("No permission to submit a delivery for another participant")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
+            }
+
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+        try {
+            gitHub.createReleaseInRepo(repoId, delivery.tag, user.gh_token)
+        } catch(ex: HttpRequestException) {
+            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
+                throw ex
+
+            throw ConflictException("Delivery has already been submitted")
+        }
+
+        return ResponseEntity
+            .status(HttpStatus.CREATED)
+            .body(null)
+    }
+
+    @RequiresUserInAssignment
+    @DeleteMapping(DELIVERY_OF_PARTICIPANT_HREF)
+    fun deleteParticipantDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Response> {
+        if (userClassroom.role == TEACHER)
+            throw ForbiddenException("No permission to delete a delivery for a participant")
+
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("No permission to delete a delivery for another participant")
+
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
+            } else {
+                if (user.uid != participantId)
+                    throw ForbiddenException("No permission to delete a delivery for another participant")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
+            }
+
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+
+        try {
+            gitHub.deleteTagFromRepo(repoId, delivery.tag, user.gh_token)
+        } catch(ex: HttpRequestException) {
+            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
+                throw ex
+
+            throw NotFoundException("Tag does not exist in the repository")
+        }
 
         return ResponseEntity
             .status(HttpStatus.OK)

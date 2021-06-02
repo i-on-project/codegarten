@@ -20,6 +20,7 @@ import org.ionproject.codegarten.exceptions.ServerErrorException
 import org.ionproject.codegarten.remote.github.GitHubInterface
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.JdbiException
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -54,7 +55,7 @@ class AuthCodeController(
         }
 
         return ResponseEntity
-            .status(302)
+            .status(HttpStatus.FOUND)
             .header("Location", gitHub.getAuthUri(stateToSend).toString())
             .body(null)
     }
@@ -104,7 +105,7 @@ class AuthCodeController(
         }
 
         return ResponseEntity
-            .status(302)
+            .status(HttpStatus.FOUND)
             .header("Location", redirectUri)
             .body(null)
     }
