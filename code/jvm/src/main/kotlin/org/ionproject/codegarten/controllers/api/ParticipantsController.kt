@@ -314,7 +314,6 @@ class ParticipantsController(
         userClassroom: UserClassroom,
         assignment: Assignment
     ): ResponseEntity<Response> {
-        // TODO: Add Repo Links to participants
         val isGroupAssignment = assignment.isGroupAssignment()
         val isTeacher = userClassroom.role == TEACHER
 

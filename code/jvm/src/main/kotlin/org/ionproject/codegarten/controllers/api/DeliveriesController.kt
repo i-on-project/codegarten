@@ -38,6 +38,7 @@ import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -476,8 +477,7 @@ class DeliveriesController(
             if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
                 throw ex
 
-            //TODO: Throw exception if tag already exists (Maybe 409 Conflict status code)
-            throw TODO()
+            throw ConflictException("Delivery has already been submitted")
         }
 
         return ResponseEntity
