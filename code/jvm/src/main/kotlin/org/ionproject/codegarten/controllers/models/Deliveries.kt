@@ -3,6 +3,8 @@ package org.ionproject.codegarten.controllers.models
 import org.ionproject.codegarten.responses.siren.SirenClass.collection
 import org.ionproject.codegarten.responses.siren.SirenClass.delivery
 import java.time.OffsetDateTime
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 class DeliveryOutputModel(
     val id: Int,
@@ -63,3 +65,15 @@ data class DeliveryEditInputModel(
     val tag: String?,
     val dueDate: String?
 )
+
+fun DeliveryCreateInputModel.isTagValid() = isTagValid(this.tag!!)
+fun DeliveryEditInputModel.isTagValid() = isTagValid(this.tag!!)
+
+private fun isTagValid(tag: String): Boolean {
+    val regex = "^(?!/|.*([/.]\\.|//|@\\{|\\\\\\\\))[^\\040\\0177~^:?*\\[]+(?<!\\.lock|[/.]|-)$"
+
+    val pattern: Pattern = Pattern.compile(regex)
+    val matcher: Matcher = pattern.matcher(tag)
+
+    return matcher.find()
+}
