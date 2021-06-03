@@ -30,6 +30,7 @@ import org.ionproject.codegarten.controllers.models.DeliveryEditInputModel
 import org.ionproject.codegarten.controllers.models.DeliveryOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantDeliveryItemOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantDeliveryOutputModel
+import org.ionproject.codegarten.controllers.models.isTagValid
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
@@ -193,6 +194,7 @@ class DeliveriesController(
 
         if (input == null) throw InvalidInputException("Missing body")
         if (input.tag == null) throw InvalidInputException("Missing tag")
+        if (!input.isTagValid()) throw InvalidInputException("Invalid tag")
 
         val dueDate = try {
             if (input.dueDate != null) OffsetDateTime.parse(input.dueDate)
@@ -247,6 +249,7 @@ class DeliveriesController(
         if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
 
         if (input == null) throw InvalidInputException("Missing body")
+        if (input.tag != null && !input.isTagValid()) throw InvalidInputException("Invalid tag")
 
         val deleteDate: Boolean
         val dueDate = try {
