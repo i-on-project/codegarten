@@ -9,7 +9,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.ionproject.codegarten.GitHubAppProperties
+import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
+import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.remote.MEDIA_TYPE_JSON
 import org.ionproject.codegarten.remote.call
 import org.ionproject.codegarten.remote.callAndMap
@@ -108,7 +111,14 @@ class GitHubInterface(
             .from(GITHUB_USER_URI, ghAppProperties.name, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Unable to access user info")
+                else -> throw e
+            }
+        }
     }
 
     fun getInstallationOrg(installationId: Int): GitHubInstallationResponse {
@@ -117,7 +127,14 @@ class GitHubInterface(
             .from(getGitHubInstallationUri(installationId), ghAppProperties.name, gitHubAppJwt)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubInstallationResponse::class.java)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Installation not found")
+                else -> throw e
+            }
+        }
     }
 
     fun getOrgInstallation(orgId: Int): GitHubInstallationResponse {
@@ -144,7 +161,15 @@ class GitHubInterface(
             .from(getGitHubUserByIdUri(userId), ghAppProperties.name, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubLoginResponse::class.java, USER_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: User not found")
+                else -> throw e
+            }
+        }
+
     }
 
     fun getUserOrgMembership(orgId: Int, accessToken: String): GitHubOrgMembershipResponse {
@@ -172,7 +197,15 @@ class GitHubInterface(
             .from(getGitHubOrgUri(orgId), ghAppProperties.name, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java, ORG_INFO_CACHE)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubOrganizationResponse::class.java, ORG_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("Github Error: Organization not found")
+                else -> throw e
+            }
+
+        }
     }
 
     fun getRepoById(repoId: Int, accessToken: String): GitHubRepoResponse {
@@ -180,7 +213,15 @@ class GitHubInterface(
             .from(getGitHubRepoByIdUri(repoId), ghAppProperties.name, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Repository not found")
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Unable to access repository")
+                else -> throw e
+            }
+        }
     }
 
     fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse {
@@ -188,7 +229,15 @@ class GitHubInterface(
             .from(getGitHubRepoByNameUri(login, repoName), ghAppProperties.name, accessToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Repository not found")
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Unable to access repository")
+                else -> throw e
+            }
+        }
     }
 
     fun createRepo(orgId: Int, repoName: String, installationToken: String): GitHubRepoResponse {
@@ -202,7 +251,16 @@ class GitHubInterface(
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Unable to access organization")
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Validation failed")
+                else -> throw e
+            }
+        }
+
     }
 
     fun createRepoFromTemplate(orgName: String, repoName: String, repoTemplateId: Int, installationToken: String): GitHubRepoResponse {
@@ -226,7 +284,14 @@ class GitHubInterface(
             .delete()
             .build()
 
-        return httpClient.call(req)
+        try {
+            return httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Cannot delete repositories in this Organization")
+                else -> throw e
+            }
+        }
     }
 
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
@@ -235,7 +300,14 @@ class GitHubInterface(
             .put(FormBody.Builder().build())
             .build()
 
-        httpClient.call(req)
+        try {
+            httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when(e.status) {
+                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("GitHub Error: Cannot add repository collaborator")
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Verification failed")
+            }
+        }
     }
 
     fun getAllTagsFromRepo(repoId: Int, ghToken: String): List<GitHubTag> {
@@ -246,9 +318,9 @@ class GitHubInterface(
         return try {
             val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java, REPO_TAGS_CACHE)
             refs.map { GitHubTag(name = getGitHubTagNameFromRef(it.ref)) }
-        } catch (ex: HttpRequestException) {
-            if (ex.status != HttpStatus.NOT_FOUND.value() && ex.status != HttpStatus.CONFLICT.value()) {
-                throw ex
+        } catch (e: HttpRequestException) {
+            if (e.status != HttpStatus.NOT_FOUND.value() && e.status != HttpStatus.CONFLICT.value()) {
+                throw e
             }
 
             listOf()
@@ -308,7 +380,15 @@ class GitHubInterface(
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
-        httpClient.call(req)
+        try {
+            httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Discussion category name is invalid")
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Validation failed")
+                else -> throw e
+            }
+        }
     }
 
     fun deleteTagFromRepo(repoId: Int, tag: String, ghToken: String) {
@@ -317,7 +397,14 @@ class GitHubInterface(
             .delete()
             .build()
 
-        httpClient.call(req)
+        try {
+            httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Validation failed")
+                else -> throw e
+            }
+        }
     }
 
     fun getTeam(orgId: Int, teamId: Int, installationToken: String): GitHubTeamResponse {
@@ -325,7 +412,14 @@ class GitHubInterface(
             .from(getGitHubTeamByIdUri(orgId, teamId), ghAppProperties.name, installationToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java, TEAM_INFO_CACHE)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java, TEAM_INFO_CACHE)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Team not found")
+                else -> throw e
+            }
+        }
     }
 
     fun createTeam(orgId: Int, name: String, installationToken: String): GitHubTeamResponse {
@@ -339,7 +433,16 @@ class GitHubInterface(
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
+        try {
+            return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Discussion category name is invalid")
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Validation failed")
+                else -> throw e
+            }
+        }
+
     }
 
     fun deleteTeam(orgId: Int, teamId: Int, installationToken: String) {
@@ -357,7 +460,14 @@ class GitHubInterface(
             .put(FormBody.Builder().build())
             .build()
 
-        httpClient.call(req)
+        try {
+            httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Cannot add organization to team")
+                else -> throw e
+            }
+        }
     }
 
     fun removeUserFromTeam(orgId: Int, teamId: Int, username: String, installationToken: String) {
@@ -379,7 +489,15 @@ class GitHubInterface(
             .put(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
-        httpClient.call(req)
+        try {
+            httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Cannot add team to repository")
+                else -> throw e
+            }
+        }
+
     }
 
     fun inviteUserToOrg(orgId: Int, userId: Int, teamId: Int? = null, installationToken: String) {
@@ -395,6 +513,15 @@ class GitHubInterface(
             .post(body.toRequestBody(MEDIA_TYPE_JSON))
             .build()
 
-        return httpClient.call(req)
+        try {
+            return httpClient.call(req)
+        } catch (e: HttpRequestException) {
+            when (e.status) {
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Error: Organization not found")
+                HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("GitHub Error: Validation failed")
+                else -> throw e
+            }
+        }
+
     }
 }
