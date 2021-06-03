@@ -1,6 +1,7 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Classroom
+import org.ionproject.codegarten.database.dto.DtoListWrapper
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserAssignment
 import org.ionproject.codegarten.database.dto.UserClassroom
@@ -11,9 +12,11 @@ import org.ionproject.codegarten.exceptions.NotFoundException
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
-private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS"
-private const val GET_USER_QUERY = "$GET_USERS_BASE WHERE uid = :userId"
-private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USERS_BASE WHERE gh_id = :gitHubId"
+private const val GET_USER_BASE = "SELECT uid, name, gh_id, gh_token FROM USERS"
+private const val GET_USERS_BASE = "SELECT uid, name, gh_id, gh_token, COUNT(*) OVER() as count FROM USERS"
+
+private const val GET_USER_QUERY = "$GET_USER_BASE WHERE uid = :userId"
+private const val GET_USER_BY_GITHUB_ID_QUERY = "$GET_USER_BASE WHERE gh_id = :gitHubId"
 
 private const val CREATE_USER_QUERY =
     "INSERT INTO USERS(name, gh_id, gh_token) VALUES (:name, :ghId, :ghToken)"
@@ -26,22 +29,16 @@ private const val UPDATE_USER_END = "WHERE uid = :userId"
 private const val DELETE_USER_QUERY = "DELETE FROM USERS WHERE uid = :userId"
 
 // Classrooms
+private const val GET_USER_CLASSROOM_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM"
+private const val GET_USERS_CLASSROOM_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id, COUNT(*) OVER() as count FROM V_USER_CLASSROOM"
 
 private const val GET_USERS_IN_CLASSROOM_QUERY =
-    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
-        "WHERE classroom_id = :classroomId ORDER BY classroom_role DESC, uid"
+    "$GET_USERS_CLASSROOM_BASE WHERE classroom_id = :classroomId ORDER BY classroom_role DESC, uid"
 private const val SEARCH_USERS_IN_CLASSROOM_QUERY =
-    "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM " +
-            "WHERE classroom_id = :classroomId AND SIMILARITY(name, :search) > 0 ORDER BY SIMILARITY(name, :search) DESC"
+    "$GET_USERS_CLASSROOM_BASE WHERE classroom_id = :classroomId AND SIMILARITY(name, :search) > 0 ORDER BY SIMILARITY(name, :search) DESC"
 
 private const val GET_USER_IN_CLASSROOM_QUERY =
     "SELECT uid from USER_CLASSROOM where cid = :classroomId AND uid = :userId"
-private const val GET_USERS_IN_CLASSROOM_COUNT =
-    "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid IN " +
-        "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber)"
-private const val SEARCH_USERS_IN_CLASSROOM_COUNT =
-    "SELECT COUNT(uid) as count FROM V_USER_CLASSROOM where classroom_id IN " +
-            "(SELECT cid FROM CLASSROOM WHERE org_id = :orgId AND number = :classroomNumber) AND SIMILARITY(name, :search) > 0"
 private const val GET_TEACHERS_IN_CLASSROOM_COUNT =
     "SELECT COUNT(uid) as count FROM USER_CLASSROOM where cid = :classroomId AND type = 'teacher'"
 
@@ -51,20 +48,15 @@ private const val UPDATE_USER_IN_CLASSROOM_START = "UPDATE USER_CLASSROOM SET"
 private const val UPDATE_USER_IN_CLASSROOM_END = "WHERE uid = :userId"
 private const val DELETE_USER_FROM_CLASSROOM_QUERY = "DELETE FROM USER_CLASSROOM WHERE uid = :userId AND cid = :classroomId"
 
-private const val GET_USER_CLASSROOM_BASE = "SELECT uid, name, gh_id, gh_token, classroom_role, classroom_id FROM V_USER_CLASSROOM"
-private const val GET_USER_ASSIGNMENT_BASE = "SELECT uid, name, gh_id, gh_token, repo_id, assignment_id FROM V_USER_ASSIGNMENT"
-
 private const val GET_USER_CLASSROOM_QUERY =
     "$GET_USER_CLASSROOM_BASE WHERE uid = :userId AND classroom_id = :classroomId"
 
 // Assignments
+private const val GET_USER_ASSIGNMENT_BASE = "SELECT uid, name, gh_id, gh_token, repo_id, assignment_id FROM V_USER_ASSIGNMENT"
+private const val GET_USERS_ASSIGNMENT_BASE = "SELECT uid, name, gh_id, gh_token, repo_id, assignment_id, COUNT(*) OVER() as count FROM V_USER_ASSIGNMENT"
 
 private const val GET_USERS_IN_ASSIGNMENT_QUERY =
-    "$GET_USER_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId ORDER BY uid"
-private const val GET_USERS_IN_ASSIGNMENT_COUNT =
-    "SELECT COUNT(uid) as count FROM USER_ASSIGNMENT where aid IN " +
-        "(SELECT aid FROM V_ASSIGNMENT WHERE org_id = :orgId AND " +
-        "classroom_number = :classroomNumber AND number = :assignmentNumber)"
+    "$GET_USERS_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId ORDER BY uid"
 
 private const val GET_USER_ASSIGNMENT_QUERY =
     "$GET_USER_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND uid = :userId"
@@ -77,7 +69,6 @@ private const val DELETE_USER_FROM_ASSIGNMENT_QUERY = "DELETE FROM USER_ASSIGNME
 
 // Teams
 private const val GET_USERS_OF_TEAM_QUERY = "$GET_USERS_BASE WHERE uid IN (SELECT uid FROM USER_TEAM WHERE tid = :teamId)"
-private const val GET_USERS_OF_TEAM_COUNT = "SELECT COUNT(uid) as count FROM USER_TEAM WHERE tid = :teamId"
 
 private const val ADD_USER_TO_TEAM_QUERY = "INSERT INTO USER_TEAM(tid, uid) VALUES(:teamId, :userId)"
 private const val DELETE_USER_FROM_TEAM_QUERY = "DELETE FROM USER_TEAM WHERE tid = :teamId AND uid = :userId"
@@ -147,24 +138,23 @@ class UsersDb(
 
     // Classrooms
 
-    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, limit: Int): List<UserClassroomDto> {
+    fun getUsersInClassroom(orgId: Int, classroomNumber: Int, page: Int, limit: Int): DtoListWrapper<UserClassroomDto> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return jdbi.getList(
+        val results = jdbi.getList(
             GET_USERS_IN_CLASSROOM_QUERY,
             UserClassroomDto::class.java, page, limit,
             mapOf("classroomId" to classroomId)
         )
-    }
-    fun getUsersInClassroomCount(orgId: Int, classroomNumber: Int) =
-        jdbi.getOne(
-            GET_USERS_IN_CLASSROOM_COUNT,
-            Int::class.java,
-            mapOf("orgId" to orgId, "classroomNumber" to classroomNumber)
-        )
 
-    fun searchUsersInClassroom(orgId: Int, classroomNumber: Int, search: String, page: Int, limit: Int): List<UserClassroomDto> {
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
+        )
+    }
+
+    fun searchUsersInClassroom(orgId: Int, classroomNumber: Int, search: String, page: Int, limit: Int): DtoListWrapper<UserClassroomDto> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return jdbi.getList(
+        val results = jdbi.getList(
             SEARCH_USERS_IN_CLASSROOM_QUERY,
             UserClassroomDto::class.java, page, limit,
             mapOf(
@@ -172,17 +162,12 @@ class UsersDb(
                 "search" to search
             )
         )
-    }
-    fun searchUsersInClassroomCount(orgId: Int, classroomNumber: Int, search: String) =
-        jdbi.getOne(
-            SEARCH_USERS_IN_CLASSROOM_COUNT,
-            Int::class.java,
-            mapOf(
-                "orgId" to orgId,
-                "classroomNumber" to classroomNumber,
-                "search" to search
-            )
+
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
     fun getTeachersInClassroomCount(classroomId: Int) =
         jdbi.getOne(
@@ -284,12 +269,17 @@ class UsersDb(
 
     // Assignments
 
-    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): List<UserAssignment> {
+    fun getUsersInAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): DtoListWrapper<UserAssignment> {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
-        return jdbi.getList(
+        val results = jdbi.getList(
             GET_USERS_IN_ASSIGNMENT_QUERY,
             UserAssignment::class.java, page, limit,
             mapOf("assignmentId" to assignmentId)
+        )
+
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
     }
 
@@ -303,13 +293,6 @@ class UsersDb(
             GET_USER_ASSIGNMENT_QUERY,
             UserAssignment::class.java,
             mapOf("userId" to userId, "assignmentId" to assignmentId)
-        )
-
-    fun getUsersInAssignmentCount(orgId: Int, classroomNumber: Int, assignmentNumber: Int) =
-        jdbi.getOne(
-            GET_USERS_IN_ASSIGNMENT_COUNT,
-            Int::class.java,
-            mapOf("orgId" to orgId, "classroomNumber" to classroomNumber, "assignmentNumber" to assignmentNumber)
         )
 
     fun addUserToAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, userId: Int, repoId: Int) {
@@ -351,38 +334,28 @@ class UsersDb(
     }
 
     // Teams
-    fun getUsersInTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, page: Int, limit: Int): List<User> {
+    fun getUsersInTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, page: Int, limit: Int): DtoListWrapper<User> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return getUsersInTeam(classroomId, teamNumber, page, limit)
     }
 
-    fun getUsersInTeamCount(orgId: Int, classroomNumber: Int, teamNumber: Int): Int {
-        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return getUsersInTeamCount(classroomId, teamNumber)
-    }
-
-    fun getUsersInTeam(classroomId: Int, teamNumber: Int, page: Int, limit: Int): List<User> {
+    fun getUsersInTeam(classroomId: Int, teamNumber: Int, page: Int, limit: Int): DtoListWrapper<User> {
         val teamId = teamsDb.getTeam(classroomId, teamNumber).tid
         return getUsersInTeam(teamId, page, limit)
     }
 
-    fun getUsersInTeamCount(classroomId: Int, teamNumber: Int): Int {
-        val teamId = teamsDb.getTeam(classroomId, teamNumber).tid
-        return getUsersInTeamCount(teamId)
-    }
-
-    fun getUsersInTeam(teamId: Int, page: Int, limit: Int) =
-        jdbi.getList(
+    fun getUsersInTeam(teamId: Int, page: Int, limit: Int): DtoListWrapper<User> {
+        val results = jdbi.getList(
             GET_USERS_OF_TEAM_QUERY, User::class.java,
             page, limit,
             mapOf("teamId" to teamId)
         )
 
-    fun getUsersInTeamCount(teamId: Int) =
-        jdbi.getOne(
-            GET_USERS_OF_TEAM_COUNT, Int::class.java,
-            mapOf("teamId" to teamId)
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
     fun addUserToTeam(orgId: Int, classroomNumber: Int, teamNumber: Int, userId: Int) {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
