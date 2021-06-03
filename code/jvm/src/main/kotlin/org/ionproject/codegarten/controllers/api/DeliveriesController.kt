@@ -79,7 +79,6 @@ class DeliveriesController(
         assignment: Assignment
     ): ResponseEntity<Response> {
         val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val actions = if (userClassroom.role == TEACHER) {
@@ -92,11 +91,11 @@ class DeliveriesController(
             assignment = assignment.name,
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = deliveriesCount,
+            collectionSize = deliveries.count,
             pageIndex = pagination.page,
-            pageSize = deliveries.size
+            pageSize = deliveries.results.size
         ).toSirenObject(
-            entities = deliveries.map {
+            entities = deliveries.results.map {
                 DeliveryOutputModel(
                     id = it.did,
                     number = it.number,
@@ -122,7 +121,7 @@ class DeliveriesController(
                 Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                deliveriesCount
+                deliveries.count
             ) + listOf(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
@@ -205,7 +204,6 @@ class DeliveriesController(
             }
 
         val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
 
         val ghTags = gitHub.getAllTagsFromRepo(repoId, user.gh_token)
         val org = gitHub.getOrgById(orgId, user.gh_token)
@@ -214,11 +212,11 @@ class DeliveriesController(
             assignment = assignment.name,
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = deliveriesCount,
+            collectionSize = deliveries.count,
             pageIndex = pagination.page,
-            pageSize = deliveries.size
+            pageSize = deliveries.results.size
         ).toSirenObject(
-            entities = deliveries.map {
+            entities = deliveries.results.map {
                 ParticipantDeliveryItemOutputModel(
                     id = it.did,
                     number = it.number,
@@ -251,7 +249,7 @@ class DeliveriesController(
                 Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                deliveriesCount
+                deliveries.count
             ) + listOf(
                 SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),

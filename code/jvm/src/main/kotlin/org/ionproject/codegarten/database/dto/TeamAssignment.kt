@@ -6,4 +6,6 @@ data class TeamAssignment(
     val name: String,
     val gh_id: Int,
     val repo_id: Int,
+
+    val count: Int? = null
 )

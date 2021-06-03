@@ -69,7 +69,6 @@ class ClassroomsController(
         orgRole: GitHubUserOrgRole
     ): ResponseEntity<Response> {
         val classrooms = classroomsDb.getClassroomsOfUser(orgId, user.uid, pagination.page, pagination.limit)
-        val classroomsCount = classroomsDb.getClassroomsOfUserCount(orgId, user.uid)
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val isOrgAdmin = orgRole == GitHubUserOrgRole.ADMIN
@@ -82,11 +81,11 @@ class ClassroomsController(
 
         return ClassroomsOutputModel(
             organization = org.login,
-            collectionSize = classroomsCount,
+            collectionSize = classrooms.count,
             pageIndex = pagination.page,
-            pageSize = classrooms.size,
+            pageSize = classrooms.results.size,
         ).toSirenObject(
-            entities = classrooms.map {
+            entities = classrooms.results.map {
                 ClassroomOutputModel(
                     id = it.cid,
                     inviteCode = if (isOrgAdmin) it.inv_code else null,
@@ -112,7 +111,7 @@ class ClassroomsController(
                 getClassroomsUri(orgId).includeHost(),
                 pagination.page,
                 pagination.limit,
-                classroomsCount
+                classrooms.count
             ) + listOf(
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))

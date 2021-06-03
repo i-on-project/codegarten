@@ -10,6 +10,8 @@ data class Team(
     val classroom_id: Int,
     val classroom_number: Int,
     val classroom_name: String,
+
+    val count: Int? = null
 )
 
 data class CreatedTeam(

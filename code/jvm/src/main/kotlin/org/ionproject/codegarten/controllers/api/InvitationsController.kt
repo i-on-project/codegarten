@@ -112,8 +112,6 @@ class InvitationsController(
         user: User
     ): ResponseEntity<Response> {
         val inviteCode = inviteCodesDb.getInviteCode(inviteCodePath)
-
-        val teamsCount = teamsDb.getTeamsOfClassroomCount(inviteCode.classroom_id)
         val teams = teamsDb.getTeamsOfClassroom(inviteCode.classroom_id, pagination.page, pagination.limit)
         val org = gitHub.getOrgById(inviteCode.org_id, user.gh_token)
         val classroom = classroomsDb.getClassroomById(inviteCode.classroom_id)
@@ -121,11 +119,11 @@ class InvitationsController(
         return TeamsOutputModel(
             classroom = classroom.name,
             organization = org.login,
-            collectionSize = teamsCount,
+            collectionSize = teams.count,
             pageIndex = pagination.page,
-            pageSize = teams.size,
+            pageSize = teams.results.size,
         ).toSirenObject(
-            entities = teams.map {
+            entities = teams.results.map {
                 TeamItemOutputModel(
                     id = it.tid,
                     number = it.number,
@@ -143,7 +141,7 @@ class InvitationsController(
                 getUserInviteClassroomTeamsUri(inviteCodePath).includeHost(),
                 pagination.page,
                 pagination.limit,
-                teamsCount
+                teams.count
             ) + listOf(
                 SirenLink(listOf("invite"), getUserInviteUri(inviteCodePath).includeHost()),
             )

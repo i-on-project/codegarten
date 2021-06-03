@@ -16,6 +16,8 @@ data class Delivery(
     val classroom_id: Int,
     val classroom_number: Int,
     val classroom_name: String,
+
+    val count: Int? = null
 )
 
 data class CreatedDelivery(

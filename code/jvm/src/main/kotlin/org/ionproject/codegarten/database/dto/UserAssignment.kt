@@ -6,4 +6,6 @@ data class UserAssignment(
     val gh_id: Int,
     val gh_token: String,
     val repo_id: Int,
+
+    val count: Int? = null
 )

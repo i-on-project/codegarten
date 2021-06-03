@@ -155,13 +155,9 @@ class UsersController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        val usersCount: Int
-
         val users = if (search.isNullOrEmpty()) {
-            usersCount = usersDb.getUsersInClassroomCount(orgId, classroomNumber)
             usersDb.getUsersInClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
         } else {
-            usersCount = usersDb.searchUsersInClassroomCount(orgId, classroomNumber, search)
             usersDb.searchUsersInClassroom(orgId, classroomNumber, search, pagination.page, pagination.limit)
         }
 
@@ -175,11 +171,11 @@ class UsersController(
                 null
 
         return UsersOutputModel(
-            collectionSize = usersCount,
+            collectionSize = users.count,
             pageIndex = pagination.page,
-            pageSize = users.size
+            pageSize = users.results.size
         ).toSirenObject(
-            entities = users.map {
+            entities = users.results.map {
                 UserClassroomOutputModel(
                     id = it.uid,
                     name = it.name,
@@ -198,7 +194,7 @@ class UsersController(
                 getUsersOfClassroomUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                usersCount
+                users.count
             ) + listOf(
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
@@ -287,7 +283,6 @@ class UsersController(
             throw ForbiddenException("User is not in team")
 
         val users = usersDb.getUsersInTeam(team.tid, pagination.page, pagination.limit)
-        val usersCount = usersDb.getUsersInTeamCount(team.tid)
 
         val actions =
             if (userClassroom.role == TEACHER)
@@ -299,11 +294,11 @@ class UsersController(
                 null
 
         return UsersOutputModel(
-            collectionSize = usersCount,
+            collectionSize = users.count,
             pageIndex = pagination.page,
-            pageSize = users.size
+            pageSize = users.results.size
         ).toSirenObject(
-            entities = users.map {
+            entities = users.results.map {
                 UserItemOutputModel(
                     id = it.uid,
                     name = it.name
@@ -322,7 +317,7 @@ class UsersController(
                 getUsersOfTeamUri(orgId, classroomNumber, teamNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                usersCount
+                users.count
             ) + listOf(
                 SirenLink(listOf("team"), getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),

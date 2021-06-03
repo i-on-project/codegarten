@@ -348,15 +348,14 @@ class ParticipantsController(
         pagination: Pagination
     ): Siren<OutputModel> {
         val users = usersDb.getUsersInAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val usersCount = usersDb.getUsersInAssignmentCount(orgId, classroomNumber, assignmentNumber)
 
         return ParticipantsOutputModel(
             participantsType = ParticipantTypes.USER.type,
-            collectionSize = usersCount,
+            collectionSize = users.count,
             pageIndex = pagination.page,
-            pageSize = users.size
+            pageSize = users.results.size
         ).toSirenObject(
-            entities = users.map {
+            entities = users.results.map {
                 ParticipantItemOutputModel(
                     id = it.uid,
                     name = it.name
@@ -379,7 +378,7 @@ class ParticipantsController(
                 getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                usersCount
+                users.count
             ) + listOf(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
@@ -393,15 +392,14 @@ class ParticipantsController(
         actions: List<SirenAction>?, pagination: Pagination
     ): Siren<OutputModel> {
         val teams = teamsDb.getTeamsFromAssignment(assignmentId, pagination.page, pagination.limit)
-        val teamsCount = teamsDb.getTeamsFromAssignmentCount(assignmentId)
 
         return ParticipantsOutputModel(
             participantsType = ParticipantTypes.TEAM.type,
-            collectionSize = teamsCount,
+            collectionSize = teams.count,
             pageIndex = pagination.page,
-            pageSize = teams.size
+            pageSize = teams.results.size
         ).toSirenObject(
-            entities = teams.map {
+            entities = teams.results.map {
                 ParticipantItemOutputModel(
                     id = it.tid,
                     name = it.name
@@ -424,7 +422,7 @@ class ParticipantsController(
                 getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                teamsCount
+                teams.count
             ) + listOf(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),

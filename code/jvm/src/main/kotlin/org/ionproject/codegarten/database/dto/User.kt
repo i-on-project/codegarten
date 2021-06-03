@@ -5,4 +5,6 @@ data class User(
     val name: String,
     val gh_id: Int,
     val gh_token: String,
+
+    val count: Int? = null
 )
