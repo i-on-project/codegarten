@@ -1,0 +1,2 @@
+This folder contains sensitive information, as in, the cipher key used to encrypt the cookies.
+The key present in the file should be replaced with another one, and this folder should be renamed to `secrets`.
