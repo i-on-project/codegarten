@@ -71,8 +71,7 @@ function getAccessToken(req: Request): AccessToken {
 
             try {
                 const decipher = crypto.createDecipheriv(CIPHER_ALGORITHM, SECRET_KEY, iv)
-                const a = accessToken.slice(16)
-                const decrypted = decipher.update(a, 'base64', 'utf8')
+                const decrypted = decipher.update(accessToken.slice(16), 'base64', 'utf8')
                 return JSON.parse(decrypted + decipher.final('utf8'))
             } catch(error) {
                 return null
@@ -85,11 +84,11 @@ function getAccessToken(req: Request): AccessToken {
 }
 
 function setAccessToken(res: Response, accessToken: AccessToken): void {
-    const yes = crypto.randomBytes(8).toString('hex')
-    const cipher = crypto.createCipheriv(CIPHER_ALGORITHM, SECRET_KEY, yes)
+    const iv = crypto.randomBytes(8).toString('hex')
+    const cipher = crypto.createCipheriv(CIPHER_ALGORITHM, SECRET_KEY, iv)
     let encrypted = cipher.update(JSON.stringify(accessToken), 'utf8', 'base64')
     encrypted += cipher.final('base64')
-    res.setHeader('Set-Cookie', [`${ACCESS_TOKEN_COOKIE}=${yes + encrypted}; Path=/; expires=${accessToken.expiresAt}; HttpOnly; SameSite=Lax`])
+    res.setHeader('Set-Cookie', [`${ACCESS_TOKEN_COOKIE}=${iv + encrypted}; Path=/; expires=${accessToken.expiresAt}; HttpOnly; SameSite=Lax`])
 }
 
 function removeAccessToken(res: Response) {
