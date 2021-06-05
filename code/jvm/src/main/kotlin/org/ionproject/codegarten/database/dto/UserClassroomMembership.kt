@@ -6,7 +6,9 @@ data class UserClassroomDto(
     val gh_id: Int,
     val gh_token: String,
     val classroom_role: String,
-    val classroom_id: Int
+    val classroom_id: Int,
+
+    val count: Int? = null
 )
 
 data class UserClassroom(

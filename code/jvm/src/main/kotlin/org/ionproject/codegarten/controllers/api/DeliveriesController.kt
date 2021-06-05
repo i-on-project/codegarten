@@ -30,6 +30,7 @@ import org.ionproject.codegarten.controllers.models.DeliveryEditInputModel
 import org.ionproject.codegarten.controllers.models.DeliveryOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantDeliveryItemOutputModel
 import org.ionproject.codegarten.controllers.models.ParticipantDeliveryOutputModel
+import org.ionproject.codegarten.controllers.models.isTagValid
 import org.ionproject.codegarten.database.dto.Assignment
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
@@ -38,8 +39,11 @@ import org.ionproject.codegarten.database.dto.isGroupAssignment
 import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -79,7 +83,6 @@ class DeliveriesController(
         assignment: Assignment
     ): ResponseEntity<Response> {
         val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val actions = if (userClassroom.role == TEACHER) {
@@ -92,11 +95,11 @@ class DeliveriesController(
             assignment = assignment.name,
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = deliveriesCount,
+            collectionSize = deliveries.count,
             pageIndex = pagination.page,
-            pageSize = deliveries.size
+            pageSize = deliveries.results.size
         ).toSirenObject(
-            entities = deliveries.map {
+            entities = deliveries.results.map {
                 DeliveryOutputModel(
                     id = it.did,
                     number = it.number,
@@ -122,7 +125,7 @@ class DeliveriesController(
                 Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                deliveriesCount
+                deliveries.count
             ) + listOf(
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
@@ -175,9 +178,123 @@ class DeliveriesController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
+
+    @RequiresUserInAssignment
+    @PostMapping(DELIVERIES_HREF)
+    fun createDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        @RequestBody input: DeliveryCreateInputModel?
+    ): ResponseEntity<Response> {
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
+
+        if (input == null) throw InvalidInputException("Missing body")
+        if (input.tag == null) throw InvalidInputException("Missing tag")
+        if (!input.isTagValid()) throw InvalidInputException("Invalid tag")
+
+        val dueDate = try {
+            if (input.dueDate != null) OffsetDateTime.parse(input.dueDate)
+            else null
+        } catch (ex: DateTimeParseException) {
+            throw InvalidInputException("Failed to parse due date")
+        }
+
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+
+        val createdDelivery = deliveriesDb.createDelivery(orgId, classroomNumber, assignmentNumber, input.tag, dueDate)
+
+        return DeliveryOutputModel(
+            id = createdDelivery.did,
+            number = createdDelivery.number,
+            tag = createdDelivery.tag,
+            dueDate = createdDelivery.due_date,
+            assignment = createdDelivery.assignment_name,
+            classroom = createdDelivery.classroom_name,
+            organization = org.login
+        ).toSirenObject(
+            actions = listOf(
+                getEditDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number),
+                getDeleteDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number)
+            ),
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost()),
+                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
+            )
+        ).toResponseEntity(HttpStatus.CREATED,
+            mapOf(
+                "Location" to listOf(getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
+            )
+        )
+    }
+
+    @RequiresUserInAssignment
+    @PutMapping(DELIVERY_BY_NUMBER_HREF)
+    fun editDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom,
+        @RequestBody input: DeliveryEditInputModel?
+    ): ResponseEntity<Any> {
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
+
+        if (input == null) throw InvalidInputException("Missing body")
+        if (input.tag != null && !input.isTagValid()) throw InvalidInputException("Invalid tag")
+
+        val deleteDate: Boolean
+        val dueDate = try {
+            if (input.dueDate != null) {
+                deleteDate = input.dueDate.isBlank()
+                if (deleteDate) null else OffsetDateTime.parse(input.dueDate)
+            } else {
+                deleteDate = false
+                null
+            }
+        } catch (ex: DateTimeParseException) {
+            throw InvalidInputException("Failed to parse due date")
+        }
+
+        deliveriesDb.editDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber,
+            input.tag, dueDate, deleteDate)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .header("Location",
+                getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber).includeHost().toString())
+            .body(null)
+    }
+
+    @RequiresUserInAssignment
+    @DeleteMapping(DELIVERY_BY_NUMBER_HREF)
+    fun deleteDelivery(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
+        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
+        user: User,
+        userClassroom: UserClassroom
+    ): ResponseEntity<Any> {
+        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
+
+        deliveriesDb.deleteDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+
+        return ResponseEntity
+            .status(HttpStatus.OK)
+            .body(null)
+    }
+
     @RequiresUserInAssignment
     @GetMapping(DELIVERIES_OF_PARTICIPANT_HREF)
-    fun getAllUserDeliveries(
+    fun getAllParticipantDeliveries(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
@@ -205,7 +322,6 @@ class DeliveriesController(
             }
 
         val deliveries = deliveriesDb.getDeliveriesOfAssignment(orgId, classroomNumber, assignmentNumber, pagination.page, pagination.limit)
-        val deliveriesCount = deliveriesDb.getDeliveriesOfAssignmentCount(orgId, classroomNumber, assignmentNumber)
 
         val ghTags = gitHub.getAllTagsFromRepo(repoId, user.gh_token)
         val org = gitHub.getOrgById(orgId, user.gh_token)
@@ -214,11 +330,11 @@ class DeliveriesController(
             assignment = assignment.name,
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = deliveriesCount,
+            collectionSize = deliveries.count,
             pageIndex = pagination.page,
-            pageSize = deliveries.size
+            pageSize = deliveries.results.size
         ).toSirenObject(
-            entities = deliveries.map {
+            entities = deliveries.results.map {
                 ParticipantDeliveryItemOutputModel(
                     id = it.did,
                     number = it.number,
@@ -251,7 +367,7 @@ class DeliveriesController(
                 Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                deliveriesCount
+                deliveries.count
             ) + listOf(
                 SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
                 SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
@@ -267,7 +383,7 @@ class DeliveriesController(
 
     @RequiresUserInAssignment
     @GetMapping(DELIVERY_OF_PARTICIPANT_HREF)
-    fun getUserDelivery(
+    fun getParticipantDelivery(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
@@ -326,110 +442,90 @@ class DeliveriesController(
     }
 
     @RequiresUserInAssignment
-    @PostMapping(DELIVERIES_HREF)
-    fun createDelivery(
+    @PutMapping(DELIVERY_OF_PARTICIPANT_HREF)
+    fun submitParticipantDelivery(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
-        user: User,
-        userClassroom: UserClassroom,
-        @RequestBody input: DeliveryCreateInputModel?
-    ): ResponseEntity<Response> {
-        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
-
-        if (input == null) throw InvalidInputException("Missing body")
-        if (input.tag == null) throw InvalidInputException("Missing tag")
-
-        val dueDate = try {
-            if (input.dueDate != null) OffsetDateTime.parse(input.dueDate)
-            else null
-        } catch (ex: DateTimeParseException) {
-            throw InvalidInputException("Failed to parse due date")
-        }
-
-        val org = gitHub.getOrgById(orgId, user.gh_token)
-
-        val createdDelivery = deliveriesDb.createDelivery(orgId, classroomNumber, assignmentNumber, input.tag, dueDate)
-
-        return DeliveryOutputModel(
-            id = createdDelivery.did,
-            number = createdDelivery.number,
-            tag = createdDelivery.tag,
-            dueDate = createdDelivery.due_date,
-            assignment = createdDelivery.assignment_name,
-            classroom = createdDelivery.classroom_name,
-            organization = org.login
-        ).toSirenObject(
-            actions = listOf(
-                getEditDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number),
-                getDeleteDeliveryAction(orgId, classroomNumber, assignmentNumber, createdDelivery.number)
-            ),
-            links = listOf(
-                SirenLink(listOf(SELF_PARAM), getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost()),
-                SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
-                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
-            )
-        ).toResponseEntity(HttpStatus.CREATED,
-            mapOf(
-                "Location" to listOf(getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, createdDelivery.number).includeHost().toString())
-            )
-        )
-    }
-
-    @RequiresUserInAssignment
-    @PutMapping(DELIVERY_BY_NUMBER_HREF)
-    fun editDelivery(
-        @PathVariable(name = ORG_PARAM) orgId: Int,
-        @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
-        @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
         @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
         user: User,
         userClassroom: UserClassroom,
-        @RequestBody input: DeliveryEditInputModel?
+        assignment: Assignment
     ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
+        if (userClassroom.role == TEACHER)
+            throw ForbiddenException("No permission to submit a delivery for a participant")
 
-        if (input == null) throw InvalidInputException("Missing body")
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("No permission to submit a delivery for another participant")
 
-        val deleteDate: Boolean
-        val dueDate = try {
-            if (input.dueDate != null) {
-                deleteDate = input.dueDate.isBlank()
-                if (deleteDate) null else OffsetDateTime.parse(input.dueDate)
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
             } else {
-                deleteDate = false
-                null
+                if (user.uid != participantId)
+                    throw ForbiddenException("No permission to submit a delivery for another participant")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
             }
-        } catch (ex: DateTimeParseException) {
-            throw InvalidInputException("Failed to parse due date")
+
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+        try {
+            gitHub.createReleaseInRepo(repoId, delivery.tag, user.gh_token)
+        } catch(ex: HttpRequestException) {
+            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
+                throw ex
+
+            throw ConflictException("Delivery has already been submitted")
         }
 
-        deliveriesDb.editDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber,
-            input.tag, dueDate, deleteDate)
-
         return ResponseEntity
-            .status(HttpStatus.OK)
-            .header("Location",
-                getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber).includeHost().toString())
+            .status(HttpStatus.CREATED)
             .body(null)
     }
 
     @RequiresUserInAssignment
-    @DeleteMapping(DELIVERY_BY_NUMBER_HREF)
-    fun deleteDelivery(
+    @DeleteMapping(DELIVERY_OF_PARTICIPANT_HREF)
+    fun deleteParticipantDelivery(
         @PathVariable(name = ORG_PARAM) orgId: Int,
         @PathVariable(name = CLASSROOM_PARAM) classroomNumber: Int,
         @PathVariable(name = ASSIGNMENT_PARAM) assignmentNumber: Int,
+        @PathVariable(name = PARTICIPANT_PARAM) participantId: Int,
         @PathVariable(name = DELIVERY_PARAM) deliveryNumber: Int,
         user: User,
-        userClassroom: UserClassroom
-    ): ResponseEntity<Any> {
-        if (userClassroom.role != TEACHER) throw ForbiddenException("User is not a teacher")
+        userClassroom: UserClassroom,
+        assignment: Assignment
+    ): ResponseEntity<Response> {
+        if (userClassroom.role == TEACHER)
+            throw ForbiddenException("No permission to delete a delivery for a participant")
 
-        deliveriesDb.deleteDelivery(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+        val isGroupAssignment = assignment.isGroupAssignment()
+        val repoId =
+            if (isGroupAssignment) {
+                val team = teamsDb.getTeam(orgId, classroomNumber, participantId)
+                if (!teamsDb.isUserInTeam(team.tid, user.uid))
+                    throw ForbiddenException("No permission to delete a delivery for another participant")
+
+                teamsDb.getTeamAssignment(assignment.aid, team.tid).repo_id
+            } else {
+                if (user.uid != participantId)
+                    throw ForbiddenException("No permission to delete a delivery for another participant")
+
+                usersDb.getUserAssignment(orgId, classroomNumber, assignmentNumber, participantId).repo_id
+            }
+
+        val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
+
+        try {
+            gitHub.deleteTagFromRepo(repoId, delivery.tag, user.gh_token)
+        } catch(ex: HttpRequestException) {
+            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
+                throw ex
+
+            throw NotFoundException("Tag does not exist in the repository")
+        }
 
         return ResponseEntity
             .status(HttpStatus.OK)

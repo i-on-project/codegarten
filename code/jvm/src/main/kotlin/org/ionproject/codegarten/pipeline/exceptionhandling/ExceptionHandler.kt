@@ -6,6 +6,7 @@ import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
 import org.ionproject.codegarten.exceptions.AuthorizationException
 import org.ionproject.codegarten.exceptions.ClientException
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -140,6 +141,19 @@ class ExceptionHandler {
             URI("/problems/invalid-input").includeHost(),
             "Invalid Input",
             HttpStatus.BAD_REQUEST,
+            ex.localizedMessage,
+            request.requestURI
+        )
+
+    @ExceptionHandler(value = [ConflictException::class])
+    private fun handleConflictException(
+        ex: ConflictException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
+            URI("/problems/resource-conflict").includeHost(),
+            "Resource Conflict",
+            HttpStatus.CONFLICT,
             ex.localizedMessage,
             request.requestURI
         )

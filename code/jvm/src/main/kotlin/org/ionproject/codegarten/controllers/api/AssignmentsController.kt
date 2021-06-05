@@ -73,7 +73,6 @@ class AssignmentsController(
         user: User,
         userClassroom: UserClassroom,
     ): ResponseEntity<Response> {
-        val assignmentsCount: Int
         val actions: List<SirenAction>?
 
         val assignments = when (userClassroom.role) {
@@ -81,12 +80,10 @@ class AssignmentsController(
                 actions = listOf(
                     AssignmentActions.getCreateAssignmentAction(orgId, classroomNumber)
                 )
-                assignmentsCount = assignmentsDb.getAllAssignmentsCount(orgId, classroomNumber)
                 assignmentsDb.getAllAssignments(orgId, classroomNumber, pagination.page, pagination.limit)
             }
             UserClassroomMembership.STUDENT -> {
                 actions = null
-                assignmentsCount = assignmentsDb.getAssignmentsOfUserCount(orgId, classroomNumber, user.uid)
                 assignmentsDb.getAssignmentsOfUser(orgId, classroomNumber, user.uid, pagination.page, pagination.limit)
             }
             else -> throw ForbiddenException("User is not a member of the classroom")
@@ -96,11 +93,11 @@ class AssignmentsController(
         return AssignmentsOutputModel(
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = assignmentsCount,
+            collectionSize = assignments.count,
             pageIndex = pagination.page,
-            pageSize = assignments.size,
+            pageSize = assignments.results.size,
         ).toSirenObject(
-            entities = assignments.map {
+            entities = assignments.results.map {
                 AssignmentItemOutputModel(
                     id = it.aid,
                     inviteCode = if (userClassroom.role == UserClassroomMembership.TEACHER) it.inv_code else null,
@@ -128,7 +125,7 @@ class AssignmentsController(
                 getAssignmentsUri(orgId, classroomNumber).includeHost(),
                 pagination.page,
                 pagination.limit,
-                assignmentsCount
+                assignments.count
             ) + listOf(
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),

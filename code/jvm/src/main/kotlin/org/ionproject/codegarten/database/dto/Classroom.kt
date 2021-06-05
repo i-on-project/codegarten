@@ -7,4 +7,6 @@ data class Classroom(
     val org_id: Int,
     val name: String,
     val description: String?,
+
+    val count: Int? = null
 )

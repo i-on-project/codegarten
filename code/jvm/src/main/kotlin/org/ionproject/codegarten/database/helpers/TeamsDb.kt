@@ -1,23 +1,24 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.CreatedTeam
+import org.ionproject.codegarten.database.dto.DtoListWrapper
 import org.ionproject.codegarten.database.dto.Team
 import org.ionproject.codegarten.database.dto.TeamAssignment
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
-private const val GET_TEAMS_BASE =
+private const val GET_TEAM_BASE =
     "SELECT tid, number, name, gh_id, org_id, classroom_id, classroom_number, classroom_name FROM V_TEAM"
+private const val GET_TEAMS_BASE =
+    "SELECT tid, number, name, gh_id, org_id, classroom_id, classroom_number, classroom_name, COUNT(*) OVER() as count FROM V_TEAM"
+
 private const val GET_TEAMS_BY_CLASSROOM_ID_QUERY = "$GET_TEAMS_BASE WHERE classroom_id = :classroomId ORDER BY number"
-private const val GET_TEAMS_BY_CLASSROOM_ID_COUNT = "SELECT COUNT(tid) FROM TEAM WHERE cid = :classroomId"
 
 private const val GET_TEAMS_BY_CLASSROOM_AND_USER_ID_QUERY =
     "$GET_TEAMS_BASE WHERE classroom_id = :classroomId AND tid IN (SELECT tid FROM USER_TEAM WHERE uid = :userId) ORDER BY number"
-private const val GET_TEAMS_BY_CLASSROOM_AND_USER_ID_COUNT =
-    "SELECT COUNT(tid) FROM TEAM WHERE cid = :classroomId AND tid IN (SELECT tid FROM USER_TEAM WHERE uid = :userId)"
 
-private const val GET_TEAM_BY_ID_QUERY = "$GET_TEAMS_BASE WHERE tid = :teamId"
-private const val GET_TEAM_BY_NUMBER_QUERY = "$GET_TEAMS_BASE WHERE classroom_id = :classroomId AND number = :teamNumber"
+private const val GET_TEAM_BY_ID_QUERY = "$GET_TEAM_BASE WHERE tid = :teamId"
+private const val GET_TEAM_BY_NUMBER_QUERY = "$GET_TEAM_BASE WHERE classroom_id = :classroomId AND number = :teamNumber"
 
 private const val GET_USER_ID_OF_TEAM_QUERY = "SELECT uid FROM USER_TEAM WHERE tid = :teamId AND uid = :userId"
 
@@ -29,22 +30,22 @@ private const val UPDATE_TEAM_END = "WHERE tid = :teamId"
 private const val DELETE_TEAM_QUERY = "DELETE FROM TEAM WHERE tid = :teamId"
 
 // Assignments
-private const val GET_TEAMS_IN_ASSIGNMENT_BASE =
+private const val GET_TEAM_IN_ASSIGNMENT_BASE =
     "SELECT tid, number, name, gh_id, repo_id, assignment_id FROM V_TEAM_ASSIGNMENT"
+private const val GET_TEAMS_IN_ASSIGNMENT_BASE =
+    "SELECT tid, number, name, gh_id, repo_id, assignment_id, COUNT(*) OVER() as count FROM V_TEAM_ASSIGNMENT"
 
 private const val GET_TEAMS_IN_ASSIGNMENT_QUERY =
     "$GET_TEAMS_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId ORDER BY number"
-private const val GET_TEAMS_IN_ASSIGNMENT_COUNT =
-    "SELECT COUNT(tid) as count FROM TEAM_ASSIGNMENT WHERE aid = :assignmentId"
 
 private const val GET_TEAM_IN_ASSIGNMENT_QUERY =
-    "$GET_TEAMS_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND tid = :teamId"
+    "$GET_TEAM_IN_ASSIGNMENT_BASE WHERE assignment_id = :assignmentId AND tid = :teamId"
 
 private const val GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY =
     "SELECT tid FROM V_TEAM_USER_ASSIGNMENT WHERE aid = :assignmentId AND uid = :userId"
 
 private const val GET_TEAM_FROM_USER_IN_ASSIGNMENT_QUERY =
-    "$GET_TEAMS_BASE WHERE tid IN ($GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY)"
+    "$GET_TEAM_BASE WHERE tid IN ($GET_TEAM_ID_FROM_USER_IN_ASSIGNMENT_QUERY)"
 
 private const val ADD_TEAM_TO_ASSIGNMENT =
     "INSERT INTO TEAM_ASSIGNMENT(tid, aid, repo_id) VALUES(:teamId, :assignmentId, :repoId)"
@@ -59,42 +60,31 @@ class TeamsDb(
     val assignmentsDb: AssignmentsDb
 ) {
 
-    fun getTeamsOfClassroom(orgId: Int, classroomNumber: Int, page: Int, limit: Int): List<Team> {
+    fun getTeamsOfClassroom(orgId: Int, classroomNumber: Int, page: Int, limit: Int): DtoListWrapper<Team> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return getTeamsOfClassroom(classroomId, page, limit)
     }
 
-    fun getTeamsOfClassroomCount(orgId: Int, classroomNumber: Int): Int {
-        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return getTeamsOfClassroomCount(classroomId)
-    }
-
-    fun getTeamsOfClassroomOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, limit: Int): List<Team> {
+    fun getTeamsOfClassroomOfUser(orgId: Int, classroomNumber: Int, userId: Int, page: Int, limit: Int): DtoListWrapper<Team> {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
         return getTeamsOfClassroomOfUser(classroomId, userId, page, limit)
     }
 
-    fun getTeamsOfClassroomOfUserCount(orgId: Int, classroomNumber: Int, userId: Int): Int {
-        val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
-        return getTeamsOfClassroomOfUserCount(classroomId, userId)
-    }
-
-    fun getTeamsOfClassroom(classroomId: Int, page: Int, limit: Int): List<Team> =
-        jdbi.getList(
+    fun getTeamsOfClassroom(classroomId: Int, page: Int, limit: Int): DtoListWrapper<Team> {
+        val results = jdbi.getList(
             GET_TEAMS_BY_CLASSROOM_ID_QUERY, Team::class.java,
             page, limit,
             mapOf("classroomId" to classroomId)
         )
 
-    fun getTeamsOfClassroomCount(classroomId: Int): Int =
-        jdbi.getOne(
-            GET_TEAMS_BY_CLASSROOM_ID_COUNT,
-            Int::class.java,
-            mapOf("classroomId" to classroomId)
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
-    fun getTeamsOfClassroomOfUser(classroomId: Int, userId: Int, page: Int, limit: Int): List<Team> =
-        jdbi.getList(
+    fun getTeamsOfClassroomOfUser(classroomId: Int, userId: Int, page: Int, limit: Int): DtoListWrapper<Team> {
+        val results = jdbi.getList(
             GET_TEAMS_BY_CLASSROOM_AND_USER_ID_QUERY, Team::class.java,
             page, limit,
             mapOf(
@@ -103,15 +93,11 @@ class TeamsDb(
             )
         )
 
-    fun getTeamsOfClassroomOfUserCount(classroomId: Int, userId: Int): Int =
-        jdbi.getOne(
-            GET_TEAMS_BY_CLASSROOM_AND_USER_ID_COUNT,
-            Int::class.java,
-            mapOf(
-                "classroomId" to classroomId,
-                "userId" to userId
-            )
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
     fun getTeam(orgId: Int, classroomNumber: Int, teamNumber: Int): Team {
         val classroomId = classroomsDb.getClassroomByNumber(orgId, classroomNumber).cid
@@ -236,29 +222,23 @@ class TeamsDb(
 
     // Assignments
 
-    fun getTeamsFromAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): List<TeamAssignment> {
+    fun getTeamsFromAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, page: Int, limit: Int): DtoListWrapper<TeamAssignment> {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
         return getTeamsFromAssignment(assignmentId, page, limit)
     }
 
-    fun getTeamsFromAssignment(assignmentId: Int, page: Int, limit: Int) =
-        jdbi.getList(
+    fun getTeamsFromAssignment(assignmentId: Int, page: Int, limit: Int): DtoListWrapper<TeamAssignment> {
+        val results = jdbi.getList(
             GET_TEAMS_IN_ASSIGNMENT_QUERY,
             TeamAssignment::class.java, page, limit,
             mapOf("assignmentId" to assignmentId)
         )
 
-    fun getTeamsFromAssignmentCount(orgId: Int, classroomNumber: Int, assignmentNumber: Int): Int {
-        val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid
-        return getTeamsFromAssignmentCount(assignmentId)
-    }
-
-    fun getTeamsFromAssignmentCount(assignmentId: Int) =
-        jdbi.getOne(
-            GET_TEAMS_IN_ASSIGNMENT_COUNT,
-            Int::class.java,
-            mapOf("assignmentId" to assignmentId)
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
     fun getTeamAssignment(orgId: Int, classroomNumber: Int, assignmentNumber: Int, teamNumber: Int): TeamAssignment {
         val assignmentId = assignmentsDb.getAssignmentByNumber(orgId, classroomNumber, assignmentNumber).aid

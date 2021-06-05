@@ -65,13 +65,10 @@ class TeamsController(
         user: User,
         userClassroom: UserClassroom
     ): ResponseEntity<Response> {
-        val teamsCount: Int
         val teams =
             if (userClassroom.role == TEACHER) {
-                teamsCount = teamsDb.getTeamsOfClassroomCount(orgId, classroomNumber)
                 teamsDb.getTeamsOfClassroom(orgId, classroomNumber, pagination.page, pagination.limit)
             } else {
-                teamsCount = teamsDb.getTeamsOfClassroomOfUserCount(orgId, classroomNumber, user.uid)
                 teamsDb.getTeamsOfClassroomOfUser(orgId, classroomNumber, user.uid, pagination.page, pagination.limit)
             }
 
@@ -86,11 +83,11 @@ class TeamsController(
         return TeamsOutputModel(
             classroom = userClassroom.classroom.name,
             organization = org.login,
-            collectionSize = teamsCount,
+            collectionSize = teams.count,
             pageIndex = pagination.page,
-            pageSize = teams.size,
+            pageSize = teams.results.size,
         ).toSirenObject(
-            entities = teams.map {
+            entities = teams.results.map {
                 TeamItemOutputModel(
                     id = it.tid,
                     number = it.number,
@@ -114,7 +111,7 @@ class TeamsController(
                 Routes.getClassroomsUri(orgId).includeHost(),
                 pagination.page,
                 pagination.limit,
-                teamsCount
+                teams.count
             ) + listOf(
                 SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),

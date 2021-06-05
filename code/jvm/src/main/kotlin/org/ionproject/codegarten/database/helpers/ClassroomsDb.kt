@@ -1,18 +1,19 @@
 package org.ionproject.codegarten.database.helpers
 
 import org.ionproject.codegarten.database.dto.Classroom
+import org.ionproject.codegarten.database.dto.DtoListWrapper
 import org.jdbi.v3.core.Jdbi
 import org.springframework.stereotype.Component
 
-private const val GET_CLASSROOMS_BASE = "SELECT cid, number, inv_code, org_id, name, description FROM V_CLASSROOM"
-private const val GET_CLASSROOM_QUERY = "$GET_CLASSROOMS_BASE WHERE org_id = :orgId AND number = :classroomNumber ORDER BY number"
+private const val GET_CLASSROOM_BASE = "SELECT cid, number, inv_code, org_id, name, description FROM V_CLASSROOM"
+private const val GET_CLASSROOMS_BASE = "SELECT cid, number, inv_code, org_id, name, description, COUNT(*) OVER() as count FROM V_CLASSROOM"
 
-private const val GET_CLASSROOM_BY_ID_QUERY = "$GET_CLASSROOMS_BASE WHERE cid = :classroomId"
+private const val GET_CLASSROOM_QUERY = "$GET_CLASSROOM_BASE WHERE org_id = :orgId AND number = :classroomNumber ORDER BY number"
+
+private const val GET_CLASSROOM_BY_ID_QUERY = "$GET_CLASSROOM_BASE WHERE cid = :classroomId"
 
 private const val GET_CLASSROOMS_OF_USER_QUERY =
     "$GET_CLASSROOMS_BASE WHERE org_id = :orgId AND cid IN (SELECT cid from USER_CLASSROOM where uid = :userId) ORDER BY number"
-private const val GET_CLASSROOMS_OF_USER_COUNT =
-    "SELECT COUNT(cid) as count FROM CLASSROOM WHERE org_id = :orgId AND cid IN (SELECT cid from USER_CLASSROOM where uid = :userId)"
 
 private const val CREATE_CLASSROOM_QUERY = "INSERT INTO CLASSROOM(org_id, name, description) VALUES(:orgId, :name, :description)"
 
@@ -38,8 +39,8 @@ class ClassroomsDb(val jdbi: Jdbi) {
             mapOf("classroomId" to classroomId)
         )
 
-    fun getClassroomsOfUser(orgId: Int, userId: Int, page: Int, limit: Int) =
-        jdbi.getList(
+    fun getClassroomsOfUser(orgId: Int, userId: Int, page: Int, limit: Int): DtoListWrapper<Classroom> {
+        val results = jdbi.getList(
             GET_CLASSROOMS_OF_USER_QUERY,
             Classroom::class.java,
             page, limit,
@@ -49,15 +50,11 @@ class ClassroomsDb(val jdbi: Jdbi) {
             )
         )
 
-    fun getClassroomsOfUserCount(orgId: Int, userId: Int) =
-        jdbi.getOne(
-            GET_CLASSROOMS_OF_USER_COUNT,
-            Int::class.java,
-            mapOf(
-                "orgId" to orgId,
-                "userId" to userId
-            )
+        return DtoListWrapper(
+            count = if (results.isEmpty()) 0 else results[0].count!!,
+            results = results
         )
+    }
 
     fun createClassroom(orgId: Int, name: String, description: String?) =
         jdbi.insertAndGet(
