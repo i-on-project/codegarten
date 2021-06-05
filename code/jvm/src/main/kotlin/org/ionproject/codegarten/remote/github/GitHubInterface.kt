@@ -48,6 +48,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamUserMem
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.searchGitHubReposInOrgUri
 import org.ionproject.codegarten.remote.github.responses.GitHubCommitResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
@@ -56,6 +57,7 @@ import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResp
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRefResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoSearchResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubTag
 import org.ionproject.codegarten.remote.github.responses.GitHubTagResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubTeamResponse
@@ -227,6 +229,14 @@ class GitHubInterface(
             .build()
 
         return httpClient.call(req)
+    }
+
+    fun searchRepos(orgName: String, toSearch: String?, ghToken: String): GitHubRepoSearchResponse {
+        val req = Request.Builder()
+            .from(searchGitHubReposInOrgUri(orgName, toSearch ?: ""), ghAppProperties.name, ghToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoSearchResponse::class.java)
     }
 
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
