@@ -44,6 +44,7 @@ import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -474,10 +475,7 @@ class DeliveriesController(
         val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
         try {
             gitHub.createReleaseInRepo(repoId, delivery.tag, user.gh_token)
-        } catch(ex: HttpRequestException) {
-            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ex
-
+        } catch(ex: UnprocessableEntityException) {
             throw ConflictException("Delivery has already been submitted")
         }
 
@@ -520,10 +518,7 @@ class DeliveriesController(
 
         try {
             gitHub.deleteTagFromRepo(repoId, delivery.tag, user.gh_token)
-        } catch(ex: HttpRequestException) {
-            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ex
-
+        } catch(ex: UnprocessableEntityException) {
             throw NotFoundException("Tag does not exist in the repository")
         }
 
