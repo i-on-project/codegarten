@@ -104,6 +104,7 @@ object GitHubRoutes {
 
 
     // Repositories
+    const val GITHUB_REPOS_SEARCH = "$GITHUB_API_HOST/search/repositories"
     const val GITHUB_REPOS_ID_URI = "$GITHUB_API_HOST/repositories"
     const val GITHUB_REPO_ID_URI = "$GITHUB_REPOS_ID_URI/{$REPO_ID_PARAM}"
     const val GITHUB_REPO_ID_RELEASES_URI = "$GITHUB_REPO_ID_URI/releases"
@@ -114,7 +115,6 @@ object GitHubRoutes {
     const val GITHUB_REPO_NAME_URI = "$GITHUB_REPOS_NAME_URI/{$LOGIN_PARAM}/{$REPO_ID_PARAM}"
     const val GITHUB_REPOS_OF_ORG_URI = "$GITHUB_ORG_URI/repos"
 
-
     val GITHUB_REPO_ID_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_URI)
     val GITHUB_REPO_ID_RELEASES_TEMPLATE = UriTemplate(GITHUB_REPO_ID_RELEASES_URI)
     val GITHUB_REPO_ID_GENERATE_URI_TEMPLATE = UriTemplate(GITHUB_REPO_ID_GENERATE_URI)
@@ -122,6 +122,8 @@ object GitHubRoutes {
     val GITHUB_REPOS_OF_ORG_URI_TEMPLATE = UriTemplate(GITHUB_REPOS_OF_ORG_URI)
     val GITHUB_REPO_COLLABORATOR_URI_TEMPLATE = UriTemplate(GITHUB_REPO_COLLABORATOR_URI)
 
+    fun searchGitHubReposInOrgUri(orgName: String, toSearch: String)
+        = "$GITHUB_REPOS_SEARCH?q=$toSearch+org:$orgName"
     fun getGitHubRepoByIdUri(repoId: Int) = GITHUB_REPO_ID_URI_TEMPLATE.expand(repoId)
     fun getGitHubRepoReleasesByIdUri(repoId: Int) = GITHUB_REPO_ID_RELEASES_TEMPLATE.expand(repoId)
     fun getGitHubRepoGenerateByIdUri(repoId: Int) = GITHUB_REPO_ID_GENERATE_URI_TEMPLATE.expand(repoId)
