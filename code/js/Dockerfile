@@ -4,8 +4,11 @@ WORKDIR /app
 
 COPY ./node_modules ./node_modules
 COPY ./public ./public
+COPY secrets ./secrets
 COPY ./dist ./dist
 COPY ./views ./views
+
+ENV CODEGARTEN_WEB_CIPHER_KEY_PATH=secrets/cipher-key.txt
 
 EXPOSE 80
 
