@@ -26,6 +26,7 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
@@ -192,7 +193,7 @@ class TeamsController(
             gitHub.createTeam(orgId, gitHubName, installation.accessToken)
         } catch(e: HttpRequestException) {
             if (e.status == HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw InvalidInputException("Team name must be unique in the classroom")
+                throw ConflictException("Team name must be unique in the classroom")
             else throw e
         }
         val createdTeam = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id)
