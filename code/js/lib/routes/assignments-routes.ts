@@ -79,7 +79,7 @@ function handlerGetAssignment(req: Request, res: Response, next: NextFunction) {
             const assignment = userAssignment.assignment
             const participation = userAssignment.participation
 
-            if (!assignment || !participation) return next()
+            if (!assignment || !participation || participation.type == 'notMember') return next()
             
             res.render('assignment', {
                 assignment: assignment,

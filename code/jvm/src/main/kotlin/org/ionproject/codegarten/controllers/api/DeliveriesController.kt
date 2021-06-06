@@ -23,6 +23,7 @@ import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getCreateDeliveryAction
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getDeleteDeliveryAction
+import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getDeleteDeliverySubmissionAction
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getEditDeliveryAction
 import org.ionproject.codegarten.controllers.models.DeliveriesOutputModel
 import org.ionproject.codegarten.controllers.models.DeliveryCreateInputModel
@@ -335,17 +336,28 @@ class DeliveriesController(
             pageSize = deliveries.results.size
         ).toSirenObject(
             entities = deliveries.results.map {
+                val isDelivered = ghTags.any { tag -> tag.name == it.tag }
+                val actions =
+                    if (!isTeacher)
+                        listOf(
+                            if (isDelivered) getDeleteDeliverySubmissionAction(orgId, classroomNumber, assignmentNumber, participantId, it.number)
+                            else getDeleteDeliverySubmissionAction(orgId, classroomNumber, assignmentNumber, participantId, it.number)
+                        )
+                    else
+                        null
+
                 ParticipantDeliveryItemOutputModel(
                     id = it.did,
                     number = it.number,
                     tag = it.tag,
                     dueDate = it.due_date,
-                    isDelivered = ghTags.any { tag -> tag.name == it.tag },
+                    isDelivered = isDelivered,
                     assignment = it.assignment_name,
                     classroom = it.classroom_name,
                     organization = org.login
                 ).toSirenObject(
                     rel = listOf("item"),
+                    actions = actions,
                     links = listOf(
                         SirenLink(listOf(SELF_PARAM),
                             getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, it.number).includeHost()),

@@ -57,6 +57,8 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
             const sirenActions: SirenAction[] = Array.from(collection.actions || [])
 
             const deliveries = entities.map(entity => {
+                const deliverySirenActions: SirenAction[] = Array.from(entity.actions || [])
+
                 const dueDate = entity.properties.dueDate == null ? null : new Date(entity.properties.dueDate)
                 const dueDateString = dueDate == null ? null : dueDate.toLocaleString()
 
@@ -69,6 +71,8 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
                     isDelivered: entity.properties.isDelivered,
 
                     canManage: false,
+                    canSubmitDelivery: getSirenAction(deliverySirenActions, 'submit-delivery') != null,
+                    canDeleteDeliverySubmission: getSirenAction(deliverySirenActions, 'delete-delivery-submission') != null
                 } as Delivery
             })
 
@@ -77,7 +81,7 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
                 page: page,
                 isLastPage: DELIVERIES_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
 
-                canManage: getSirenAction(sirenActions, 'create-delivery') != null,
+                canManage: false,
             } as Deliveries
         })
 }
