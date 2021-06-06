@@ -25,6 +25,7 @@ import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getCrea
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getDeleteDeliveryAction
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getDeleteDeliverySubmissionAction
 import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getEditDeliveryAction
+import org.ionproject.codegarten.controllers.api.actions.DeliveryActions.getSubmitDeliveryAction
 import org.ionproject.codegarten.controllers.models.DeliveriesOutputModel
 import org.ionproject.codegarten.controllers.models.DeliveryCreateInputModel
 import org.ionproject.codegarten.controllers.models.DeliveryEditInputModel
@@ -341,7 +342,7 @@ class DeliveriesController(
                     if (!isTeacher)
                         listOf(
                             if (isDelivered) getDeleteDeliverySubmissionAction(orgId, classroomNumber, assignmentNumber, participantId, it.number)
-                            else getDeleteDeliverySubmissionAction(orgId, classroomNumber, assignmentNumber, participantId, it.number)
+                            else getSubmitDeliveryAction(orgId, classroomNumber, assignmentNumber, participantId, it.number)
                         )
                     else
                         null
