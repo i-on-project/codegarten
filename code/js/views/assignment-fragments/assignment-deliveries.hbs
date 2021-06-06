@@ -120,12 +120,12 @@
                     <a class="deleteDeliveryButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}">Delete</a>
                 </div>
             {{/if}}
-            {{#if canSubmitDelivery}}
+            {{#if canDeleteDeliverySubmission}}
                 <div class="col-lg d-flex align-items-center my-1">
                     <a class="deleteDeliverySubmissionButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}" data-participant-id="{{../participantId}}">Delete submission</a>
                 </div>
             {{/if}}
-            {{#if canDeleteDeliverySubmission}}
+            {{#if canSubmitDelivery}}
                 <div class="col-lg d-flex align-items-center my-1">
                     <a class="submitDeliveryButton btn btn-primary btn-block" href="#" data-delivery-number="{{number}}" data-participant-id="{{../participantId}}">Submit</a>
                 </div>
