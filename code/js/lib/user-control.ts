@@ -10,7 +10,7 @@ import * as fs from 'fs'
 const ACCESS_TOKEN_VALIDITY_THRESHOLD = 1000 * 60 * 60 * 24 // 1 day
 const ACCESS_TOKEN_COOKIE = 'tok'
 
-const SECRET_KEY = fs.readFileSync(`${process.env.CODEGARTEN_WEB_CIPHER_KEY_PATH}`)
+const SECRET_KEY = fs.readFileSync(`${process.env.CG_WEB_CIPHER_KEY_PATH}`)
 const CIPHER_ALGORITHM = 'aes-256-cbc'
 
 export = function(req: Request, res: Response, next: NextFunction): void {

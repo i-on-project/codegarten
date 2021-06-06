@@ -78,12 +78,12 @@
 {{else}}
     {{#each deliveries}}
         <div class="row rounded bg-light" style="position: relative;">
-            {{#if ../canManage}}
-                <!-- Overlays -->
-                <div id="delivery{{number}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
-                    <div class="spinner-border"></div>
-                    <h4 class="ml-3">Please wait...</h4>
-                </div>
+            <!-- Overlays -->
+            <div id="delivery{{number}}LoadingOverlay" class="overlay-fixed justify-content-center align-items-center" style="position:absolute; height:100%; width: 100%">
+                <div class="spinner-border"></div>
+                <h4 class="ml-3">Please wait...</h4>
+            </div>
+            {{#if ../canManage}} 
                 <div id="deleteDelivery{{number}}Overlay" class="overlay-fixed slide-in justify-content-center align-items-center p-3" style="position:absolute; height:100%; width: 100%">
                     <div class="col-sm-auto">
                         <h5 class="font-weight-bold">
@@ -119,6 +119,16 @@
                 <div class="col-lg d-flex align-items-center my-1">
                     <a class="deleteDeliveryButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}">Delete</a>
                 </div>
+            {{else}}
+                {{#if isDelivered}}
+                    <div class="col-lg d-flex align-items-center my-1">
+                        <a class="deleteDeliverySubmissionButton btn btn-danger btn-block" href="#" data-delivery-number="{{number}}" data-participant-id="{{../participantId}}">Delete submission</a>
+                    </div>
+                {{else}}
+                    <div class="col-lg d-flex align-items-center my-1">
+                        <a class="submitDeliveryButton btn btn-primary btn-block" href="#" data-delivery-number="{{number}}" data-participant-id="{{../participantId}}">Submit</a>
+                    </div>
+                {{/if}}
             {{/if}}
         </div>
     {{/each}}

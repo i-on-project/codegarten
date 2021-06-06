@@ -478,7 +478,7 @@ class DeliveriesController(
             if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
                 throw ex
 
-            throw ConflictException("Delivery has already been submitted")
+            throw ForbiddenException("Delivery has already been submitted or repo is empty")
         }
 
         return ResponseEntity

@@ -34,6 +34,14 @@ function getDeliveries(content, assignmentUri, page, updatePaginationFn) {
                 hideOverlay(event.target.parentElement.parentElement)
                 deleteDelivery(event.target.dataset.deliveryNumber)
             })
+
+            $('.submitDeliveryButton').on('click', (event) => {
+                submitDelivery(event.target.dataset.participantId, event.target.dataset.deliveryNumber, assignmentUri)
+            })
+            $('.deleteDeliverySubmissionButton').on('click', (event) => {
+                deleteParticipantDelivery(event.target.dataset.participantId, event.target.dataset.deliveryNumber, assignmentUri)
+            })
+
         })
         .catch((err) => alertMsg('Error while getting deliveries'))
         
@@ -102,6 +110,19 @@ function createDelivery(createButton, deliveryTag, deliveryDueDate, deliveryDueT
                 location.reload()
             })
             .catch(err => alertMsg('Failed to create delivery')))
+}
+
+function submitDelivery(participantId, deliveryNumber, assignmentUri) {
+    const loadingOverlay = $(`#delivery${deliveryNumber}LoadingOverlay`)[0]
+    workWithOverlay(loadingOverlay, fetch(`${assignmentUri}/participants/${participantId}/deliveries/${deliveryNumber}`, { method: 'PUT' })
+        .then(res => res.json())
+        .then(res => {
+            if (!res.wasSubmitted) return alertMsg(res.message)
+            location.reload()
+        })
+        .catch(err => {
+            alertMsg('Failed to submit delivery')
+        }))
 }
 
 function setupEditForm(deliveryNumber, oldTag, oldDueDate) {
@@ -201,6 +222,19 @@ function deleteDelivery(deliveryNumber) {
         })
         .catch(err => {
             alertMsg('Failed to delete delivery')
+        }))
+}
+
+function deleteParticipantDelivery(participantId, deliveryNumber, assignmentUri) {
+    const loadingOverlay = $(`#delivery${deliveryNumber}LoadingOverlay`)[0]
+    workWithOverlay(loadingOverlay, fetch(`${assignmentUri}/participants/${participantId}/deliveries/${deliveryNumber}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(res => {
+            if (!res.wasDeleted) return alertMsg(res.message)
+            location.reload()
+        })
+        .catch(err => {
+            alertMsg('Failed to delete delivery submission')
         }))
 }
 

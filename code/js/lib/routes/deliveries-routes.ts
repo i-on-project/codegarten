@@ -1,7 +1,7 @@
 'use strict'
 
 import { NextFunction, Request, Response, Router as expressRouter } from 'express'
-import { createDelivery, deleteDelivery, editDelivery, getDeliveries, getParticipantDeliveries } from '../repo/services/deliveries'
+import { createDelivery, deleteDelivery, deleteParticipantDelivery, editDelivery, getDeliveries, getParticipantDeliveries, submitDelivery } from '../repo/services/deliveries'
 import { INTERNAL_ERROR, requiresAuth } from './common-routes'
 
 const router = expressRouter()
@@ -11,8 +11,10 @@ router.get('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumb
 
 router.post('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries', requiresAuth, handlerCreateDelivery)
 router.put('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries/:deliveryNumber', requiresAuth, handlerEditDelivery)
+router.put('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId/deliveries/:deliveryNumber', requiresAuth, handlerSubmitDelivery)
 
 router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/deliveries/:deliveryNumber', requiresAuth, handlerDeleteDelivery)
+router.delete('/orgs/:orgId/classrooms/:classroomNumber/assignments/:assignmentNumber/participants/:participantId/deliveries/:deliveryNumber', requiresAuth, handlerDeleteParticipantDelivery)
 
 function handlerGetDeliveries(req: Request, res: Response, next: NextFunction) {
     if (!req.xhr) return next()
@@ -84,6 +86,7 @@ function handlerGetParticipantDeliveries(req: Request, res: Response, next: Next
                 assignmentNumber: assignmentNumber,
                 classroomNumber: classroomNumber,
                 orgId: orgId,
+                participantId: participantId,
                 
                 canManage: deliveries.canManage
             })
@@ -134,6 +137,43 @@ function handlerCreateDelivery(req: Request, res: Response, next: NextFunction) 
             res.send({
                 wasCreated: false,
                 message: 'Failed to create delivery'
+            })
+        })
+}
+
+function handlerSubmitDelivery(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+    const participantId = Number(req.params.participantId)
+    const deliveryNumber = Number(req.params.deliveryNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber) || isNaN(participantId)|| isNaN(deliveryNumber)) return next()
+
+    submitDelivery(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 201:
+                    message = 'Delivery submitted successfully'
+                    req.flash('success', message)
+                    break
+                case 403:
+                    message = 'Delivery has already been submitted or repo is empty'
+                    break
+                default:
+                    message = 'Failed to submit delivery'
+            }
+
+            res.send({
+                wasSubmitted: result.status == 201,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasSubmitted: false,
+                message: 'Failed to submit delivery'
             })
         })
 }
@@ -215,6 +255,43 @@ function handlerDeleteDelivery(req: Request, res: Response, next: NextFunction) 
             res.send({
                 wasDeleted: false,
                 message: 'Failed to delete delivery'
+            })
+        })
+}
+
+function handlerDeleteParticipantDelivery(req: Request, res: Response, next: NextFunction) {
+    const orgId = Number(req.params.orgId)
+    const classroomNumber = Number(req.params.classroomNumber)
+    const assignmentNumber = Number(req.params.assignmentNumber)
+    const participantId = Number(req.params.participantId)
+    const deliveryNumber = Number(req.params.deliveryNumber)
+
+    if (isNaN(orgId) || isNaN(classroomNumber) || isNaN(assignmentNumber) || isNaN(participantId)|| isNaN(deliveryNumber)) return next()
+
+    deleteParticipantDelivery(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber, req.user.accessToken.token)
+        .then(result => {
+            let message: string
+            switch(result.status) {
+                case 200:
+                    message = 'Delivery submission deleted successfully'
+                    req.flash('success', message)
+                    break
+                case 403:
+                    message = 'No permission to delete a delivery for another participant'
+                    break
+                default:
+                    message = 'Failed to submit delivery'
+            }
+
+            res.send({
+                wasDeleted: result.status == 200,
+                message: message
+            })
+        })
+        .catch(err => {
+            res.send({
+                wasDeleted: false,
+                message: 'Failed to delete delivery submission'
             })
         })
 }
