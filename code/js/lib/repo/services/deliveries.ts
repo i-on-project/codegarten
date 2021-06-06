@@ -121,6 +121,19 @@ function createDelivery(orgId: number, classroomNumber: number, assignmentNumber
         })
 }
 
+function submitDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, 
+    participantId: number, deliveryNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(
+        deliveryRoutes.getParticipantDeliveryUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
+        getJsonRequestOptions('PUT', accessToken)
+    )
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
 function editDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, deliveryNumber: number,
     newTag: string, newDueDate: Date, accessToken: string): Promise<ApiResponse> {
     return fetch(
@@ -146,10 +159,25 @@ function deleteDelivery(orgId: number, classroomNumber: number, assignmentNumber
         })
 }
 
+function deleteParticipantDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, 
+    participantId: number, deliveryNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(
+        deliveryRoutes.getParticipantDeliveryUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
+        getJsonRequestOptions('DELETE', accessToken)
+    )
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
 export {
     getDeliveries,
     getParticipantDeliveries,
     createDelivery,
+    submitDelivery,
     editDelivery,
-    deleteDelivery
+    deleteDelivery,
+    deleteParticipantDelivery
 }
