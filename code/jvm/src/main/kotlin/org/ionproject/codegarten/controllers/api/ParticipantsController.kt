@@ -400,7 +400,7 @@ class ParticipantsController(
         ).toSirenObject(
             entities = teams.results.map {
                 ParticipantItemOutputModel(
-                    id = it.tid,
+                    id = it.number,
                     name = it.name
                 ).toSirenObject(
                     rel = listOf("item"),

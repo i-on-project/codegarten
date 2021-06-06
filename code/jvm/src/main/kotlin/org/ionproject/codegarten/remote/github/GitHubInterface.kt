@@ -18,7 +18,6 @@ import org.ionproject.codegarten.remote.from
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_MEMBERSHIP_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_INFO_CACHE
-import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAGS_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAG_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.TEAM_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.USER_INFO_CACHE
