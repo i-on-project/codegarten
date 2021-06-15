@@ -39,6 +39,8 @@ The i-on initiative seeks to build an extensible platform in order to support ac
         - [Building the server application](#building-the-server-application)
         - [Running without Docker](#running-without-docker)
     - [Running the web application](#running-the-web-application)
+        - [Registering the client](#registering-the-client)
+        - [Setting up the environment variables](#setting-up-the-environment-variables)
         - [Setting up the cipher key](#setting-up-the-cipher-key)
         - [Running with Docker](#running-with-docker-1)
         - [Building the web application](#building-the-server-application)
