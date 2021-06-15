@@ -22,7 +22,7 @@
 </div>
 
 # Overview
-The i-on initiative seeks to build an extensible platform in order to support academic activities. The i-on CodeGarten project provides a system, for both students and teachers, that aims to help with the management of GitHub repositories, in an academic context.
+The i-on initiative seeks to build an extensible platform in order to support academic activities. The i-on CodeGarten project provides a system for both students and teachers that aims to help with the management of GitHub repositories, in an academic context.
 
 # Table Of Contents
 - [Functionalities](#functionalities)
@@ -67,7 +67,7 @@ The i-on CodeGarten server application is an application that exposes an web API
 The CodeGarten web application uses the API to expose its functionalities to the user in a friendly manner, acting as a client of the server application.
 
 # Getting Started
-The following chapters document the requires procedures to run the i-on CodeGarten system.
+The following sections document the requires procedures to run the i-on CodeGarten system.
 
 ## Running the server application
 There's different ways to run the server application, although both of them require the `secrets` directory to be set up (in the case of Docker, in `code/jvm`), as well as the creation of a GitHub App.
@@ -172,7 +172,7 @@ gradlew build -x dbTestsWait -x dbTestsDown
 ```
 
 ### Running without Docker
-The previous chapter explained how to build the server application. Running the server app requires the database to be specified using the environment variables stated [here](#building-the-server-application), as well as the [secret files and their paths](#setting-up-the-secrets-directory). The database must be initialized using the SQL scripts provided [here](../../tree/main/code/sql)
+The previous section explained how to build the server application. Running the server app requires the database to be specified using the environment variables stated [here](#building-the-server-application), as well as the [secret files and their paths](#setting-up-the-secrets-directory). The database must be initialized using the SQL scripts provided [here](../../tree/main/code/sql)
 
 To run the built application, the following command can be executed in the `code/jvm` directory:
 ```
@@ -180,7 +180,7 @@ java -server -jar ./build/libs/codegarten-0.1.jar
 ```
 
 ## Running the web application
-The web application can be executed in multiple ways, described in the following chapters.
+The web application can be executed in multiple ways, described in the following sections.
 
 ### Registering the client
 The web application needs to be a registered client in the server application's database. In order to register it, the CLIENT table needs to have a row dedicated to it. For this, the following information is required:
@@ -256,7 +256,7 @@ npm run tsc
 ```
 
 ### Running without Docker
-The previous chapter explained how to build the web application. Running the web app requires the environment variables stated [here](#setting-up-the-environment-variables) to be set accordingly, as well as the [cipher key](#setting-up-the-cipher-key). The server application must be running in order for the web application to function.
+The previous section explained how to build the web application. Running the web app requires the environment variables stated [here](#setting-up-the-environment-variables) to be set accordingly, as well as the [cipher key](#setting-up-the-cipher-key). The server application must be running in order for the web application to function.
 
 To run the built application, the following command can be executed in the `code/js` directory:
 ```
