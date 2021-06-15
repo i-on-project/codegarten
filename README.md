@@ -147,7 +147,7 @@ docker run -e "JDBC_DATABASE_URL=jdbc:postgresql://codegarten-db:5432/db?user=co
 
 After running these commands, the server application should be available on port `8080` (can be changed through the `PORT` environment variable and port mapping option) and the database on port `5432`. The connection string for the database can also be changed, as seen in the `JDBC_DATABASE_URL` environment variable passed in the last command.
 
-In order to access the API, an access token is required. More info about how to obtain one is available [here](/blob/main/docs/api/auth/README.md)
+In order to access the API, an access token is required. More info about how to obtain one is available [here](/docs/api/auth/README.md).
 
 To clean up the application and database containers, the following commands can be executed in the `code/jvm` directory:
 
