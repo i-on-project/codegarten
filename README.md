@@ -3,19 +3,19 @@
         <img src="./resources/graphics/logo-color.png" height="200px" alt="i-on CodeGarten logo" />
     </div>
     <div>
-        <a href="/blob/main/LICENSE">
+        <a href="../../main/LICENSE">
             <img src="https://img.shields.io/github/license/i-on-project/codegarten" />
         </a>
-        <a href="/graphs/contributors">
+        <a href="../../graphs/contributors">
             <img src="https://img.shields.io/github/contributors/i-on-project/codegarten" />
         </a>
-        <a href="/stargazers">
+        <a href="../../stargazers">
             <img src="https://img.shields.io/github/stars/i-on-project/codegarten" />
         </a>
-        <a href="/issues">
+        <a href="../../issues">
             <img src="https://img.shields.io/github/issues/i-on-project/codegarten" />
         </a>
-        <a href="/pulls">
+        <a href="../../pulls">
             <img src="https://img.shields.io/github/issues-pr/i-on-project/codegarten" />
         </a>
     </div>
@@ -40,9 +40,9 @@ The i-on initiative seeks to build an extensible platform in order to support ac
         - [Running without Docker](#running-without-docker)
     - [Running the web application](#running-the-web-application)
         - [Setting up the cipher key](#setting-up-the-cipher-key)
-        - [Running with Docker](#running-with-docker)
+        - [Running with Docker](#running-with-docker-1)
         - [Building the web application](#building-the-server-application)
-        - [Running without Docker](#running-without-docker)
+        - [Running without Docker](#running-without-docker-1)
 
 # Functionalities
 i-on CodeGarten exposes the following functionalities:
