@@ -6,16 +6,16 @@
         <a href="../../main/LICENSE">
             <img src="https://img.shields.io/github/license/i-on-project/codegarten" />
         </a>
-        <a href="../../graphs/contributors">
+        <a href="../../../graphs/contributors">
             <img src="https://img.shields.io/github/contributors/i-on-project/codegarten" />
         </a>
-        <a href="../../stargazers">
+        <a href="../../../stargazers">
             <img src="https://img.shields.io/github/stars/i-on-project/codegarten" />
         </a>
-        <a href="../../issues">
+        <a href="../../../issues">
             <img src="https://img.shields.io/github/issues/i-on-project/codegarten" />
         </a>
-        <a href="../../pulls">
+        <a href="../../../pulls">
             <img src="https://img.shields.io/github/issues-pr/i-on-project/codegarten" />
         </a>
     </div>
