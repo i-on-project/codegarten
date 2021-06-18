@@ -3,7 +3,6 @@ package org.ionproject.codegarten.controllers.api.actions
 import org.ionproject.codegarten.Routes.INPUT_CONTENT_TYPE
 import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getClassroomsUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType.hidden
@@ -16,7 +15,7 @@ object ClassroomActions {
         name = "create-classroom",
         title = "Create Classroom",
         method = HttpMethod.POST,
-        href = getClassroomsUri(orgId).includeHost(),
+        href = getClassroomsUri(orgId),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = hidden, value = orgId),
@@ -29,7 +28,7 @@ object ClassroomActions {
         name = "edit-classroom",
         title = "Edit Classroom",
         method = HttpMethod.PUT,
-        href = getClassroomByNumberUri(orgId, classroomNumber).includeHost(),
+        href = getClassroomByNumberUri(orgId, classroomNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = hidden, value = orgId),
@@ -43,7 +42,7 @@ object ClassroomActions {
         name = "delete-classroom",
         title = "Delete Classroom",
         method = HttpMethod.DELETE,
-        href = getClassroomByNumberUri(orgId, classroomNumber).includeHost(),
+        href = getClassroomByNumberUri(orgId, classroomNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = hidden, value = orgId),

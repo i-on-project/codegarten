@@ -24,7 +24,6 @@ import org.ionproject.codegarten.Routes.getParticipationInClassroomOfUserUri
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.getUserInviteUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.ParticipantActions
 import org.ionproject.codegarten.controllers.models.JoinInviteOutputModel
 import org.ionproject.codegarten.controllers.models.OutputModel
@@ -155,22 +154,22 @@ class ParticipantsController(
                         links = listOf(
                             SirenLink(
                                 listOf(SELF_PARAM),
-                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
+                                getParticipationInAssignmentOfUserUri(assignment.aid)
                             ),
-                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                            SirenLink(listOf("user"), getUserByIdUri(user.uid)),
                             SirenLink(
                                 listOf("assignment"),
                                 getAssignmentByNumberUri(
                                     assignment.org_id,
                                     assignment.classroom_number,
                                     assignment.number
-                                ).includeHost()
+                                )
                             ),
                             SirenLink(
                                 listOf("classroom"),
-                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number)
                             ),
-                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id)),
                         )
                     )
                 }
@@ -192,7 +191,7 @@ class ParticipantsController(
                         links = listOf(
                             SirenLink(
                                 listOf(SELF_PARAM),
-                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
+                                getParticipationInAssignmentOfUserUri(assignment.aid)
                             ),
                             SirenLink(listOf("repo"), URI(repo.html_url)),
                             SirenLink(
@@ -202,22 +201,22 @@ class ParticipantsController(
                                     assignment.classroom_number,
                                     assignment.number,
                                     user.uid
-                                ).includeHost()
+                                )
                             ),
-                            SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                            SirenLink(listOf("user"), getUserByIdUri(user.uid)),
                             SirenLink(
                                 listOf("assignment"),
                                 getAssignmentByNumberUri(
                                     assignment.org_id,
                                     assignment.classroom_number,
                                     assignment.number
-                                ).includeHost()
+                                )
                             ),
                             SirenLink(
                                 listOf("classroom"),
-                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number)
                             ),
-                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id)),
                         )
                     )
                 }
@@ -239,7 +238,7 @@ class ParticipantsController(
                         links = listOf(
                             SirenLink(
                                 listOf(SELF_PARAM),
-                                getParticipationInAssignmentOfUserUri(assignment.aid).includeHost()
+                                getParticipationInAssignmentOfUserUri(assignment.aid)
                             ),
                             SirenLink(listOf("repo"), URI(repo.html_url)),
                             SirenLink(
@@ -249,11 +248,11 @@ class ParticipantsController(
                                     assignment.classroom_number,
                                     assignment.number,
                                     team.number
-                                ).includeHost()
+                                )
                             ),
                             SirenLink(
                                 listOf("team"),
-                                getTeamByNumberUri(team.org_id, team.classroom_number, team.number).includeHost()
+                                getTeamByNumberUri(team.org_id, team.classroom_number, team.number)
                             ),
                             SirenLink(
                                 listOf("assignment"),
@@ -261,13 +260,13 @@ class ParticipantsController(
                                     assignment.org_id,
                                     assignment.classroom_number,
                                     assignment.number
-                                ).includeHost()
+                                )
                             ),
                             SirenLink(
                                 listOf("classroom"),
-                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number).includeHost()
+                                getClassroomByNumberUri(assignment.org_id, assignment.classroom_number)
                             ),
-                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id).includeHost()),
+                            SirenLink(listOf("organization"), getOrgByIdUri(assignment.org_id)),
                         )
                     )
                 }
@@ -293,12 +292,12 @@ class ParticipantsController(
             name = user.name,
         ).toSirenObject(
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getParticipationInClassroomOfUserUri(classroomId).includeHost()),
-                SirenLink(listOf("user"), getUserByIdUri(user.uid).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getParticipationInClassroomOfUserUri(classroomId)),
+                SirenLink(listOf("user"), getUserByIdUri(user.uid)),
                 SirenLink(listOf("classroom"),
-                    getClassroomByNumberUri(classroom.org_id, classroom.number).includeHost()
+                    getClassroomByNumberUri(classroom.org_id, classroom.number)
                 ),
-                SirenLink(listOf("organization"), getOrgByIdUri(classroom.org_id).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(classroom.org_id)),
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -361,27 +360,27 @@ class ParticipantsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOfNotNull(
-                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid)),
                         SirenLink(listOf("avatar"), getGitHubUserAvatarUri(it.gh_id)),
                         if (isTeacher)
-                            SirenLink(listOf("deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, it.uid).includeHost())
+                            SirenLink(listOf("deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, it.uid))
                         else
                             null,
-                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
                 )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber).includeHost(),
+                getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber),
                 pagination.page,
                 pagination.limit,
                 users.count
             ) + listOf(
-                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
         )
     }
 
@@ -405,27 +404,27 @@ class ParticipantsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOfNotNull(
-                        SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, it.number).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, it.number)),
                         SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(it.gh_id)),
                         if (isTeacher)
-                            SirenLink(listOf("deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, it.number).includeHost())
+                            SirenLink(listOf("deliveries"), getDeliveriesOfParticipantUri(orgId, classroomNumber, assignmentNumber, it.number))
                         else
                             null,
-                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                        SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
                 )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber).includeHost(),
+                getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber),
                 pagination.page,
                 pagination.limit,
                 teams.count
             ) + listOf(
-                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                SirenLink(listOf("assignment"), getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber)),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
         )
     }
 
@@ -636,7 +635,7 @@ class ParticipantsController(
         val headers = if (repoUri != null) mapOf("Location" to listOf(repoUri)) else null
 
         val links = listOfNotNull(
-            SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCode.inv_code).includeHost()),
+            SirenLink(listOf(SELF_PARAM), getUserInviteUri(inviteCode.inv_code)),
             SirenLink(listOf("organizationInviteGitHub"), getGithubOrgInviteUri(org.login)),
             if (repoUri != null) SirenLink(listOf("repositoryInviteGitHub"), URI(repoUri)) else null
         )

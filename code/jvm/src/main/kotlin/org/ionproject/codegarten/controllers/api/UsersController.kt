@@ -19,7 +19,6 @@ import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getUserByIdUri
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
 import org.ionproject.codegarten.Routes.getUsersOfTeamUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.UserActions
 import org.ionproject.codegarten.controllers.models.UserAddInputModel
 import org.ionproject.codegarten.controllers.models.UserClassroomOutputModel
@@ -87,7 +86,7 @@ class UsersController(
                 UserActions.getDeleteUserAction()
             ),
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), URI(USER_HREF).includeHost()),
+                SirenLink(listOf(SELF_PARAM), URI(USER_HREF)),
                 SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(ghUser.login)),
                 SirenLink(listOf("avatar"), URI(ghUser.avatar_url))
             )
@@ -109,7 +108,7 @@ class UsersController(
             gitHubName = requestedGitHubUser.login
         ).toSirenObject(
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getUserByIdUri(userId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getUserByIdUri(userId)),
                 SirenLink(listOf("github"), GitHubRoutes.getGithubLoginUri(requestedGitHubUser.login)),
                 SirenLink(listOf("avatar"), URI(requestedGitHubUser.avatar_url))
             )
@@ -128,7 +127,7 @@ class UsersController(
         usersDb.editUser(user.uid, input.name)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header("Location", getUserByIdUri(user.uid).includeHost().toString())
+            .header("Location", getUserByIdUri(user.uid).toString())
             .body(null)
     }
 
@@ -183,21 +182,21 @@ class UsersController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid)),
                         SirenLink(listOf("avatar"), getGitHubUserAvatarUri(it.gh_id)),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
                     )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getUsersOfClassroomUri(orgId, classroomNumber).includeHost(),
+                getUsersOfClassroomUri(orgId, classroomNumber),
                 pagination.page,
                 pagination.limit,
                 users.count
             ) + listOf(
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
         ).toResponseEntity(HttpStatus.OK)
     }
 
@@ -239,7 +238,7 @@ class UsersController(
 
         return ResponseEntity
             .status(status)
-            .header("Location", getClassroomByNumberUri(orgId, classroomNumber).includeHost().toString())
+            .header("Location", getClassroomByNumberUri(orgId, classroomNumber).toString())
             .body(null)
     }
 
@@ -305,23 +304,23 @@ class UsersController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOfNotNull(
-                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getUserByIdUri(it.uid)),
                         SirenLink(listOf("avatar"), getGitHubUserAvatarUri(it.gh_id)),
-                        SirenLink(listOf("team"), getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                        SirenLink(listOf("team"), getTeamByNumberUri(orgId, classroomNumber, teamNumber)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
                 )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getUsersOfTeamUri(orgId, classroomNumber, teamNumber).includeHost(),
+                getUsersOfTeamUri(orgId, classroomNumber, teamNumber),
                 pagination.page,
                 pagination.limit,
                 users.count
             ) + listOf(
-                SirenLink(listOf("team"), getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()))
+                SirenLink(listOf("team"), getTeamByNumberUri(orgId, classroomNumber, teamNumber)),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)))
         ).toResponseEntity(HttpStatus.OK)
     }
 

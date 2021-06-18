@@ -4,7 +4,6 @@ import org.ionproject.codegarten.Routes.INPUT_CONTENT_TYPE
 import org.ionproject.codegarten.Routes.getDeliveriesUri
 import org.ionproject.codegarten.Routes.getDeliveryByNumberUri
 import org.ionproject.codegarten.Routes.getDeliveryOfParticipantUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
@@ -16,7 +15,7 @@ object DeliveryActions {
         name = "create-delivery",
         title = "Create Delivery",
         method = HttpMethod.POST,
-        href = getDeliveriesUri(orgId, classroomNumber, assignmentNumber).includeHost(),
+        href = getDeliveriesUri(orgId, classroomNumber, assignmentNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -31,7 +30,7 @@ object DeliveryActions {
         name = "edit-delivery",
         title = "Edit Delivery",
         method = HttpMethod.PUT,
-        href = getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber).includeHost(),
+        href = getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -47,7 +46,7 @@ object DeliveryActions {
         name = "delete-delivery",
         title = "Delete Delivery",
         method = HttpMethod.DELETE,
-        href = getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber).includeHost(),
+        href = getDeliveryByNumberUri(orgId, classroomNumber, assignmentNumber, deliveryNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -61,7 +60,7 @@ object DeliveryActions {
         name = "submit-delivery",
         title = "Submit Delivery",
         method = HttpMethod.PUT,
-        href = getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber).includeHost(),
+        href = getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -76,7 +75,7 @@ object DeliveryActions {
         name = "delete-delivery-submission",
         title = "Delete Delivery Submission",
         method = HttpMethod.DELETE,
-        href = getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber).includeHost(),
+        href = getDeliveryOfParticipantUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),

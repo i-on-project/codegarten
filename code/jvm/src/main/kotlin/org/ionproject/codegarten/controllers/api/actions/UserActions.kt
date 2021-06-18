@@ -5,7 +5,6 @@ import org.ionproject.codegarten.Routes.USER_HREF
 import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
 import org.ionproject.codegarten.Routes.getUsersOfTeamUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
@@ -20,7 +19,7 @@ object UserActions {
         name = "edit-user",
         title = "Edit User",
         method = HttpMethod.PUT,
-        href = URI(USER_HREF).includeHost(),
+        href = URI(USER_HREF),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "name", type = SirenFieldType.text),
@@ -31,7 +30,7 @@ object UserActions {
         name = "delete-user",
         title = "Delete User",
         method = HttpMethod.DELETE,
-        href = URI(USER_HREF).includeHost()
+        href = URI(USER_HREF)
     )
 
     // Classrooms
@@ -40,7 +39,7 @@ object UserActions {
         name = "add-user-to-classroom",
         title = "Add User To Classroom",
         method = HttpMethod.PUT,
-        hrefTemplate = UriTemplate("${getUsersOfClassroomUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getUsersOfClassroomUri(orgId, classroomNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -54,7 +53,7 @@ object UserActions {
         name = "remove-user-from-classroom",
         title = "Remove User From Classroom",
         method = HttpMethod.DELETE,
-        hrefTemplate = UriTemplate("${getUsersOfClassroomUri(orgId, classroomNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getUsersOfClassroomUri(orgId, classroomNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -69,7 +68,7 @@ object UserActions {
         name = "add-user-to-team",
         title = "Add User To Team",
         method = HttpMethod.PUT,
-        hrefTemplate = UriTemplate("${getUsersOfTeamUri(orgId, classroomNumber, teamNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getUsersOfTeamUri(orgId, classroomNumber, teamNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -83,7 +82,7 @@ object UserActions {
         name = "remove-user-from-team",
         title = "Remove User From Team",
         method = HttpMethod.DELETE,
-        hrefTemplate = UriTemplate("${getUsersOfTeamUri(orgId, classroomNumber, teamNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getUsersOfTeamUri(orgId, classroomNumber, teamNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),

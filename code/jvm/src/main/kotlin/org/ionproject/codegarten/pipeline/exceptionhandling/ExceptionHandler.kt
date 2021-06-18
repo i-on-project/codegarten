@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.pipeline.exceptionhandling
 
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.auth.AuthHeaderValidator.AUTH_SCHEME
 import org.ionproject.codegarten.database.PsqlErrorCode
 import org.ionproject.codegarten.database.getPsqlErrorCode
@@ -55,7 +54,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/github-api-error").includeHost(),
+            URI("/problems/github-api-error"),
             "Error While Processing GitHub API Response",
             HttpStatus.INTERNAL_SERVER_ERROR,
             ex.localizedMessage,
@@ -68,7 +67,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/resource-not-found").includeHost(),
+            URI("/problems/resource-not-found"),
             "Resource Not Found",
             HttpStatus.NOT_FOUND,
             ex.localizedMessage,
@@ -84,7 +83,7 @@ class ExceptionHandler {
         headers.add("WWW-Authenticate", AUTH_SCHEME)
 
         return handleExceptionResponse(
-            URI("/problems/not-authorized").includeHost(),
+            URI("/problems/not-authorized"),
             "Authorization Error",
             HttpStatus.UNAUTHORIZED,
             ex.localizedMessage,
@@ -99,7 +98,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/forbidden-operation").includeHost(),
+            URI("/problems/forbidden-operation"),
             "Forbidden Operation",
             HttpStatus.FORBIDDEN,
             ex.localizedMessage,
@@ -112,7 +111,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/internal-server-error").includeHost(),
+            URI("/problems/internal-server-error"),
             "Internal Server Error",
             HttpStatus.INTERNAL_SERVER_ERROR,
             ex.localizedMessage,
@@ -125,7 +124,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/invalid-pagination-parameters").includeHost(),
+            URI("/problems/invalid-pagination-parameters"),
             "Invalid Pagination Parameters",
             HttpStatus.BAD_REQUEST,
             ex.localizedMessage,
@@ -138,7 +137,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/invalid-input").includeHost(),
+            URI("/problems/invalid-input"),
             "Invalid Input",
             HttpStatus.BAD_REQUEST,
             ex.localizedMessage,
@@ -151,7 +150,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/resource-conflict").includeHost(),
+            URI("/problems/resource-conflict"),
             "Resource Conflict",
             HttpStatus.CONFLICT,
             ex.localizedMessage,
@@ -164,7 +163,7 @@ class ExceptionHandler {
         request: HttpServletRequest
     ): ResponseEntity<Response> =
         handleExceptionResponse(
-            URI("/problems/invalid-client").includeHost(),
+            URI("/problems/invalid-client"),
             "Invalid Client",
             HttpStatus.UNAUTHORIZED,
             ex.localizedMessage,
@@ -181,7 +180,7 @@ class ExceptionHandler {
 
         if (psqlError == null) {
             return handleExceptionResponse(
-                URI("/problems/database-error").includeHost(),
+                URI("/problems/database-error"),
                 "Unknown Database Error",
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "An unknown database error has occurred",
@@ -192,7 +191,7 @@ class ExceptionHandler {
         return when (psqlError) {
             PsqlErrorCode.UniqueViolation -> {
                 handleExceptionResponse(
-                    URI("/problems/resource-already-exists").includeHost(),
+                    URI("/problems/resource-already-exists"),
                     "Resource Already Exists",
                     HttpStatus.CONFLICT,
                     cause.localizedMessage,
@@ -201,7 +200,7 @@ class ExceptionHandler {
             }
             PsqlErrorCode.ForeignKeyViolation -> {
                 handleExceptionResponse(
-                    URI("/problems/resource-referenced").includeHost(),
+                    URI("/problems/resource-referenced"),
                     "Resource Is Referenced",
                     HttpStatus.CONFLICT,
                     cause.localizedMessage,
@@ -210,7 +209,7 @@ class ExceptionHandler {
             }
             PsqlErrorCode.CheckViolation -> {
                 handleExceptionResponse(
-                    URI("/problems/invalid-creation-request").includeHost(),
+                    URI("/problems/invalid-creation-request"),
                     "Invalid Creation Request",
                     HttpStatus.BAD_REQUEST,
                     cause.localizedMessage,
@@ -219,7 +218,7 @@ class ExceptionHandler {
             }
             PsqlErrorCode.StringDataRightTruncation -> {
                 handleExceptionResponse(
-                    URI("/problems/invalid-string-size").includeHost(),
+                    URI("/problems/invalid-string-size"),
                     "Invalid String Size",
                     HttpStatus.BAD_REQUEST,
                     cause.localizedMessage,
