@@ -12,7 +12,6 @@ import org.ionproject.codegarten.Routes.getClassroomsUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getTeamsUri
 import org.ionproject.codegarten.Routes.getUsersOfClassroomUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.ClassroomActions.getCreateClassroomAction
 import org.ionproject.codegarten.controllers.api.actions.ClassroomActions.getDeleteClassroomAction
 import org.ionproject.codegarten.controllers.api.actions.ClassroomActions.getEditClassroomAction
@@ -96,24 +95,24 @@ class ClassroomsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, it.number).includeHost()),
-                        SirenLink(listOf("assignments"), getAssignmentsUri(orgId, it.number).includeHost()),
-                        SirenLink(listOf("teams"), getTeamsUri(orgId, it.number).includeHost()),
-                        SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, it.number).includeHost()),
-                        SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, it.number)),
+                        SirenLink(listOf("assignments"), getAssignmentsUri(orgId, it.number)),
+                        SirenLink(listOf("teams"), getTeamsUri(orgId, it.number)),
+                        SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, it.number)),
+                        SirenLink(listOf("classrooms"), getClassroomsUri(orgId)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                         SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getClassroomsUri(orgId).includeHost(),
+                getClassroomsUri(orgId),
                 pagination.page,
                 pagination.limit,
                 classrooms.count
             ) + listOf(
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
@@ -152,12 +151,12 @@ class ClassroomsController(
         ).toSirenObject(
             actions = actions,
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, classroom.number).includeHost()),
-                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroom.number).includeHost()),
-                SirenLink(listOf("teams"), getTeamsUri(orgId, classroom.number).includeHost()),
-                SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, classroom.number).includeHost()),
-                SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, classroom.number)),
+                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroom.number)),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroom.number)),
+                SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, classroom.number)),
+                SirenLink(listOf("classrooms"), getClassroomsUri(orgId)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
@@ -197,17 +196,17 @@ class ClassroomsController(
                 getDeleteClassroomAction(orgId, createdClassroom.number)
             ),
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, createdClassroom.number).includeHost()),
-                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, createdClassroom.number).includeHost()),
-                SirenLink(listOf("teams"), getTeamsUri(orgId, createdClassroom.number).includeHost()),
-                SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, createdClassroom.number).includeHost()),
-                SirenLink(listOf("classrooms"), getClassroomsUri(orgId).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getClassroomByNumberUri(orgId, createdClassroom.number)),
+                SirenLink(listOf("assignments"), getAssignmentsUri(orgId, createdClassroom.number)),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, createdClassroom.number)),
+                SirenLink(listOf("users"), getUsersOfClassroomUri(orgId, createdClassroom.number)),
+                SirenLink(listOf("classrooms"), getClassroomsUri(orgId)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.CREATED,
             mapOf(
-                "Location" to listOf(getClassroomByNumberUri(orgId, createdClassroom.number).includeHost().toString())
+                "Location" to listOf(getClassroomByNumberUri(orgId, createdClassroom.number).toString())
             )
         )
     }
@@ -229,7 +228,7 @@ class ClassroomsController(
         classroomsDb.editClassroom(orgId, classroomNumber, input.name, input.description)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header("Location", getClassroomByNumberUri(orgId, classroomNumber).includeHost().toString())
+            .header("Location", getClassroomByNumberUri(orgId, classroomNumber).toString())
             .body(null)
     }
 

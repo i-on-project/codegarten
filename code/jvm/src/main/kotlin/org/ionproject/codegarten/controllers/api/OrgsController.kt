@@ -9,7 +9,6 @@ import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.createSirenLinkListForPagination
 import org.ionproject.codegarten.Routes.getClassroomsUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.Routes.searchOrgRepositories
 import org.ionproject.codegarten.controllers.models.OrganizationOutputModel
 import org.ionproject.codegarten.controllers.models.OrganizationsOutputModel
@@ -59,15 +58,15 @@ class OrgsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id)),
                         SirenLink(listOf("github"), getGithubLoginUri(it.login)),
                         SirenLink(listOf("avatar"), URI(it.avatar_url)),
-                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id).includeHost()),
-                        SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
+                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id)),
+                        SirenLink(listOf("organizations"), URI(ORGS_HREF))
                     )
                 )
             },
-            links = createSirenLinkListForPagination(URI(ORGS_HREF).includeHost(), pagination.page, pagination.limit, pageSize = userOrgs.size)
+            links = createSirenLinkListForPagination(URI(ORGS_HREF), pagination.page, pagination.limit, pageSize = userOrgs.size)
         ).toResponseEntity(HttpStatus.OK)
     }
 
@@ -86,11 +85,11 @@ class OrgsController(
             description = if (org.description.isNullOrEmpty()) null else org.description
         ).toSirenObject(
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getOrgByIdUri(orgId)),
                 SirenLink(listOf("github"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("avatar"), URI(org.avatar_url)),
-                SirenLink(listOf("classrooms"), getClassroomsUri(org.id).includeHost()),
-                SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
+                SirenLink(listOf("classrooms"), getClassroomsUri(org.id)),
+                SirenLink(listOf("organizations"), URI(ORGS_HREF))
             )
         ).toResponseEntity(HttpStatus.OK)
     }
@@ -126,8 +125,8 @@ class OrgsController(
                 )
             },
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), searchOrgRepositories(org.id).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), searchOrgRepositories(org.id)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("github"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("avatar"), URI(org.avatar_url)),
             )

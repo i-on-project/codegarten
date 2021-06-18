@@ -13,7 +13,6 @@ import org.ionproject.codegarten.Routes.getClassroomByNumberUri
 import org.ionproject.codegarten.Routes.getDeliveriesUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getParticipantsOfAssignmentUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions.getDeleteAssignmentAction
 import org.ionproject.codegarten.controllers.api.actions.AssignmentActions.getEditAssignmentAction
@@ -110,25 +109,25 @@ class AssignmentsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, it.number).includeHost()),
-                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, it.number).includeHost()),
-                        SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, it.number).includeHost()),
-                        SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, it.number)),
+                        SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, it.number)),
+                        SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, it.number)),
+                        SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                         SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
             actions = actions,
             links = createSirenLinkListForPagination(
-                getAssignmentsUri(orgId, classroomNumber).includeHost(),
+                getAssignmentsUri(orgId, classroomNumber),
                 pagination.page,
                 pagination.limit,
                 assignments.count
             ) + listOf(
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
@@ -157,12 +156,12 @@ class AssignmentsController(
         val org = gitHub.getOrgById(orgId, user.gh_token)
 
         val sirenLinks = mutableListOf(
-            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number).includeHost()),
-            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignment.number).includeHost()),
-            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, assignment.number).includeHost()),
-            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
-            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-            SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, assignment.number)),
+            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, assignment.number)),
+            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, assignment.number)),
+            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber)),
+            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+            SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
             SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
         )
 
@@ -232,12 +231,12 @@ class AssignmentsController(
         val inviteCode = inviteCodesDb.generateAndCreateUniqueInviteCode(createdAssignment.classroom_id, createdAssignment.aid)
 
         val sirenLinks = mutableListOf(
-            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
-            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
-            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, createdAssignment.number).includeHost()),
-            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber).includeHost()),
-            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-            SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+            SirenLink(listOf(SELF_PARAM), getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number)),
+            SirenLink(listOf("deliveries"), getDeliveriesUri(orgId, classroomNumber, createdAssignment.number)),
+            SirenLink(listOf("participants"), getParticipantsOfAssignmentUri(orgId, classroomNumber, createdAssignment.number)),
+            SirenLink(listOf("assignments"), getAssignmentsUri(orgId, classroomNumber)),
+            SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+            SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
             SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
         )
 
@@ -263,7 +262,7 @@ class AssignmentsController(
             ),
             links = sirenLinks
         ).toResponseEntity(HttpStatus.CREATED, mapOf(
-            "Location" to listOf(getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).includeHost().toString())
+            "Location" to listOf(getAssignmentByNumberUri(orgId, classroomNumber, createdAssignment.number).toString())
         ))
     }
 
@@ -285,7 +284,7 @@ class AssignmentsController(
         assignmentsDb.editAssignment(orgId, classroomNumber, assignmentNumber, input.name, input.description)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header("Location", getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost().toString())
+            .header("Location", getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).toString())
             .body(null)
     }
 

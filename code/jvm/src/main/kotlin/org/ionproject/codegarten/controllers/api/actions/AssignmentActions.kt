@@ -1,7 +1,6 @@
 package org.ionproject.codegarten.controllers.api.actions
 
 import org.ionproject.codegarten.Routes
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
@@ -14,7 +13,7 @@ object AssignmentActions {
         name = "create-assignment",
         title = "Create Assignment",
         method = HttpMethod.POST,
-        href = Routes.getAssignmentsUri(orgId, classroomNumber).includeHost(),
+        href = Routes.getAssignmentsUri(orgId, classroomNumber),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -31,7 +30,7 @@ object AssignmentActions {
         name = "edit-assignment",
         title = "Edit Assignment",
         method = HttpMethod.PUT,
-        href = Routes.getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost(),
+        href = Routes.getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -46,7 +45,7 @@ object AssignmentActions {
         name = "delete-assignment",
         title = "Delete Assignment",
         method = HttpMethod.DELETE,
-        href = Routes.getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber).includeHost(),
+        href = Routes.getAssignmentByNumberUri(orgId, classroomNumber, assignmentNumber),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
