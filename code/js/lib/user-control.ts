@@ -51,7 +51,7 @@ export = function(req: Request, res: Response, next: NextFunction): void {
             .then(() => next())
             .catch((err) => {
                 req.logout()
-                    .then(() => next())
+                    .finally(() => next())
             })
     } else next()
 }

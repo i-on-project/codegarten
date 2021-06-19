@@ -1,4 +1,4 @@
-import { mapEnterToButton, alertMsg, workWithLoading, workWithOverlay, getLocation, showOverlay, fetchXhr, hideOverlay, getLocationWithoutQuery } from './common.js'
+import { alertMsg, workWithLoading, workWithOverlay, getLocation, fetchXhr, getLocationWithoutQuery } from './common.js'
 
 export function setup() {
     const content = $('#invitationTeamsContent')[0]
@@ -59,7 +59,7 @@ function joinInvitation(isTeam) {
                 if (!res.wasAccepted) alertMsg(res.message)
                 else {
                     if (res.isOrgInvitePending) {
-                        $('#invite').addClass('slide-out')
+                        $('#invite').remove()
 
                         $('#acceptInvites').removeClass('d-none').addClass('slide-in')
                         $('#orgInvite').attr('href', res.orgUri)
