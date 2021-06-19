@@ -58,21 +58,6 @@ function searchOrgTemplateRepos(orgId: number, searchQuery: string, accessToken:
         })
 }
 
-type Repository = {
-    id: number,
-    name: string,
-    description?: string,
-    isPrivate: boolean,
-    organization: string,
-}
-
-type Repositories = {
-    repos: Repository[],
-
-    organization: string,
-    organizationUri: string,
-}
-
 export {
     getUserOrgs,
     searchOrgTemplateRepos
