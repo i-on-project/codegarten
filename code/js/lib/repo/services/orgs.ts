@@ -30,6 +30,50 @@ function getUserOrgs(page: number, accessToken: string): Promise<Organizations> 
         })
 }
 
+function searchOrgTemplateRepos(orgId: number, searchQuery: string, accessToken: string): Promise<Repositories> {
+    return fetch(orgRoutes.getSearchOrgTemplateReposUri(orgId, searchQuery || ''), getJsonRequestOptions('GET', accessToken))
+        .then(res => res.json())
+        .then(collection => {
+            const entities = Array.from(collection.entities) as any[]
+            const links: SirenLink[] = Array.from(collection.links)
+
+            const repos = entities.map(entity => {
+                const repoLinks: SirenLink[] = Array.from(entity.links)
+                
+                return {
+                    id: entity.properties.id,
+                    name: entity.properties.name,
+                    description: entity.properties.description,
+                    isPrivate: entity.properties.isPrivate,
+                    organization: entity.properties.organization,
+                    repoUri: getSirenLink(repoLinks, 'self').href,
+                } as Repository
+            })
+
+            return {
+                repos: repos,
+                organization: collection.properties.organization,
+                organizationUri: getSirenLink(links, 'github').href, // TODO: Not sure if needed
+            } as Repositories
+        })
+}
+
+type Repository = {
+    id: number,
+    name: string,
+    description?: string,
+    isPrivate: boolean,
+    organization: string,
+}
+
+type Repositories = {
+    repos: Repository[],
+
+    organization: string,
+    organizationUri: string,
+}
+
 export {
-    getUserOrgs
+    getUserOrgs,
+    searchOrgTemplateRepos
 }

@@ -1,4 +1,4 @@
-import { alertMsg, getLocationWithoutQuery, hideOverlay, showOverlay, mapEnterToButton, workWithLoading, workWithOverlay, fetchXhr, generateSlug, getLocation, validateTag } from '../common.js'
+import { alertMsg, getLocationWithoutQuery, hideOverlay, showOverlay, mapEnterToButton, workWithLoading, workWithOverlay, fetchXhr, getLocation, validateTag } from '../common.js'
 
 function getDeliveries(content, assignmentUri, page, updatePaginationFn) {
     content.innerHTML = ''

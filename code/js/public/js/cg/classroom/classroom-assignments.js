@@ -25,6 +25,7 @@ function setupCreationForm() {
     const repoTemplate = $('#repoTemplate')
     const dropdownButton = $('#assignmentTypeButton')[0]
     const createButton = $('#createAssignmentButton')
+    const repoList = $('#repoList')
 
     $('.assignment-type a').on('click', (event => {
         const elem = event.target
@@ -59,8 +60,11 @@ function setupCreationForm() {
     })
     repoPrefix.on('keyup', (event) => mapEnterToButton(repoPrefix[0], event, createButton[0]))
 
-    // TODO: Find better way to provide repo template
-    repoTemplate.on('keyup', (event) => mapEnterToButton(repoTemplate[0], event, createButton[0]))
+    // TODO: Search not only on input (also when focusing the element)
+    repoTemplate.on('input', (event) => {
+        // TODO: Set a timer so that the request isn't made instantly 
+        searchTemplateRepos(repoList[0], event.target.value)
+    })
 
     createButton.on('click', (event) => {
         let type
@@ -124,6 +128,25 @@ function createAssignment(createButton, assignmentName, assignmentDescription, a
 
             })
             .catch(err => alertMsg('Failed to create assignment')))
+}
+
+function searchTemplateRepos(repoListElem, toSearch) {
+    repoListElem.innerHTML = ''
+    fetchXhr(`/orgs/${repoListElem.dataset.orgId}/templaterepos?q=${toSearch}`)
+        .then(res => {
+            // TODO: proper error message, maybe feedback below search box?
+            if (res.status != 200) return alertMsg('Error while searching repositories')
+            return res.text()
+        })
+        .then(fragment => {
+            if (toSearch != $('#repoTemplate').val()) return // Ignore, a more recent search has been made
+
+            repoListElem.innerHTML = fragment || ''
+            $('.repoOption').on('click', (event) => {
+                // TODO:
+                console.log(`Selected: ${event.currentTarget.dataset.repoName}`)
+            })
+        })
 }
 
 export {

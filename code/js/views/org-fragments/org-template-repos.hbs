@@ -1,0 +1,11 @@
+<!-- TODO: -->
+{{#if isEmpty}}
+    <p> empty... </p>
+{{else}}
+    {{#each repos}}
+        <li class="repoOption" role="option" data-repo-id="{{id}}" data-repo-uri="{{repoUri}}" data-repo-name="{{name}}">
+            <!-- TODO: GitHub Repo Image (maybe private/public?) -->
+            <p>{{name}}</p>
+        </li>
+    {{/each}}
+{{/if}}
