@@ -12,7 +12,6 @@ import org.ionproject.codegarten.Routes.getOrgByIdUri
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getTeamsUri
 import org.ionproject.codegarten.Routes.getUsersOfTeamUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getCreateTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getDeleteTeamAction
 import org.ionproject.codegarten.controllers.api.actions.TeamActions.getEditTeamAction
@@ -26,8 +25,11 @@ import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.database.dto.UserClassroom
 import org.ionproject.codegarten.database.dto.UserClassroomMembership.TEACHER
 import org.ionproject.codegarten.database.helpers.TeamsDb
+import org.ionproject.codegarten.exceptions.ConflictException
 import org.ionproject.codegarten.exceptions.ForbiddenException
+import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
@@ -96,24 +98,24 @@ class TeamsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, it.number).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, it.number)),
                         SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(it.gh_id)),
-                        SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, it.number).includeHost()),
-                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                        SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                        SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, it.number)),
+                        SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                         SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
                     )
                 )
             },
             actions = actions,
             links = Routes.createSirenLinkListForPagination(
-                Routes.getClassroomsUri(orgId).includeHost(),
+                Routes.getClassroomsUri(orgId),
                 pagination.page,
                 pagination.limit,
                 teams.count
             ) + listOf(
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
@@ -156,13 +158,13 @@ class TeamsController(
         ).toSirenObject(
             actions = actions,
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, team.number).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, team.number)),
                 SirenLink(listOf("github"), URI(ghTeam.html_url)),
                 SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(team.gh_id)),
-                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, team.number).includeHost()),
-                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, team.number)),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber)),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.OK)
@@ -187,7 +189,12 @@ class TeamsController(
 
         val org = gitHub.getOrgById(orgId, user.gh_token)
         val gitHubName = generateCodeGartenTeamName(classroomNumber, input.name)
-        val ghTeam = gitHub.createTeam(orgId, gitHubName, installation.accessToken)
+        val ghTeam = try {
+            gitHub.createTeam(orgId, gitHubName, installation.accessToken)
+        } catch(e: UnprocessableEntityException) {
+            throw ConflictException("Team name must be unique in the classroom")
+        }
+
         val createdTeam = teamsDb.createTeam(userClassroom.classroom.cid, input.name, ghTeam.id)
 
         return TeamOutputModel(
@@ -204,17 +211,17 @@ class TeamsController(
                 getDeleteTeamAction(orgId, classroomNumber, createdTeam.number)
             ),
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getTeamByNumberUri(orgId, classroomNumber, createdTeam.number)),
                 SirenLink(listOf("github"), URI(ghTeam.html_url)),
                 SirenLink(listOf("avatar"), getGitHubTeamAvatarUri(createdTeam.gh_id)),
-                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, createdTeam.number).includeHost()),
-                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber).includeHost()),
-                SirenLink(listOf("organization"), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf("users"), getUsersOfTeamUri(orgId, classroomNumber, createdTeam.number)),
+                SirenLink(listOf("teams"), getTeamsUri(orgId, classroomNumber)),
+                SirenLink(listOf("classroom"), getClassroomByNumberUri(orgId, classroomNumber)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
                 SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login))
             )
         ).toResponseEntity(HttpStatus.CREATED, mapOf(
-            "Location" to listOf(getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).includeHost().toString())
+            "Location" to listOf(getTeamByNumberUri(orgId, classroomNumber, createdTeam.number).toString())
         ))
     }
 
@@ -236,7 +243,7 @@ class TeamsController(
         teamsDb.editTeam(userClassroom.classroom.cid, teamNumber, input.name)
         return ResponseEntity
             .status(HttpStatus.OK)
-            .header("Location", getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost().toString())
+            .header("Location", getTeamByNumberUri(orgId, classroomNumber, teamNumber).toString())
             .body(null)
     }
 

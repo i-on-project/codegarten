@@ -3,7 +3,6 @@ package org.ionproject.codegarten.controllers.api.actions
 import org.ionproject.codegarten.Routes
 import org.ionproject.codegarten.Routes.USER_PARAM
 import org.ionproject.codegarten.Routes.getParticipantsOfAssignmentUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
@@ -16,7 +15,7 @@ object ParticipantActions {
         name = "add-participant-to-assignment",
         title = "Add Participant To Assignment",
         method = HttpMethod.PUT,
-        hrefTemplate = UriTemplate("${getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOfNotNull(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -31,7 +30,7 @@ object ParticipantActions {
         name = "remove-participant-from-assignment",
         title = "Remove Participant From Assignment",
         method = HttpMethod.DELETE,
-        hrefTemplate = UriTemplate("${getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}").includeHost(),
+        hrefTemplate = UriTemplate("${getParticipantsOfAssignmentUri(orgId, classroomNumber, assignmentNumber)}/{$USER_PARAM}"),
         type = Routes.INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),

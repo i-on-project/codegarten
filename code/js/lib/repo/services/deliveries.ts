@@ -57,6 +57,8 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
             const sirenActions: SirenAction[] = Array.from(collection.actions || [])
 
             const deliveries = entities.map(entity => {
+                const deliverySirenActions: SirenAction[] = Array.from(entity.actions || [])
+
                 const dueDate = entity.properties.dueDate == null ? null : new Date(entity.properties.dueDate)
                 const dueDateString = dueDate == null ? null : dueDate.toLocaleString()
 
@@ -69,6 +71,8 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
                     isDelivered: entity.properties.isDelivered,
 
                     canManage: false,
+                    canSubmitDelivery: getSirenAction(deliverySirenActions, 'submit-delivery') != null,
+                    canDeleteDeliverySubmission: getSirenAction(deliverySirenActions, 'delete-delivery-submission') != null
                 } as Delivery
             })
 
@@ -77,7 +81,7 @@ function getParticipantDeliveries(orgId: number, classroomNumber: number, assign
                 page: page,
                 isLastPage: DELIVERIES_LIST_LIMIT * (collection.properties.pageIndex + 1) >= collection.properties.collectionSize,
 
-                canManage: getSirenAction(sirenActions, 'create-delivery') != null,
+                canManage: false,
             } as Deliveries
         })
 }
@@ -121,6 +125,19 @@ function createDelivery(orgId: number, classroomNumber: number, assignmentNumber
         })
 }
 
+function submitDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, 
+    participantId: number, deliveryNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(
+        deliveryRoutes.getParticipantDeliveryUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
+        getJsonRequestOptions('PUT', accessToken)
+    )
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
 function editDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, deliveryNumber: number,
     newTag: string, newDueDate: Date, accessToken: string): Promise<ApiResponse> {
     return fetch(
@@ -146,10 +163,25 @@ function deleteDelivery(orgId: number, classroomNumber: number, assignmentNumber
         })
 }
 
+function deleteParticipantDelivery(orgId: number, classroomNumber: number, assignmentNumber: number, 
+    participantId: number, deliveryNumber: number, accessToken: string): Promise<ApiResponse> {
+    return fetch(
+        deliveryRoutes.getParticipantDeliveryUri(orgId, classroomNumber, assignmentNumber, participantId, deliveryNumber),
+        getJsonRequestOptions('DELETE', accessToken)
+    )
+        .then(res => {
+            return {
+                status: res.status
+            } as ApiResponse
+        })
+}
+
 export {
     getDeliveries,
     getParticipantDeliveries,
     createDelivery,
+    submitDelivery,
     editDelivery,
-    deleteDelivery
+    deleteDelivery,
+    deleteParticipantDelivery
 }

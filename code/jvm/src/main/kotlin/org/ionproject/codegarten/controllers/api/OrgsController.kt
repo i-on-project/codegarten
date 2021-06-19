@@ -3,13 +3,17 @@ package org.ionproject.codegarten.controllers.api
 import org.ionproject.codegarten.Routes.ORGS_HREF
 import org.ionproject.codegarten.Routes.ORG_BY_ID_HREF
 import org.ionproject.codegarten.Routes.ORG_PARAM
+import org.ionproject.codegarten.Routes.ORG_SEARCH_REPOSITORIES_HREF
+import org.ionproject.codegarten.Routes.SEARCH_PARAM
 import org.ionproject.codegarten.Routes.SELF_PARAM
 import org.ionproject.codegarten.Routes.createSirenLinkListForPagination
 import org.ionproject.codegarten.Routes.getClassroomsUri
 import org.ionproject.codegarten.Routes.getOrgByIdUri
-import org.ionproject.codegarten.Routes.includeHost
+import org.ionproject.codegarten.Routes.searchOrgRepositories
 import org.ionproject.codegarten.controllers.models.OrganizationOutputModel
 import org.ionproject.codegarten.controllers.models.OrganizationsOutputModel
+import org.ionproject.codegarten.controllers.models.RepositoriesOutputModel
+import org.ionproject.codegarten.controllers.models.RepositoryOutputModel
 import org.ionproject.codegarten.database.dto.User
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
@@ -23,8 +27,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
+
+private const val MAX_REPOS_SIZE_SEARCH = 5
 
 @RestController
 class OrgsController(
@@ -51,19 +58,18 @@ class OrgsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id).includeHost()),
+                        SirenLink(listOf(SELF_PARAM), getOrgByIdUri(it.id)),
                         SirenLink(listOf("github"), getGithubLoginUri(it.login)),
                         SirenLink(listOf("avatar"), URI(it.avatar_url)),
-                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id).includeHost()),
-                        SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
+                        SirenLink(listOf("classrooms"), getClassroomsUri(it.id)),
+                        SirenLink(listOf("organizations"), URI(ORGS_HREF))
                     )
                 )
             },
-            links = createSirenLinkListForPagination(URI(ORGS_HREF).includeHost(), pagination.page, pagination.limit, pageSize = userOrgs.size)
+            links = createSirenLinkListForPagination(URI(ORGS_HREF), pagination.page, pagination.limit, pageSize = userOrgs.size)
         ).toResponseEntity(HttpStatus.OK)
     }
 
-    @RequiresUserAuth
     @RequiresUserInOrg
     @GetMapping(ORG_BY_ID_HREF)
     fun getOrg(
@@ -79,11 +85,50 @@ class OrgsController(
             description = if (org.description.isNullOrEmpty()) null else org.description
         ).toSirenObject(
             links = listOf(
-                SirenLink(listOf(SELF_PARAM), getOrgByIdUri(orgId).includeHost()),
+                SirenLink(listOf(SELF_PARAM), getOrgByIdUri(orgId)),
                 SirenLink(listOf("github"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("avatar"), URI(org.avatar_url)),
-                SirenLink(listOf("classrooms"), getClassroomsUri(org.id).includeHost()),
-                SirenLink(listOf("organizations"), URI(ORGS_HREF).includeHost())
+                SirenLink(listOf("classrooms"), getClassroomsUri(org.id)),
+                SirenLink(listOf("organizations"), URI(ORGS_HREF))
+            )
+        ).toResponseEntity(HttpStatus.OK)
+    }
+
+    @RequiresUserInOrg
+    @GetMapping(ORG_SEARCH_REPOSITORIES_HREF)
+    fun searchOrgTemplateRepositories(
+        @PathVariable(name = ORG_PARAM) orgId: Int,
+        @RequestParam(name = SEARCH_PARAM) repoSearch: String?,
+        user: User
+    ): ResponseEntity<Response> {
+        val org = gitHub.getOrgById(orgId, user.gh_token)
+        val repos = gitHub.searchRepos(org.login, repoSearch, user.gh_token).items
+            .filter { repo -> repo.is_template }
+            .take(MAX_REPOS_SIZE_SEARCH)
+
+        return RepositoriesOutputModel(
+            organization = org.login,
+            collectionSize = repos.size
+        ).toSirenObject(
+            entities = repos.map {
+                RepositoryOutputModel(
+                    id = it.id,
+                    name = it.name,
+                    isPrivate = it.private,
+                    description = it.description,
+                    organization = org.login
+                ).toSirenObject(
+                    rel = listOf("item"),
+                    links = listOf(
+                        SirenLink(listOf(SELF_PARAM), URI(it.html_url))
+                    )
+                )
+            },
+            links = listOf(
+                SirenLink(listOf(SELF_PARAM), searchOrgRepositories(org.id)),
+                SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
+                SirenLink(listOf("github"), getGithubLoginUri(org.login)),
+                SirenLink(listOf("avatar"), URI(org.avatar_url)),
             )
         ).toResponseEntity(HttpStatus.OK)
     }

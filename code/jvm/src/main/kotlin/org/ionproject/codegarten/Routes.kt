@@ -82,10 +82,13 @@ object Routes {
     // Organizations
     const val ORGS_HREF = "$API_BASE_URI/orgs"
     const val ORG_BY_ID_HREF = "$ORGS_HREF/{$ORG_PARAM}"
+    const val ORG_SEARCH_REPOSITORIES_HREF = "$ORG_BY_ID_HREF/templaterepos"
 
     val ORG_BY_ID_HREF_TEMPLATE = UriTemplate(ORG_BY_ID_HREF)
+    val ORG_SEARCH_REPOSITORIES_TEMPLATE = UriTemplate(ORG_SEARCH_REPOSITORIES_HREF)
 
     fun getOrgByIdUri(orgId: Int) = ORG_BY_ID_HREF_TEMPLATE.expand(orgId)
+    fun searchOrgRepositories(orgId: Int) = ORG_SEARCH_REPOSITORIES_TEMPLATE.expand(orgId)
 
 
     // Classrooms
@@ -231,7 +234,4 @@ object Routes {
 
         return toReturn
     }
-
-    fun URI.includeHost() = URI(SCHEME.toLowerCase(), HOST, this.path, this.query, this.fragment)
-    fun UriTemplate.includeHost() = UriTemplate("${SCHEME.toLowerCase()}://${HOST}$this")
 }

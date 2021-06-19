@@ -3,7 +3,6 @@ package org.ionproject.codegarten.controllers.api.actions
 import org.ionproject.codegarten.Routes.INPUT_CONTENT_TYPE
 import org.ionproject.codegarten.Routes.getTeamByNumberUri
 import org.ionproject.codegarten.Routes.getTeamsUri
-import org.ionproject.codegarten.Routes.includeHost
 import org.ionproject.codegarten.responses.siren.SirenAction
 import org.ionproject.codegarten.responses.siren.SirenActionField
 import org.ionproject.codegarten.responses.siren.SirenFieldType
@@ -15,7 +14,7 @@ object TeamActions {
         name = "create-team",
         title = "Create Team",
         method = HttpMethod.POST,
-        href = getTeamsUri(orgId, classroomNumber).includeHost(),
+        href = getTeamsUri(orgId, classroomNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -28,7 +27,7 @@ object TeamActions {
         name = "edit-team",
         title = "Edit Team",
         method = HttpMethod.PUT,
-        href = getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost(),
+        href = getTeamByNumberUri(orgId, classroomNumber, teamNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),
@@ -42,7 +41,7 @@ object TeamActions {
         name = "delete-team",
         title = "Delete Team",
         method = HttpMethod.DELETE,
-        href = getTeamByNumberUri(orgId, classroomNumber, teamNumber).includeHost(),
+        href = getTeamByNumberUri(orgId, classroomNumber, teamNumber),
         type = INPUT_CONTENT_TYPE,
         fields = listOf(
             SirenActionField(name = "orgId", type = SirenFieldType.hidden, value = orgId),

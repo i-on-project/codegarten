@@ -21,7 +21,6 @@ import org.ionproject.codegarten.remote.from
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_MEMBERSHIP_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_INFO_CACHE
-import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAGS_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAG_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.TEAM_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.USER_INFO_CACHE
@@ -51,6 +50,7 @@ import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamUserMem
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubTeamsUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGitHubUserByIdUri
 import org.ionproject.codegarten.remote.github.GitHubRoutes.getGithubUserOrgsUri
+import org.ionproject.codegarten.remote.github.GitHubRoutes.searchGitHubReposInOrgUri
 import org.ionproject.codegarten.remote.github.responses.GitHubCommitResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
@@ -59,6 +59,7 @@ import org.ionproject.codegarten.remote.github.responses.GitHubOrgMembershipResp
 import org.ionproject.codegarten.remote.github.responses.GitHubOrganizationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRefResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubRepoResponse
+import org.ionproject.codegarten.remote.github.responses.GitHubRepoSearchResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubTag
 import org.ionproject.codegarten.remote.github.responses.GitHubTagResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubTeamResponse
@@ -316,6 +317,14 @@ class GitHubInterface(
         }
     }
 
+    fun searchRepos(orgName: String, toSearch: String?, ghToken: String): GitHubRepoSearchResponse {
+        val req = Request.Builder()
+            .from(searchGitHubReposInOrgUri(orgName, toSearch ?: ""), ghAppProperties.name, ghToken)
+            .build()
+
+        return httpClient.callAndMap(req, mapper, GitHubRepoSearchResponse::class.java)
+    }
+
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
         val req = Request.Builder()
             .from(getGitHubRepoCollaboratorUri(repoId, username), ghAppProperties.name, installationToken)
@@ -338,7 +347,7 @@ class GitHubInterface(
             .build()
 
         return try {
-            val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java, REPO_TAGS_CACHE)
+            val refs = httpClient.callAndMapList(req, mapper, GitHubRefResponse::class.java)
             refs.map { GitHubTag(name = getGitHubTagNameFromRef(it.ref)) }
         } catch (e: HttpRequestException) {
             if (e.status != HttpStatus.NOT_FOUND.value() && e.status != HttpStatus.CONFLICT.value()) {
@@ -423,7 +432,7 @@ class GitHubInterface(
             httpClient.call(req)
         } catch (e: HttpRequestException) {
             when (e.status) {
-                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub repository not found")
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Tag not found")
                 HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("Validation failed")
                 else -> throw e
             }
@@ -460,7 +469,7 @@ class GitHubInterface(
             return httpClient.callAndMap(req, mapper, GitHubTeamResponse::class.java)
         } catch (e: HttpRequestException) {
             when (e.status) {
-                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub team not found")
+                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Organization not found")
                 HttpStatus.UNPROCESSABLE_ENTITY.value() -> throw UnprocessableEntityException("Validation failed")
                 else -> throw e
             }
