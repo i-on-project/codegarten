@@ -49,7 +49,7 @@
 
     <div class="row d-flex justify-content-center align-items-center mt-4">
         <div class="col-sm">
-            <button class="shadow btn btn-outline-primary btn-lg btn-block" disabled id="acceptInvitation">Accept</button>
+            <button class="shadow btn btn-outline-primary btn-lg btn-block" {{#if isTeam}}disabled{{/if}} id="acceptInvitation">Accept</button>
         </div>
         <div class="col-sm">
             <button class="shadow btn btn-outline-danger btn-lg btn-block" id="rejectInvitation">Reject</button>
@@ -74,9 +74,11 @@
         <div class="col-sm">
             <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="orgInvite">Organization</a>
         </div>
-        <div class="col-sm">
-            <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="repoInvite">Repository</a>
-        </div>
+        {{#unless isTeam}}
+            <div class="col-sm">
+                <a class="shadow btn btn-outline-primary btn-lg btn-block my-2" target="_blank" id="repoInvite">Repository</a>
+            </div>
+        {{/unless}}
     </div>
 
     <div class="row">
@@ -84,5 +86,4 @@
             <h5>After accepting the invites, you may <a id="continueUri">proceed to the assignment<a></h5>
         </div>
     </div>
-
 </div>
