@@ -78,6 +78,7 @@ const userRoutes = {
 
 const orgRoutes = {
     getPaginatedOrgsUri: (page: number, limit: number): string => `${API_HOST}/orgs?page=${page}&limit=${limit}`,
+    getSearchOrgTemplateReposUri: (orgId: number, searchQuery: string): string => `${API_HOST}/orgs/${orgId}/templaterepos?q=${searchQuery}`
 }
 
 const classroomRoutes = {

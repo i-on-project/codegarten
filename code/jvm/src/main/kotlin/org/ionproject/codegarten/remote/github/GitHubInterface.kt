@@ -21,6 +21,7 @@ import org.ionproject.codegarten.remote.from
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.ORG_MEMBERSHIP_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_INFO_CACHE
+import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_SEARCH_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.REPO_TAG_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.TEAM_INFO_CACHE
 import org.ionproject.codegarten.remote.github.GitHubCacheTimes.USER_INFO_CACHE
@@ -318,7 +319,7 @@ class GitHubInterface(
             .from(searchGitHubReposInOrgUri(orgName, toSearch ?: ""), ghAppProperties.name, ghToken)
             .build()
 
-        return httpClient.callAndMap(req, mapper, GitHubRepoSearchResponse::class.java)
+        return httpClient.callAndMap(req, mapper, GitHubRepoSearchResponse::class.java, REPO_SEARCH_CACHE)
     }
 
     fun addUserToRepo(repoId: Int, username: String, installationToken: String) {
