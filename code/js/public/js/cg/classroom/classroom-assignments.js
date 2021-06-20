@@ -1,4 +1,6 @@
-import { mapEnterToButton, workWithLoading, alertMsg, fetchXhr, getLocation, getLocationWithoutQuery, generateSlug } from '../common.js'
+import { mapEnterToButton, workWithLoading, alertMsg, fetchXhr, getLocation, getLocationWithoutQuery, generateSlug, showOverlay, hideOverlay } from '../common.js'
+
+const START_SEARCH_TIMEOUT = 500
 
 function getAssignments(content, page, updatePaginationFn) {
     content.innerHTML = ''
@@ -60,10 +62,18 @@ function setupCreationForm() {
     })
     repoPrefix.on('keyup', (event) => mapEnterToButton(repoPrefix[0], event, createButton[0]))
 
-    // TODO: Search not only on input (also when focusing the element)
+    let tid = null
     repoTemplate.on('input', (event) => {
-        // TODO: Set a timer so that the request isn't made instantly 
-        searchTemplateRepos(repoList[0], event.target.value)
+        repoTemplate.removeClass('is-invalid')
+        repoTemplate.removeClass('is-valid')
+        repoTemplate.val(generateSlug(event.target.value))
+        repoList[0].innerHTML = ''
+
+        if (tid != null) clearTimeout(tid)
+
+        tid = setTimeout(() => {
+            searchTemplateRepos(repoTemplate, repoList[0], event.target.value)
+        }, START_SEARCH_TIMEOUT)
     })
 
     createButton.on('click', (event) => {
@@ -87,6 +97,10 @@ function createAssignment(createButton, assignmentName, assignmentDescription, a
     if (assignmentRepoPrefix.val().length == 0) {
         $('#repoPrefixFeedback').html('Prefix can\'t be empty')
         return assignmentRepoPrefix.addClass('is-invalid')
+    }
+    if (assignmentRepoTemplate.val().length != 0 && !assignmentRepoTemplate.hasClass('is-valid')) {
+        $('#repoSearchFeedback').html('Invalid template repository specified')
+        return assignmentRepoTemplate.addClass('is-invalid')
     }
 
     const name = assignmentName.val()
@@ -130,21 +144,30 @@ function createAssignment(createButton, assignmentName, assignmentDescription, a
             .catch(err => alertMsg('Failed to create assignment')))
 }
 
-function searchTemplateRepos(repoListElem, toSearch) {
-    repoListElem.innerHTML = ''
+function searchTemplateRepos(repoSearchElem, repoListElem, toSearch) {
+    if (toSearch.length == 0) return
+
     fetchXhr(`/orgs/${repoListElem.dataset.orgId}/templaterepos?q=${toSearch}`)
         .then(res => {
-            // TODO: proper error message, maybe feedback below search box?
-            if (res.status != 200) return alertMsg('Error while searching repositories')
+            if (res.status != 200) {
+                $('#repoSearchFeedback').html('Error searching for repositories')
+                repoSearchElem.addClass('is-invalid')
+                return null
+            }
+
             return res.text()
         })
         .then(fragment => {
-            if (toSearch != $('#repoTemplate').val()) return // Ignore, a more recent search has been made
+            if (!fragment) return
+
+            if (toSearch != repoSearchElem.val()) return // Ignore, the search box has a different value now
 
             repoListElem.innerHTML = fragment || ''
-            $('.repoOption').on('click', (event) => {
-                // TODO:
-                console.log(`Selected: ${event.currentTarget.dataset.repoName}`)
+            $('.search-result').on('click', (event) => {
+                repoSearchElem.val(event.currentTarget.dataset.repoName)
+                repoListElem.innerHTML = ''
+                repoSearchElem.addClass('is-valid')
+                repoSearchElem.removeClass('is-invalid')
             })
         })
 }

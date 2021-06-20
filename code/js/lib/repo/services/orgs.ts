@@ -53,7 +53,7 @@ function searchOrgTemplateRepos(orgId: number, searchQuery: string, accessToken:
             return {
                 repos: repos,
                 organization: collection.properties.organization,
-                organizationUri: getSirenLink(links, 'github').href, // TODO: Not sure if needed
+                organizationUri: getSirenLink(links, 'github').href,
             } as Repositories
         })
 }

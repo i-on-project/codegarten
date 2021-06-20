@@ -9,6 +9,7 @@ object GitHubCacheTimes {
     val ORG_MEMBERSHIP_CACHE = Duration.ofMinutes(1).toMillis()
     val ORG_INFO_CACHE = Duration.ofMinutes(10).toMillis()
 
+    val REPO_SEARCH_CACHE = Duration.ofSeconds(10).toMillis()
     val REPO_INFO_CACHE = Duration.ofMinutes(10).toMillis()
     val REPO_TAGS_CACHE = Duration.ofSeconds(10).toMillis()
     val REPO_TAG_CACHE = Duration.ofSeconds(10).toMillis()

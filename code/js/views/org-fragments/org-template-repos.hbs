@@ -1,11 +1,12 @@
-<!-- TODO: -->
 {{#if isEmpty}}
-    <p> empty... </p>
+    <p class="text-center">No results found</p>
 {{else}}
-    {{#each repos}}
-        <li class="repoOption" role="option" data-repo-id="{{id}}" data-repo-uri="{{repoUri}}" data-repo-name="{{name}}">
-            <!-- TODO: GitHub Repo Image (maybe private/public?) -->
-            <p>{{name}}</p>
-        </li>
-    {{/each}}
+    <div class="search-list">
+        {{#each repos}}
+            <span class="search-result" data-repo-id="{{id}}" data-repo-uri="{{repoUri}}" data-repo-name="{{name}}">
+                <i class="mr-1 fas {{#if isPrivate}}lock-icon fa-lock{{else}}fa-unlock{{/if}}"></i>
+                {{name}}
+            </span>
+        {{/each}}
+    </div>
 {{/if}}

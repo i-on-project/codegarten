@@ -48,10 +48,11 @@
                 <div class="form-group">
                     <label for="repoTemplate" class="col-form-label">Repository template:</label>
                     <div>
-                        <input type="search" class="form-control" placeholder="Search for a repository template" id="repoTemplate">
-                        <ul id="repoList" role="listbox" data-org-id="{{orgId}}">
+                        <input type="search" class="form-control" placeholder="Search for a template repository" id="repoTemplate">
+                        <div class="invalid-feedback" id="repoSearchFeedback">Error searching for repositories</div>
+                        <div id="repoList" data-org-id="{{orgId}}">
                             <!-- To be filled via javascript with DOM -->
-                        </ul>
+                        </div>
                     </div>
                 </div>
             </div>
