@@ -4,6 +4,7 @@ import { NextFunction, Request, Response } from 'express'
 import { getAuthenticatedUser } from './repo/services/users'
 import { authRoutes } from './repo/api-routes'
 import { revokeAccessToken } from './repo/services/auth'
+import { Error } from './types/error-types'
 import * as crypto from 'crypto'
 import * as fs from 'fs'
 
@@ -51,7 +52,14 @@ export = function(req: Request, res: Response, next: NextFunction): void {
             .then(() => next())
             .catch((err) => {
                 req.logout()
-                    .finally(() => next())
+                    .then(() => next())
+                    .catch(err => {
+                        const error: Error = {
+                            status: 502,
+                            message: 'Cannot establish connection to the API' 
+                        }
+                        next(error)
+                    })
             })
     } else next()
 }
