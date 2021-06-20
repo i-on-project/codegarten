@@ -228,15 +228,7 @@ class GitHubInterface(
             .from(getGitHubRepoByIdUri(repoId), ghAppProperties.name, accessToken)
             .build()
 
-        try {
-            return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
-        } catch (e: HttpRequestException) {
-            when(e.status) {
-                HttpStatus.NOT_FOUND.value() -> throw NotFoundException("GitHub Repository not found")
-                HttpStatus.FORBIDDEN.value() -> throw ForbiddenException("Unable to access GitHub repository")
-                else -> throw e
-            }
-        }
+        return getRepo(req)
     }
 
     fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse {
@@ -244,6 +236,10 @@ class GitHubInterface(
             .from(getGitHubRepoByNameUri(login, repoName), ghAppProperties.name, accessToken)
             .build()
 
+        return getRepo(req)
+    }
+
+    private fun getRepo(req: Request): GitHubRepoResponse {
         try {
             return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
         } catch (e: HttpRequestException) {

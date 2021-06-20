@@ -70,7 +70,7 @@ class ExceptionHandler {
         handleExceptionResponse(
             URI("/problems/github-api-error"),
             "Error While Processing GitHub API Response",
-            HttpStatus.INTERNAL_SERVER_ERROR, // TODO: Shouldn't be 500
+            HttpStatus.BAD_GATEWAY,
             ex.localizedMessage,
             request.requestURI
         )

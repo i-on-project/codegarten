@@ -41,9 +41,7 @@ import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
-import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
@@ -487,7 +485,6 @@ class DeliveriesController(
         try {
             gitHub.createReleaseInRepo(repoId, delivery.tag, user.gh_token)
         } catch(ex: UnprocessableEntityException) {
-            // TODO: Can't differentiate between Forbidden and Conflict (repo empty and already submitted)
             throw ForbiddenException("Delivery has already been submitted or repository is empty")
         }
 
