@@ -51,9 +51,9 @@ import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
-import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserAuth
@@ -176,12 +176,7 @@ class ParticipantsController(
                 assignment.isIndividualAssignment() -> {
                     val user = participant as User
                     val userAssignment = usersDb.getUserAssignment(assignment.aid, user.uid)
-                    val repo = try {
-                        gitHub.getRepoById(userAssignment.repo_id, authUser.gh_token)
-                    } catch (e: HttpRequestException) {
-                        if (e.status != HttpStatus.NOT_FOUND.value()) throw e
-                        throw NotFoundException("Repository does not exist")
-                    }
+                    val repo = gitHub.getRepoById(userAssignment.repo_id, authUser.gh_token)
 
                     ParticipantOutputModel(
                         type = ParticipantTypes.USER.type,
@@ -223,12 +218,7 @@ class ParticipantsController(
                 else -> {
                     val team = participant as Team
                     val teamAssignment = teamsDb.getTeamAssignment(assignment.aid, team.tid)
-                    val repo = try {
-                        gitHub.getRepoById(teamAssignment.repo_id, authUser.gh_token)
-                    } catch (e: HttpRequestException) {
-                        if (e.status != HttpStatus.NOT_FOUND.value()) throw e
-                        throw NotFoundException("Repository does not exist")
-                    }
+                    val repo = gitHub.getRepoById(teamAssignment.repo_id, authUser.gh_token)
 
                     ParticipantOutputModel(
                         type = ParticipantTypes.TEAM.type,
@@ -485,10 +475,8 @@ class ParticipantsController(
 
             usersDb.addUserToAssignment(orgId, assignment.classroom_number, assignment.number, userToAdd.uid, repo.id)
             return repo
-        } catch (ex: HttpRequestException) {
-            if (ex.status == HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ForbiddenException("User is already in assignment")
-            else throw ex
+        } catch (ex: UnprocessableEntityException) {
+            throw ForbiddenException("User is already in assignment")
         }
     }
 
@@ -509,10 +497,8 @@ class ParticipantsController(
             gitHub.addTeamToRepo(org.id, org.login, repo.name, team.gh_id, installationToken)
             teamsDb.addTeamToAssignment(assignment.aid, team.tid, repo.id)
             return repo
-        } catch (ex: HttpRequestException) {
-            if (ex.status == HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ForbiddenException("Team is already in assignment")
-            else throw ex
+        } catch (ex: UnprocessableEntityException) {
+            throw ForbiddenException("Team is already in assignment")
         }
     }
 

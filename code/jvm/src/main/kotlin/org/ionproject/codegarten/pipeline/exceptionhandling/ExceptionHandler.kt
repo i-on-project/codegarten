@@ -12,6 +12,7 @@ import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.exceptions.PaginationException
 import org.ionproject.codegarten.exceptions.ServerErrorException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.responses.ProblemJson
 import org.ionproject.codegarten.responses.Response
 import org.jdbi.v3.core.JdbiException
@@ -48,6 +49,19 @@ fun handleExceptionResponse(
 @RestControllerAdvice
 class ExceptionHandler {
 
+    @ExceptionHandler(value = [UnprocessableEntityException::class])
+    private fun handleUnprocessableEntityException(
+        ex: UnprocessableEntityException,
+        request: HttpServletRequest
+    ): ResponseEntity<Response> =
+        handleExceptionResponse(
+            URI("/problems/unprocessable-entity"),
+            "Error Processing Request",
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            ex.localizedMessage,
+            request.requestURI
+        )
+
     @ExceptionHandler(value = [HttpRequestException::class])
     private fun handleHttpRequestException(
         ex: HttpRequestException,
@@ -56,7 +70,7 @@ class ExceptionHandler {
         handleExceptionResponse(
             URI("/problems/github-api-error"),
             "Error While Processing GitHub API Response",
-            HttpStatus.INTERNAL_SERVER_ERROR,
+            HttpStatus.BAD_GATEWAY,
             ex.localizedMessage,
             request.requestURI
         )

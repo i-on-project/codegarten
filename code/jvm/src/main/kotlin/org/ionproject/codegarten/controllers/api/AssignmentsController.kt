@@ -30,8 +30,8 @@ import org.ionproject.codegarten.database.dto.UserClassroomMembership
 import org.ionproject.codegarten.database.helpers.AssignmentsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
-import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
+import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
@@ -170,7 +170,10 @@ class AssignmentsController(
             try {
                 repo = gitHub.getRepoById(assignment.repo_template, user.gh_token)
                 sirenLinks.add(1, SirenLink(listOf("templateGitHub"), URI(repo.html_url)))
-            } catch (e: HttpRequestException) {} // If we can't get the template, we ignore the repository
+            }
+            // If we can't get the template, we ignore the repository
+            catch (e: NotFoundException) {}
+            catch (e: ForbiddenException) {}
         }
 
         return AssignmentOutputModel(
@@ -215,11 +218,11 @@ class AssignmentsController(
         if (input.repoTemplate != null) {
             val repo = try {
                 gitHub.getRepoByName(org.login, input.repoTemplate, installation.accessToken)
-            } catch (ex: HttpRequestException) {
-                throw InvalidInputException("Repository '${input.repoTemplate}' is not in the organization")
+            } catch (ex: Exception) {
+                throw ForbiddenException("Repository '${input.repoTemplate}' is not in the organization")
             }
 
-            if (!repo.is_template) throw InvalidInputException("Repository '${repo.name}' is not a template repository")
+            if (!repo.is_template) throw ForbiddenException("Repository '${repo.name}' is not a template repository")
             repoResponse = repo
         }
 

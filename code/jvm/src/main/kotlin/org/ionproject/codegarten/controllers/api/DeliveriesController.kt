@@ -41,9 +41,8 @@ import org.ionproject.codegarten.database.helpers.DeliveriesDb
 import org.ionproject.codegarten.database.helpers.TeamsDb
 import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
-import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
-import org.ionproject.codegarten.exceptions.NotFoundException
+import org.ionproject.codegarten.exceptions.UnprocessableEntityException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInAssignment
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -485,11 +484,8 @@ class DeliveriesController(
         val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
         try {
             gitHub.createReleaseInRepo(repoId, delivery.tag, user.gh_token)
-        } catch(ex: HttpRequestException) {
-            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ex
-
-            throw ForbiddenException("Delivery has already been submitted or repo is empty")
+        } catch(ex: UnprocessableEntityException) {
+            throw ForbiddenException("Delivery has already been submitted or repository is empty")
         }
 
         return ResponseEntity
@@ -528,15 +524,7 @@ class DeliveriesController(
             }
 
         val delivery = deliveriesDb.getDeliveryByNumber(orgId, classroomNumber, assignmentNumber, deliveryNumber)
-
-        try {
-            gitHub.deleteTagFromRepo(repoId, delivery.tag, user.gh_token)
-        } catch(ex: HttpRequestException) {
-            if (ex.status != HttpStatus.UNPROCESSABLE_ENTITY.value())
-                throw ex
-
-            throw NotFoundException("Tag does not exist in the repository")
-        }
+        gitHub.deleteTagFromRepo(repoId, delivery.tag, user.gh_token)
 
         return ResponseEntity
             .status(HttpStatus.OK)
