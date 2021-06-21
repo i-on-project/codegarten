@@ -114,6 +114,26 @@
   color: black;
 }
 
+.loading-input {
+  position: relative;
+}
+
+.loading-input input {
+  padding-right: calc(1.5em + 0.75rem);
+}
+
+.input-spinner {
+  display: none;
+  position: absolute;
+  right: calc(0.375em + 0.1875rem);
+  z-index: 4; 
+  top: calc( (0.375em + 0.1875rem) + 2px );
+}
+
+.display-inline-block {
+  display: inline-block;
+}
+
 .lock-icon {
   color: #FFBF46;
 }

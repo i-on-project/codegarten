@@ -47,8 +47,9 @@
 
                 <div class="form-group">
                     <label for="repoTemplate" class="col-form-label">Repository template:</label>
-                    <div>
-                        <input type="search" class="form-control" placeholder="Search for a template repository" id="repoTemplate">
+                    <div class="loading-input">
+                        <input type="search" maxlength="100" class="form-control" placeholder="Search for a template repository" id="repoTemplate">
+                        <div class="spinner-border spinner-border-sm input-spinner" id="repoTemplateSpinner"></div>
                         <div class="invalid-feedback" id="repoSearchFeedback">Error searching for repositories</div>
                         <div id="repoList" data-org-id="{{orgId}}">
                             <!-- To be filled via javascript with DOM -->
