@@ -70,11 +70,11 @@
                 <i class="fas fa-2x fa-{{#if assignment.isGroup}}users{{else}}user{{/if}}"></i>
             </div>
             <div class="col-md">
-                <h1 id="assignmentName">{{assignment.name}}</h1>
+                <h1 id="assignmentName" class="text-break">{{assignment.name}}</h1>
             </div>
         </div>
         
-        <h5 class="text-muted font-weight-light" id="assignmentDescription">{{assignment.description}}</h5>
+        <h5 class="text-muted font-weight-light text-break" id="assignmentDescription">{{assignment.description}}</h5>
     </div>
     <div class="col-md d-flex flex-column">
         {{#if canManage}}

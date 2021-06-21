@@ -28,6 +28,7 @@ function setupCreationForm() {
     const dropdownButton = $('#assignmentTypeButton')[0]
     const createButton = $('#createAssignmentButton')
     const repoList = $('#repoList')
+    const repoTemplateSpinner = $('#repoTemplateSpinner')
 
     $('.assignment-type a').on('click', (event => {
         const elem = event.target
@@ -66,13 +67,23 @@ function setupCreationForm() {
     repoTemplate.on('input', (event) => {
         repoTemplate.removeClass('is-invalid')
         repoTemplate.removeClass('is-valid')
-        repoTemplate.val(generateSlug(event.target.value))
+
+        const value = event.target.value
+
+        repoTemplate.val(generateSlug(value))
         repoList[0].innerHTML = ''
 
         if (tid != null) clearTimeout(tid)
 
+        if (value.length != 0) {
+            repoTemplateSpinner.addClass('display-inline-block')
+        } else {
+            repoTemplateSpinner.removeClass('display-inline-block')
+            return 
+        }
+
         tid = setTimeout(() => {
-            searchTemplateRepos(repoTemplate, repoList[0], event.target.value)
+            searchTemplateRepos(repoTemplate, repoList[0], value)
         }, START_SEARCH_TIMEOUT)
     })
 
@@ -169,6 +180,11 @@ function searchTemplateRepos(repoSearchElem, repoListElem, toSearch) {
                 repoSearchElem.addClass('is-valid')
                 repoSearchElem.removeClass('is-invalid')
             })
+
+
+        })
+        .finally(() => {
+            $('#repoTemplateSpinner').removeClass('display-inline-block')
         })
 }
 

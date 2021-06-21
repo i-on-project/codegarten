@@ -5,7 +5,6 @@ import org.ionproject.codegarten.Routes.ORG_PARAM
 import org.ionproject.codegarten.database.dto.Installation
 import org.ionproject.codegarten.database.helpers.InstallationsDb
 import org.ionproject.codegarten.database.helpers.InviteCodesDb
-import org.ionproject.codegarten.exceptions.HttpRequestException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.exceptions.NotFoundException
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -13,7 +12,6 @@ import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAcces
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
@@ -46,7 +44,7 @@ class InstallationInterceptor(
         try {
             installation = gitHub.getOrgInstallation(orgId)
             tokenResponse = gitHub.getInstallationToken(installation.id)
-        } catch (ex: HttpRequestException) {
+        } catch (ex: NotFoundException) {
             throw NotFoundException("GitHub App is not installed in the organization")
         }
 
@@ -75,8 +73,7 @@ class InstallationInterceptor(
             )
 
             return Installation(installation.iid, installation.org_id, encryptedToken, tokenResponse.expires_at)
-        } catch (ex: HttpRequestException) {
-            if (ex.status != HttpStatus.NOT_FOUND.value()) throw ex
+        } catch (ex: NotFoundException) {
             // This happens when the installation token is invalid
 
             return getNewInstallationToken(orgId)
