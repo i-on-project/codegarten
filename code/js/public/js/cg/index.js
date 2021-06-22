@@ -10,6 +10,8 @@ import * as assignment from './assignment.js'
 import * as invitation from './invitation.js'
 
 function setup() {
+    
+
     // Close alert
     const closeAlertButton = document.querySelector('#closeAlertButton')
     if (closeAlertButton) {

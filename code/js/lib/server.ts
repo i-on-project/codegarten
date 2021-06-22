@@ -1,10 +1,12 @@
 'use strict'
 
 import express, { NextFunction, Request, Response } from 'express'
-import flash from 'connect-flash'
-import session from 'express-session'
 
 import userControl from './user-control'
+import flash from './utils/flash'
+import cookies from './utils/cookies'
+import state from './utils/state'
+import redirectAfterLogin from './utils/redirectAfterLogin'
 import homeRoutes from './routes/home-routes'
 import orgsRoutes from './routes/orgs-routes'
 import classroomsRoutes from './routes/classrooms-routes'
@@ -17,8 +19,6 @@ import participantsRoutes from './routes/participants-routes'
 import authRoutes from './routes/auth-routes'
 
 import { Error } from './types/error-types'
-
-const SESSION_MAX_AGE = 1000 * 60 * 60 * 24 * 365 // 1 year
 
 let PORT = 80
 let server
@@ -36,19 +36,13 @@ export function init(portArg: number, done: () => void = null): void {
 
     app.use(express.static('public'))
     app.use(express.json())
-    app.use(session({
-        secret: 'changeit',
-        resave: true,
-        saveUninitialized: true,
-        cookie: {
-            maxAge: SESSION_MAX_AGE,
-            sameSite: 'lax' 
-        }
-    }))
-
-    app.use(flash())
+    app.use(cookies)
+    app.use(flash)
+    app.use(redirectAfterLogin)
+    app.use(state)
     app.use(userControl)
     
+
     app.use((req: Request, res: Response, next: NextFunction) => {
         res.locals.user = req.user
         res.locals.messages = {
@@ -78,7 +72,7 @@ export function init(portArg: number, done: () => void = null): void {
     })
 
     app.use((req: Request, res: Response, next: NextFunction) => {
-        res.status(404)
+        //res.status(404)
         res.render('common/error-page', {
             'status': 404,
             'message': 'Sorry, that page does not exist!'

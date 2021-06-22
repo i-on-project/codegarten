@@ -47,8 +47,7 @@ function getSirenAction(actions: SirenAction[], name: string): SirenAction {
 }
 
 const authRoutes = {
-    // TODO: Implement state
-    getAuthCodeUri: `${IM_HOST}/oauth/authorize?client_id=${CLIENT_ID}`,
+    getAuthCodeUri: (state: string): string => `${IM_HOST}/oauth/authorize?client_id=${CLIENT_ID}&state=${state}`,
     getAccessTokenUri: `${API_HOST}/oauth/access_token`,
     getRevokeAccessTokenUri: `${API_HOST}/oauth/revoke`,
     getAccessTokenRequestBody: (code: string): string => 
