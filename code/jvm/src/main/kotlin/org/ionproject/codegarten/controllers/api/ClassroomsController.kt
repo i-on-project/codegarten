@@ -28,6 +28,7 @@ import org.ionproject.codegarten.database.helpers.UsersDb
 import org.ionproject.codegarten.exceptions.ForbiddenException
 import org.ionproject.codegarten.exceptions.InvalidInputException
 import org.ionproject.codegarten.pipeline.argumentresolvers.Pagination
+import org.ionproject.codegarten.pipeline.interceptors.RequiresGhAppInstallation
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInClassroom
 import org.ionproject.codegarten.pipeline.interceptors.RequiresUserInOrg
 import org.ionproject.codegarten.remote.github.GitHubInterface
@@ -159,6 +160,7 @@ class ClassroomsController(
         ).toResponseEntity(HttpStatus.OK)
     }
 
+    @RequiresGhAppInstallation // Needed in order to generate the required sequence in the database
     @RequiresUserInOrg
     @PostMapping(CLASSROOMS_HREF)
     fun createClassroom(

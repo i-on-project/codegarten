@@ -43,8 +43,8 @@ export = function(req: Request, res: Response, next: NextFunction): void {
         const expirDate = new Date(accessToken.expiresAt)
         if (expirDate <= date) {
             removeAccessToken(res)
-            req.session.redirectUri = req.url
-            return res.redirect(authRoutes.getAuthCodeUri)
+            req.redirectLoginTo(req.url)
+            return res.redirect('/login')
         }
         
         getAuthenticatedUser(accessToken)
@@ -65,26 +65,15 @@ export = function(req: Request, res: Response, next: NextFunction): void {
 }
 
 function getAccessToken(req: Request): AccessToken {
-    if (req.headers.cookie) {
-        const rawCookies = req.headers.cookie.split('; ')
+    const accessToken: string = req.getCookie(ACCESS_TOKEN_COOKIE)
+    if (accessToken != null) {
+        const iv = accessToken.slice(0, 16)
 
-        const parsedCookies = {}
-        rawCookies.forEach(rawCookie => {
-            const parsedCookie = rawCookie.split('=')
-            parsedCookies[parsedCookie[0]] = parsedCookie[1]
-        })
-        const accessToken: string = parsedCookies[ACCESS_TOKEN_COOKIE]
-        if (accessToken) {
-            const iv = accessToken.slice(0, 16)
-
-            try {
-                const decipher = crypto.createDecipheriv(CIPHER_ALGORITHM, SECRET_KEY, iv)
-                const decrypted = decipher.update(accessToken.slice(16), 'base64', 'utf8')
-                return JSON.parse(decrypted + decipher.final('utf8'))
-            } catch(error) {
-                return null
-            }
-        } else {
+        try {
+            const decipher = crypto.createDecipheriv(CIPHER_ALGORITHM, SECRET_KEY, iv)
+            const decrypted = decipher.update(accessToken.slice(16), 'base64', 'utf8')
+            return JSON.parse(decrypted + decipher.final('utf8'))
+        } catch(error) {
             return null
         }
     }
@@ -96,9 +85,9 @@ function setAccessToken(res: Response, accessToken: AccessToken): void {
     const cipher = crypto.createCipheriv(CIPHER_ALGORITHM, SECRET_KEY, iv)
     let encrypted = cipher.update(JSON.stringify(accessToken), 'utf8', 'base64')
     encrypted += cipher.final('base64')
-    res.setHeader('Set-Cookie', [`${ACCESS_TOKEN_COOKIE}=${iv + encrypted}; Path=/; expires=${accessToken.expiresAt}; HttpOnly; SameSite=Lax`])
+    res.setCookie(ACCESS_TOKEN_COOKIE, iv + encrypted, accessToken.expiresAt)
 }
 
 function removeAccessToken(res: Response) {
-    res.setHeader('Set-Cookie', [`${ACCESS_TOKEN_COOKIE}=expired; Max-Age=-99999999`])
+    res.expireCookie(ACCESS_TOKEN_COOKIE)
 }

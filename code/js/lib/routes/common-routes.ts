@@ -10,11 +10,11 @@ const INTERNAL_ERROR: Error = {
 
 function requiresAuth(req: Request, res: Response, next: NextFunction): void {
     if (req.user) {
-        req.session.redirectUri = null
+        req.redirectLoginTo(null)
         return next()
     }
 
-    req.session.redirectUri = req.url
+    req.redirectLoginTo(req.url)
     res.redirect('/login')
 }
 

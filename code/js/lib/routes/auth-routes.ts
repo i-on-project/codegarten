@@ -14,12 +14,14 @@ router.get('/login/cb', handlerLoginCallback)
 router.get('/logout', handlerLogout)
 
 function handlerLogin(req: Request, res: Response, next: NextFunction) {
-    res.redirect(authRoutes.getAuthCodeUri)
+    const state = req.generateRandomState()
+    res.redirect(authRoutes.getAuthCodeUri(state))
 }
 
 function handlerLoginCallback(req: Request, res: Response, next: NextFunction) {
     const code = req.query.code as string
-    if (!code) {
+    const state = req.query.state as string
+    if (!code || !state || state != req.getState()) {
         req.flash('error', 'Failed to log in! Please try again.')
         return res.redirect('/')
     }
@@ -29,7 +31,7 @@ function handlerLoginCallback(req: Request, res: Response, next: NextFunction) {
         .then(user => req.login(user))
         .then(success => {
             if (!success) throw new Error()
-            res.redirect(req.session.redirectUri || '/')
+            res.redirect(req.getLoginRedirect() || '/')
         })
         .catch(err => {
             req.flash('error', 'Failed to log in! Please try again.')
