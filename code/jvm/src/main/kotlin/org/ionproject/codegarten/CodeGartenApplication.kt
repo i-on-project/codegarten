@@ -25,8 +25,6 @@ import org.springframework.util.Base64Utils
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
 import java.net.URI
 
 @ConfigurationPropertiesScan

@@ -5,7 +5,6 @@ WORKDIR /app
 
 COPY ${DEPENDENCY}/BOOT-INF/lib ./server/lib
 COPY ${DEPENDENCY}/META-INF ./server/META-INF
-COPY secrets ./secrets
 COPY ${DEPENDENCY}/BOOT-INF/classes ./server
 
 EXPOSE 8080

@@ -192,6 +192,7 @@ class ExceptionHandler {
         val cause = ex.cause as SQLException
         val psqlError = ex.getPsqlErrorCode()
 
+        logger.error("[DB Exception] ${cause.localizedMessage}")
         if (psqlError == null) {
             return handleExceptionResponse(
                 URI("/problems/database-error"),
