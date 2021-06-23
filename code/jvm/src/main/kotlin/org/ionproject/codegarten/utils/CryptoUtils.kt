@@ -3,8 +3,8 @@ package org.ionproject.codegarten.utils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.util.io.pem.PemReader
 import org.springframework.util.Base64Utils
-import java.io.File
 import java.io.FileReader
+import java.io.Reader
 import java.security.Key
 import java.security.KeyFactory
 import java.security.MessageDigest
@@ -29,7 +29,7 @@ data class CodeWrapper(
     val expirationDate: OffsetDateTime
 )
 
-class CryptoUtils(cipherKeyPath: String) {
+class CryptoUtils(cipherKey: String) {
 
     private val validChars: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     private val digester = MessageDigest.getInstance("SHA-256")
@@ -38,21 +38,20 @@ class CryptoUtils(cipherKeyPath: String) {
     init {
         java.security.Security.addProvider(BouncyCastleProvider())
 
-        // Read cipher key file content into variable (adding padding if necessary)
-        val key = File(cipherKeyPath).readText()
+        // Add padding to cipher key if necessary
         var toAssign: ByteArray? = null
         for (range in KEY_LENGTH_RANGES) {
-            if (range.contains(key.length)) {
-                toAssign = String.format("%1$-" + range.last + "s", key).toByteArray()
+            if (range.contains(cipherKey.length)) {
+                toAssign = String.format("%1$-" + range.last + "s", cipherKey).toByteArray()
                 break
             }
         }
 
         if (toAssign == null) {
-            toAssign = key.substring(0, KEY_LENGTH_RANGES.last().last).toByteArray()
+            toAssign = cipherKey.substring(0, KEY_LENGTH_RANGES.last().last).toByteArray()
         }
 
-        cipherKey = toAssign
+        this.cipherKey = toAssign
     }
 
     fun generateAuthCode() = generateRandomCode(AUTH_CODE_LENGTH, OffsetDateTime.now().plusMinutes(1))
@@ -111,11 +110,12 @@ class CryptoUtils(cipherKeyPath: String) {
         return String(decryptedValue)
     }
 
-    fun readRsaPrivateKey(filePath: String): Key {
+    fun readRsaPrivateKey(privateKey: String): Key {
         val keyContent: ByteArray
-        FileReader(filePath).use {
+        privateKey.reader().use {
             keyContent = PemReader(it).readPemObject().content
         }
+
         val factory = KeyFactory.getInstance("RSA")
         val keySpec = PKCS8EncodedKeySpec(keyContent)
         return factory.generatePrivate(keySpec)
