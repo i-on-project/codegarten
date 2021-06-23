@@ -1,19 +1,22 @@
 import { NextFunction, Request, Response } from 'express'
 
-const COOKIE_PREFIX = 'cgflash'
+const COOKIE_NAME = 'flash'
 
 export = function(req: Request, res: Response, next: NextFunction): void {
     req.flash = function(type: string, message: string = null): string {
-        const cookie = `${COOKIE_PREFIX}_${type}`
+        const msg = JSON.parse(req.getCookie(COOKIE_NAME)) || {}
 
         if (message == null) {
-            const msg = req.getCookie(cookie)
-            res.expireCookie(cookie)
-            return msg
+            const value = msg[type]
+            if (value != null) {
+                delete msg[type]
+                res.setCookie(COOKIE_NAME, JSON.stringify(msg))
+            }
+            return value
         }
         
-        res.setCookie(cookie, message)
-        
+        msg[type] = message
+        res.setCookie(COOKIE_NAME, JSON.stringify(msg))
         return null
     }
 
