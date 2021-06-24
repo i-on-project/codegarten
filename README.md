@@ -27,10 +27,11 @@ The i-on initiative seeks to build an extensible platform in order to support ac
 # Table Of Contents
 - [Functionalities](#functionalities)
 - [Components](#components)
+- [Quick Start With Docker](#quick-start-with-docker)
 - [Getting Started](#getting-started)
     - [Running the server application](#running-the-server-application)
         - [Creating a GitHub App](#creating-a-github-app)
-        - [Setting up the secrets directory](#setting-up-the-secrets-directory)
+        - [Setting up the secrets](#setting-up-the-secrets)
             - [Cipher key](#cipher-key)
             - [GitHub App private key](#github-app-private-key)
             - [GitHub App properties JSON](#github-app-properties-json)
@@ -66,6 +67,24 @@ The i-on CodeGarten server application is an application that exposes an web API
 
 The CodeGarten web application uses the API to expose its functionalities to the user in a friendly manner, acting as a client of the server application.
 
+# Quick Start With Docker
+To execute both the web app, the server app and the database:
+- Set up [these](#setting-up-the-secrets) environment variables in the `env_server` file in the `.docker` directory
+- Set up these environment variables in the `env_web` file in the `.docker` directory (more information [here](#setting-up-the-environment-variables)):
+    - `CG_CLIENT_ID`
+    - `CG_CLIENT_SECRET`
+    - `CG_WEB_CIPHER_KEY`
+- Execute the following command:
+```sh
+docker-compose -f .docker/docker-compose.yml up
+```
+- The web application should now be available on port `80` and the server application on port `8080`
+
+The created containers can be cleaned up by executing the following command:
+```sh
+docker-compose -f .docker/docker-compose.yml down
+```
+
 # Getting Started
 The following sections document the requires procedures to run the i-on CodeGarten system.
 
@@ -88,27 +107,29 @@ In order for the server application to be able to make requests to the GitHub AP
         - Administration (Read & Write)
 - Disable "User-to-server token expiration"
 
-### Setting up the secrets directory
-The server application requires some secret information in order to be able to be executed (including running the tests). This information is composed by (the file names are the ones specified in the Dockerfile):
+### Setting up the secrets
+The server application requires some secret information in order to be able to be executed (including running the tests). This information is composed by:
 
-- `cipher-key.txt` - A cipher key that'll be used to cipher sensitive information in the database
-- `gh-app-private-key.pem` - The GitHub App's private key, in order to be able to sign JWTs
-- `github-app-properties.json` - A GitHub App Properties JSON that specifies information about the Github App
+- A cipher key that'll be used to cipher sensitive information in the database
+- The GitHub App's private key, in order to be able to sign JWTs
+- A GitHub App Properties JSON that specifies information about the Github App
 
-The path for these files can be specified through the use of the following environment variables, respectively:
+This information can be specified through the use of the following environment variables, respectively:
 
-- `CODEGARTEN_CIPHER_KEY_PATH`
-- `CODEGARTEN_GITHUB_APP_PRIVATE_KEY_PATH`
-- `CODEGARTEN_GITHUB_APP_PROPERTIES_PATH`
+- `CODEGARTEN_CIPHER_KEY`
+- `CODEGARTEN_GITHUB_APP_PRIVATE_KEY`
+- `CODEGARTEN_GITHUB_APP_PROPERTIES`
+
+More information about the value of these variables in the following sections.
 
 #### Cipher key
-The cipher key is specified in a simple text file. It will be padded or cut in order to have exactly 16, 24 or 32 bytes.
+The cipher key is specified in the `CODEGARTEN_CIPHER_KEY` environment variable. It will be padded or cut in order to have exactly 16, 24 or 32 bytes.
 
 #### GitHub App private key
-The GitHub App's private key can be obtained from its configuration page. Since it auto-downloads a `.pem` file, it can be easily copied over to the `secrets` directory.
+The GitHub App's private key can be obtained from its configuration page. In order for the server application to read it properly, the text present in the `.pem` file needs to be encoded in Base64 and placed in the `CODEGARTEN_GITHUB_APP_PRIVATE_KEY` environment variable.
 
 #### GitHub App properties JSON
-This file needs to follow the following scheme:
+This information needs to follow the following scheme:
 ```json
 {
     "name": "GitHub App Name",
@@ -124,6 +145,8 @@ This file needs to follow the following scheme:
 
 This information can be obtained through the GitHub App's configuration page. The client secret can be obtained by generating one in that same page.
 
+In order for the server application to read this information, the JSON content needs to be encoded into Base64 and placed in the `CODEGARTEN_GITHUB_APP_PROPERTIES` environment variable.
+
 ### Warning to Windows users
 Since Windows uses CRLF (carriage-return line-feed) line endings, there may be problems while trying to run and build the server application.
 
@@ -135,29 +158,31 @@ git config --global core.autocrlf input
 
 ### Running with Docker
 
-To run the i-on CodeGarten server app locally with Docker, both the Dockerfile and Docker Compose files present in the `code/jvm` directory can be used to start the database and the server app itself. That can be achieved through the execution of the following commands in the `code/jvm` directory:
+To run the i-on CodeGarten server app locally with Docker, the `env_server` file in the `.docker` directory needs to contain the environment variables detailed [here](#setting-up-the-secrets).
 
+After setting up the environment file, the server app can be executed using the `docker-compose.yml` Docker Compose file present in the `.docker` directory:
+
+```sh
+# Build (without tests) and extract uber jar in order to build the docker image (invert '/' if using Windows)
+code/jvm/gradlew -p code/jvm extractUberJar -x test
+
+# Run the server and both the database and test database on three containers
+docker-compose -f .docker/docker-compose.yml up codegarten-server
 ```
-docker-compose -p codegarten up -d 
 
-gradlew extractUberJar -x test
-docker build -t codegarten-server .
-docker run -e "JDBC_DATABASE_URL=jdbc:postgresql://codegarten-db:5432/db?user=codegarten&password=changeit" -e PORT=8080 -p 8080:8080 --network=codegarten_default -t --name codegarten-server codegarten-server
-```
-
-After running these commands, the server application should be available on port `8080` (can be changed through the `PORT` environment variable and port mapping option) and the database on port `5432`. The connection string for the database can also be changed, as seen in the `JDBC_DATABASE_URL` environment variable passed in the last command.
+After running this command, the server application should be available on port `8080` (can be changed through the `PORT` environment variable and port mapping option in the compose file) and the database on port `5432`. The connection string for the database can also be changed, as seen in the `JDBC_DATABASE_URL` environment variable defined in the docker compose file.
 
 In order to access the API, an access token is required. More info about how to obtain one is available [here](/docs/api/auth/README.md).
 
-To clean up the application and database containers, the following commands can be executed in the `code/jvm` directory:
+To clean up the application and database containers, Docker Compose can be used again:
 
-```
-docker rm -f codegarten-server
-docker-compose -p codegarten down
+```sh
+# Remove docker images and clean resources
+docker-compose -f .docker/docker-compose.yml down
 ```
 
 ### Building the server application
-The server application will connect to a PostgreSQL database specified with the `JDBC_DATABASE_URL` environment variable. The database URI can also be specified using `DATABASE_URL` environment variable, although it needs to be formatted as specified [here](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING). The test database also needs to be specified using the `CODEGARTEN_TEST_DB_CONNECTION_STRING` environment variable, as well as the [secret files and their paths](#setting-up-the-secrets-directory)
+The server application will connect to a PostgreSQL database specified with the `JDBC_DATABASE_URL` environment variable. The database URI can also be specified using `DATABASE_URL` environment variable, although it needs to be formatted as specified [here](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-CONNSTRING). The test database also needs to be specified using the `CODEGARTEN_TEST_DB_CONNECTION_STRING` environment variable, as well as the [secrets](#setting-up-the-secrets)
 
 The execution of this command in the `code/jvm` directory will build the application.
 
@@ -172,7 +197,7 @@ gradlew build -x dbTestsWait -x dbTestsDown
 ```
 
 ### Running without Docker
-The previous section explained how to build the server application. Running the server app requires the database to be specified using the environment variables stated [here](#building-the-server-application), as well as the [secret files and their paths](#setting-up-the-secrets-directory). The database must be initialized using the SQL scripts provided [here](../../tree/main/code/sql)
+The previous section explained how to build the server application. Running the server app requires the database to be specified using the environment variables stated [here](#building-the-server-application), as well as the [secrets](#setting-up-the-secrets). The database must be initialized using the SQL scripts provided [here](../../tree/main/code/sql)
 
 To run the built application, the following command can be executed in the `code/jvm` directory:
 ```
@@ -204,48 +229,39 @@ The web application requires the following environment variables to be set:
 - `CG_CLIENT_ID`: The Client ID that was auto generated when registering the client (e.g. `1`)
 - `CG_CLIENT_SECRET`: The secret that was used when registering the client. This value must **not** be hashed (e.g. `change me`)
 - `CG_SERVER_API_HOST`: The server application host (e.g. `http://localhost:8080`)
-- `CG_SERVER_IM_HOST`: The server application host, but only used in user redirection. This is required when running the application with Docker. More info [here](#running-with-docker-1) (e.g. `http://localhost:8080`)
-- `CG_WEB_CIPHER_KEY_PATH`: The path for the cipher key text file. This is not required when running the web application with Docker. More info [here](#setting-up-the-cipher-key) and [here](#running-with-docker-1) (e.g. `secrets/cipher-key.txt`)
+- `CG_SERVER_IM_HOST`: The server application host, but only used in user redirection. More info [here](#running-with-docker-1) (e.g. `http://localhost:8080`)
+- `CG_WEB_CIPHER_KEY`: The cipher key. More info [here](#setting-up-the-cipher-key) and [here](#running-with-docker-1) (e.g. `a-secure-cipher-key-with-32bytes`)
 
 ### Setting up the cipher key
-The cipher key must be contained in a simple text file. This key must be exactly 32 bytes long, or else it won't work. The path for this key must be specified in the `CG_WEB_CIPHER_KEY_PATH` environment variable, which is already done in advance when running the application with Docker, via its Dockerfile.
-
-If running with Docker, the cipher key file must be:
-
-- Named `cipher-key.txt`
-- Placed in the `code/js/secrets` directory
+The cipher key must be specified through the `CG_WEB_CIPHER_KEY` environment variable. This key must be exactly 32 bytes long.
 
 ### Running with Docker
+To run the i-on CodeGarten web application locally with Docker, the `env_web` file in the `.docker` directory needs to contain the following environment variables:
+- `CG_CLIENT_ID`
+- `CG_CLIENT_SECRET`
+- `CG_WEB_CIPHER_KEY`
+More info about these variables is available [here](#setting-up-the-environment-variables)
 
-To run the i-on CodeGarten web application locally with Docker, the Dockerfile present in the `code/js` directory can be used. However, in contrast with running it without Docker, the `CG_SERVER_IM_HOST` environment variable must be set **if** the server application is also running locally via Docker. This is required due to the web application needing to connect to the API via a Docker hostname and redirecting the app users to the server app, without using the Docker hostname. Below is the recommended values for these variables if running both apps locally via Docker:
+Execution of the web application via Docker can be achieved through the use of the `docker-compose.yml` Docker Compose file present in the `.docker` directory:
 
-- `CG_SERVER_API_HOST`: `http://codegarten-server:8080`
-- `CG_SERVER_IM_HOST`: `http://localhost:8080`
-
-
-Execution of the web application via Docker can be achieved through the execution of one of the following command list, both of them in the `code/js` directory:
-
-1 - If running the API locally with Docker (execution of the commands specified [here](#running-with-docker) is required first)
-```
+```sh
+# Go to the web app's directory
+cd code/js
+# Install npm dependencies
 npm install
+# Transpile TypeScript code into Javascript
 npm run tsc
-docker build -t codegarten-web .
-docker run -e PORT=80 -p 80:80 --network=codegarten_default -t --name codegarten-web codegarten-web
+# Go back to the root directory
+cd ../..
+# Run the web app, the server, and both the database and test database on four containers
+docker-compose -f .docker/docker-compose.yml up codegarten-web
 ```
+After running this command, the web application should be available on port `80` (can be changed through the `PORT` environment variable and port mapping option in the compose file).
 
-2 - If running the API locally without Docker or remotely
+To clean up the web and server application as well as database containers, Docker Compose can be used again:
 ```
-npm install
-npm run tsc
-docker build -t codegarten-web .
-docker run -e PORT=80 -p 80:80 -t --name codegarten-web codegarten-web
+docker-compose -f .docker/docker-compose.yml down
 ```
-
-To cleanup the web application's container:
-```
-docker rm -f codegarten-web
-```
-NOTE: If doing a complete cleanup (server application and web application), **execute the above command first** and then the [server application's cleanup commands](#running-with-docker)
 
 ### Building the web application
 Before being executed, the web application needs to undergo a transpilation process, which will convert the TypeScript code into JavaScript code. In order to do this, the following commands must be executed in the `code/js` directory:
@@ -256,7 +272,7 @@ npm run tsc
 ```
 
 ### Running without Docker
-The previous section explained how to build the web application. Running the web app requires the environment variables stated [here](#setting-up-the-environment-variables) to be set accordingly, as well as the [cipher key](#setting-up-the-cipher-key). The server application must be running in order for the web application to function.
+The previous section explained how to build the web application. Running the web app requires the environment variables stated [here](#setting-up-the-environment-variables) to be set accordingly. The server application must be running in order for the web application to function.
 
 To run the built application, the following command can be executed in the `code/js` directory:
 ```
