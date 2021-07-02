@@ -1,7 +1,11 @@
 package org.ionproject.codegarten.utils
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 
@@ -11,9 +15,12 @@ class CryptoUtilsTest {
     @Autowired
     private lateinit var cryptoUtils: CryptoUtils
 
+    private val logger = LoggerFactory.getLogger(CryptoUtilsTest::class.java)
+
     @Test
     fun testEncryptionAndDecryption() {
         val message = "myEncryptedMessage"
+        logger.info("Testing encryption and decryption with message: '${message}'")
 
         val encrypted = cryptoUtils.encrypt(message)
         assertNotEquals(message, encrypted)
@@ -23,6 +30,8 @@ class CryptoUtilsTest {
 
     @Test
     fun testEncryptionAndDecryptionWithDifferentMessages() {
+        logger.info("Testing encryption and decryption with different messages")
+
         val message1 = "myEncryptedMessage"
         val message2 = "myOtherEncryptedMessage"
 
@@ -42,6 +51,7 @@ class CryptoUtilsTest {
     @Test
     fun testValidateHashSuccessfully() {
         val message = "toHash"
+        logger.info("Testing hash validation with message: '${message}'")
 
         val hash = cryptoUtils.hash(message)
         assertTrue(cryptoUtils.validateHash(message, hash))
@@ -49,6 +59,8 @@ class CryptoUtilsTest {
 
     @Test
     fun testValidateHashUnsuccessfully() {
+        logger.info("Testing hash validation failure")
+
         val message = "toHash"
 
         val hash = cryptoUtils.hash("otherToHash")
