@@ -74,8 +74,23 @@ To execute both the web app, the server app and the database:
     - `CG_CLIENT_ID`
     - `CG_CLIENT_SECRET`
     - `CG_WEB_CIPHER_KEY`
-- Execute the following command:
+- Execute the following commands in order:
 ```sh
+# Build and extract uber jar in order to build the docker image (invert '/' if using Windows)
+code/jvm/gradlew -p code/jvm extractUberJar
+
+# Go to the web app's directory
+cd code/js
+
+# Install npm dependencies
+npm install
+
+# Transpile TypeScript code into Javascript
+npm run tsc
+
+# Go back to the root directory
+cd ../..
+
 docker-compose -f .docker/docker-compose.yml up
 ```
 - The web application should now be available on port `80` and the server application on port `8080`
@@ -163,8 +178,8 @@ To run the i-on CodeGarten server app locally with Docker, the `env_server` file
 After setting up the environment file, the server app can be executed using the `docker-compose.yml` Docker Compose file present in the `.docker` directory:
 
 ```sh
-# Build (without tests) and extract uber jar in order to build the docker image (invert '/' if using Windows)
-code/jvm/gradlew -p code/jvm extractUberJar -x test
+# Build and extract uber jar in order to build the docker image (invert '/' if using Windows)
+code/jvm/gradlew -p code/jvm extractUberJar
 
 # Run the server and both the database and test database on three containers
 docker-compose -f .docker/docker-compose.yml up codegarten-server
