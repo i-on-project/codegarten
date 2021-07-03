@@ -1,6 +1,7 @@
 package org.ionproject.codegarten.database
 
 import org.ionproject.codegarten.testutils.TestUtils.getResourceFile
+import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.extension.BeforeAllCallback
 import org.junit.jupiter.api.extension.ExtensionContext
@@ -11,11 +12,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 const val CLEANUP_SCRIPT_PATH = "sql/delete.sql"
 const val FILL_SCRIPT_PATH = "sql/fill.sql"
 
-class DatabaseInitializer : BeforeAllCallback, ExtensionContext.Store.CloseableResource{
+class DatabaseInitializer : BeforeAllCallback, ExtensionContext.Store.CloseableResource {
 
     private var started = false
 
     private lateinit var jdbi: Jdbi
+    private lateinit var cryptoUtils: CryptoUtils
     private val logger = LoggerFactory.getLogger(DatabaseInitializer::class.java)
 
     override fun beforeAll(context: ExtensionContext) {
@@ -26,7 +28,7 @@ class DatabaseInitializer : BeforeAllCallback, ExtensionContext.Store.CloseableR
                 // Get the jdbi bean from the spring context, as we cannot get it through injection
                 val springContext = SpringExtension.getApplicationContext(context)
                 jdbi = springContext.getBean(Jdbi::class.java)
-
+                cryptoUtils = springContext.getBean(CryptoUtils::class.java)
                 cleanupDb()
                 fillDb()
 
@@ -56,6 +58,11 @@ class DatabaseInitializer : BeforeAllCallback, ExtensionContext.Store.CloseableR
         logger.info("Running SQL fill script")
         val fillScript = getResourceFile(FILL_SCRIPT_PATH).readText()
         jdbi.useHandle<Exception> {
+            it.createUpdate("INSERT INTO USERS(name, gh_id, gh_token) VALUES ('teacher', '1', '${cryptoUtils.encrypt("gh_tokenAdmin")}'), " +
+                    "('student', '2', '${cryptoUtils.encrypt("gh_tokenMember")}'), " +
+                    "('user3', '3', '${cryptoUtils.encrypt("gh_tokenNotMember")}'), " +
+                    "('user4', '4', '${cryptoUtils.encrypt("gh_tokenDeliveries")}');")
+                .execute()
             it.createScript(fillScript).execute()
         }
     }

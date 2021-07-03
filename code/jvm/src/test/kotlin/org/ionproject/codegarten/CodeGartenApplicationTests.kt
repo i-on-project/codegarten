@@ -17,7 +17,7 @@ class CodeGartenApplicationTests {
 }
 
 @TestConfiguration
-class GitHubMockConfiguration {
+class TestConfiguration {
 
 	@Bean
 	@Primary

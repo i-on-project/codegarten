@@ -1,6 +1,9 @@
 package org.ionproject.codegarten.controllers
 
-import org.ionproject.codegarten.GitHubMockConfiguration
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.ionproject.codegarten.TestConfiguration
+import org.ionproject.codegarten.database.DatabaseInitializer
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -13,12 +16,15 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import java.net.URI
 
-@Import(GitHubMockConfiguration::class)
+@Import(TestConfiguration::class)
+@ExtendWith(DatabaseInitializer::class)
 @SpringBootTest
 @AutoConfigureMockMvc
 class ControllerTester {
     @Autowired
     lateinit var mocker: MockMvc
+    @Autowired
+    lateinit var mapper: ObjectMapper
 
     fun doGet(uri: URI, dsl: MockHttpServletRequestDsl.() -> Unit = {}) = mocker.get(uri, dsl)
 

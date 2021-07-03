@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.remote.github
 
-import okhttp3.Request
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationAccessTokenResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubInstallationResponse
 import org.ionproject.codegarten.remote.github.responses.GitHubLoginResponse
@@ -40,8 +39,6 @@ interface GitHubInterface {
     fun getRepoById(repoId: Int, accessToken: String): GitHubRepoResponse
 
     fun getRepoByName(login: String, repoName: String, accessToken: String): GitHubRepoResponse
-
-    fun getRepo(req: Request): GitHubRepoResponse
 
     fun createRepo(orgId: Int, repoName: String, installationToken: String): GitHubRepoResponse
 

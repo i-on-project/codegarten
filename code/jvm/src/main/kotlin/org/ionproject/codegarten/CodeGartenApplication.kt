@@ -78,7 +78,7 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	fun getCryptoUtils() = cryptoUtils
 
 	@Bean
-	fun getJacksonMapper(): ObjectMapper{
+	fun getJacksonMapper(): ObjectMapper {
 		return Jackson2ObjectMapperBuilder().build()
 	}
 }

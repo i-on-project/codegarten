@@ -240,7 +240,7 @@ class GitHubInterfaceImpl(
         return getRepo(req)
     }
 
-    override fun getRepo(req: Request): GitHubRepoResponse {
+    private fun getRepo(req: Request): GitHubRepoResponse {
         try {
             return httpClient.callAndMap(req, mapper, GitHubRepoResponse::class.java, REPO_INFO_CACHE)
         } catch (e: HttpRequestException) {
