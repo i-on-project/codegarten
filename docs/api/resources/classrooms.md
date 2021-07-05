@@ -41,6 +41,7 @@ A classroom is a collections of [users](users.md), [teams](teams.md) and [assign
 * [users](users.md#list-users)
 * [classrooms](#list-classrooms)
 * [organization](organizations.md#get-organization)
+* organizationGitHub (GitHub Organization URL)
 
 ## Actions
 * [List Classrooms](#list-classrooms)
@@ -73,6 +74,7 @@ Status: 200 OK
 {
   "class": ["classroom", "collection"],
   "properties": {
+    "organization": "i-on-project-codegarten-tests",
     "collectionSize": 2,
     "pageIndex": 0,
     "pageSize": 2
@@ -92,27 +94,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["assignments"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments"
+          "href": "/api/orgs/80703382/classrooms/1/assignments"
         },
         {
           "rel": ["teams"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams"
+          "href": "/api/orgs/80703382/classrooms/1/teams"
         },
         {
           "rel": ["users"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/users"
+          "href": "/api/orgs/80703382/classrooms/1/users"
         },
         {
           "rel": ["classrooms"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms"
+          "href": "/api/orgs/80703382/classrooms"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     },
@@ -130,27 +136,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/2"
+          "href": "/api/orgs/80703382/classrooms/2"
         },
         {
           "rel": ["assignments"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/2/assignments"
+          "href": "/api/orgs/80703382/classrooms/2/assignments"
         },
         {
           "rel": ["teams"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/2/teams"
+          "href": "/api/orgs/80703382/classrooms/2/teams"
         },
         {
           "rel": ["users"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/2/users"
+          "href": "/api/orgs/80703382/classrooms/2/users"
         },
         {
           "rel": ["classrooms"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms"
+          "href": "/api/orgs/80703382/classrooms"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     }
@@ -160,7 +170,7 @@ Status: 200 OK
       "name": "create-classroom",
       "title": "Create Classroom",
       "method": "POST",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms",
+      "href": "/api/orgs/80703382/classrooms",
       "type": "application/json",
       "fields": [
         {
@@ -182,15 +192,19 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms{?page,limit}"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -204,6 +218,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 ------
@@ -241,7 +260,7 @@ Status: 200 OK
       "name": "edit-classroom",
       "title": "Edit Classroom",
       "method": "PUT",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1",
+      "href": "/api/orgs/80703382/classrooms/1",
       "type": "application/json",
       "fields": [
         {
@@ -268,7 +287,7 @@ Status: 200 OK
       "name": "delete-classroom",
       "title": "Delete Classroom",
       "method": "DELETE",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1",
+      "href": "/api/orgs/80703382/classrooms/1",
       "type": "application/json",
       "fields": [
         {
@@ -287,27 +306,31 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["assignments"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments"
+      "href": "/api/orgs/80703382/classrooms/1/assignments"
     },
     {
       "rel": ["teams"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams"
+      "href": "/api/orgs/80703382/classrooms/1/teams"
     },
     {
       "rel": ["users"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/users"
+      "href": "/api/orgs/80703382/classrooms/1/users"
     },
     {
       "rel": ["classrooms"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms"
+      "href": "/api/orgs/80703382/classrooms"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -321,6 +344,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -350,6 +378,97 @@ POST /api/orgs/{orgId}/classrooms
 Status: 201 Created
 Location: /api/orgs/{orgId}/classrooms/{classroomNumber}
 ```
+```json
+{
+  "class": ["classroom"],
+  "properties": {
+    "id": 1,
+    "inviteCode": "inv1",
+    "number": 1,
+    "name": "Classroom 1",
+    "description": "Description of Classroom 1",
+    "organization": "i-on-project-codegarten-tests"
+  },
+  "actions": [
+    {
+      "name": "edit-classroom",
+      "title": "Edit Classroom",
+      "method": "PUT",
+      "href": "/api/orgs/80703382/classrooms/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "delete-classroom",
+      "title": "Delete Classroom",
+      "method": "DELETE",
+      "href": "/api/orgs/80703382/classrooms/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": ["self"],
+      "href": "/api/orgs/80703382/classrooms/1"
+    },
+    {
+      "rel": ["assignments"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments"
+    },
+    {
+      "rel": ["teams"],
+      "href": "/api/orgs/80703382/classrooms/1/teams"
+    },
+    {
+      "rel": ["users"],
+      "href": "/api/orgs/80703382/classrooms/1/users"
+    },
+    {
+      "rel": ["classrooms"],
+      "href": "/api/orgs/80703382/classrooms"
+    },
+    {
+      "rel": ["organization"],
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
+    }
+  ]
+}
+```
 
 #### Bad Request
 ```
@@ -359,6 +478,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -405,6 +529,11 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -443,6 +572,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found

@@ -87,7 +87,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/users/1"
+          "href": "/api/users/1"
         },
         {
           "rel": ["avatar"],
@@ -95,11 +95,11 @@ Status: 200 OK
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
     },
@@ -115,7 +115,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/users/2"
+          "href": "/api/users/2"
         },
         {
           "rel": ["avatar"],
@@ -123,11 +123,11 @@ Status: 200 OK
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
     }
@@ -137,7 +137,7 @@ Status: 200 OK
       "name": "add-user-to-classroom",
       "title": "Add User To Classroom",
       "method": "PUT",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/users/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/users/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -170,7 +170,7 @@ Status: 200 OK
       "name": "remove-user-from-classroom",
       "title": "Remove User From Classroom",
       "method": "DELETE",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/users/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/users/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -193,19 +193,19 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/users?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/users?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/users{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/users{?page,limit}"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -220,6 +220,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -267,7 +273,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/users/1"
+          "href": "/api/users/1"
         },
         {
           "rel": ["avatar"],
@@ -275,15 +281,15 @@ Status: 200 OK
         },
         {
           "rel": ["team"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+          "href": "/api/orgs/80703382/classrooms/1/teams/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
     }
@@ -293,7 +299,7 @@ Status: 200 OK
       "name": "add-user-to-team",
       "title": "Add User To Team",
       "method": "PUT",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/teams/1/users/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -321,7 +327,7 @@ Status: 200 OK
       "name": "remove-user-from-team",
       "title": "Remove User From Team",
       "method": "DELETE",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/teams/1/users/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -349,23 +355,23 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/teams/1/users?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/teams/1/users{?page,limit}"
     },
     {
       "rel": ["team"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+      "href": "/api/orgs/80703382/classrooms/1/teams/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -380,6 +386,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -415,7 +427,7 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/users/1"
+      "href": "/api/users/1"
     },
     {
       "rel": ["github"],
@@ -438,6 +450,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -472,7 +490,7 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/users/1"
+      "href": "/api/users/1"
     },
     {
       "rel": ["github"],
@@ -490,6 +508,12 @@ Status: 200 OK
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 ------
 ### Edit User
@@ -521,6 +545,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+
 ------
 ### Delete User
 Delete the user that's currently authenticated.
@@ -548,6 +578,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 ------
 ### Edit Classroom User Membership
@@ -582,6 +618,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -618,6 +660,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -656,6 +704,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -692,6 +746,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```

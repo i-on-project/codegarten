@@ -18,6 +18,16 @@ A team is a group of [users](users.md) in a [classroom](classrooms.md).
     * editable
     * type: **text**
     * example: `"My Team"`
+* `gitHubName` - Name of the associated GitHub Team
+    * mandatory
+    * non editable
+    * type: **text**
+    * example: `"CG1-My Team"`
+* `isMember` - Indicates wether the authenticated user is a member of the team
+    * mandatory
+    * non editable
+    * type: **boolean**
+    * example: `true`
 * `classroom` - Name of the classroom where the issue is contained
     * mandatory
     * non editable
@@ -36,6 +46,7 @@ A team is a group of [users](users.md) in a [classroom](classrooms.md).
 * [users](users.md#get-users-in-users)
 * [classroom](classrooms.md#get-classroom)
 * [organization](organizations.md#get-organization)
+* organizationGitHub (GitHub Organization URL)
 
 ## Actions
 * [List Teams](#list-teams)
@@ -69,6 +80,8 @@ Status: 200 OK
 {
   "class": ["team", "collection"],
   "properties": {
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests",
     "collectionSize": 2,
     "pageIndex": 0,
     "pageSize": 2
@@ -87,7 +100,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+          "href": "/api/orgs/80703382/classrooms/1/teams/1"
         },
         {
           "rel": ["avatar"],
@@ -95,15 +108,19 @@ Status: 200 OK
         },
         {
           "rel": ["users"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users"
+          "href": "/api/orgs/80703382/classrooms/1/teams/1/users"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     },
@@ -120,7 +137,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/2"
+          "href": "/api/orgs/80703382/classrooms/1/teams/2"
         },
         {
           "rel": ["avatar"],
@@ -128,15 +145,19 @@ Status: 200 OK
         },
         {
           "rel": ["users"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/2/users"
+          "href": "/api/orgs/80703382/classrooms/1/teams/2/users"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     }
@@ -146,7 +167,7 @@ Status: 200 OK
       "name": "create-team",
       "title": "Create Team",
       "method": "POST",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams",
+      "href": "/api/orgs/80703382/classrooms/1/teams",
       "type": "application/json",
       "fields": [
         {
@@ -169,19 +190,23 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms{?page,limit}"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -196,6 +221,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -229,6 +260,8 @@ Status: 200 OK
     "id": 1,
     "number": 1,
     "name": "Team 1",
+    "gitHubName": "CG1-Team 1",
+    "isMember": false,
     "classroom": "Classroom 1",
     "organization": "i-on-project-codegarten-tests"
   },
@@ -237,7 +270,7 @@ Status: 200 OK
       "name": "edit-team",
       "title": "Edit Team",
       "method": "PUT",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1",
+      "href": "/api/orgs/80703382/classrooms/1/teams/1",
       "type": "application/json",
       "fields": [
         {
@@ -265,7 +298,7 @@ Status: 200 OK
       "name": "delete-team",
       "title": "Delete Team",
       "method": "DELETE",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1",
+      "href": "/api/orgs/80703382/classrooms/1/teams/1",
       "type": "application/json",
       "fields": [
         {
@@ -289,7 +322,7 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+      "href": "/api/orgs/80703382/classrooms/1/teams/1"
     },
     {
       "rel": ["github"],
@@ -301,20 +334,25 @@ Status: 200 OK
     },
     {
       "rel": ["users"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1/users"
+      "href": "/api/orgs/80703382/classrooms/1/teams/1/users"
     },
     {
       "rel": ["teams"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams"
+      "href": "/api/orgs/80703382/classrooms/1/teams"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
+    
   ]
 }
 ```
@@ -328,6 +366,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -356,6 +400,109 @@ POST /api/orgs/{orgId}/classrooms/{classroomNumber}/teams
 Status: 201 Created
 Location: /api/orgs/{orgId}/classrooms/{classroomNumber}/teams/{teamNumber}
 ```
+```json
+{
+  "class": ["team"],
+  "properties": {
+    "id": 1,
+    "number": 1,
+    "name": "Team 1",
+    "gitHubName": "CG1-Team 1",
+    "isMember": false,
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests"
+  },
+  "actions": [
+    {
+      "name": "edit-team",
+      "title": "Edit Team",
+      "method": "PUT",
+      "href": "/api/orgs/80703382/classrooms/1/teams/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "teamNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "name",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "delete-team",
+      "title": "Delete Team",
+      "method": "DELETE",
+      "href": "/api/orgs/80703382/classrooms/1/teams/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "teamNumber",
+          "type": "hidden",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": ["self"],
+      "href": "/api/orgs/80703382/classrooms/1/teams/1"
+    },
+    {
+      "rel": ["github"],
+      "href": "https://github.com/orgs/i-on-project-codegarten-tests/teams/cg1-team-1"
+    },
+    {
+      "rel": ["avatar"],
+      "href": "https://avatars.githubusercontent.com/t/4794888"
+    },
+    {
+      "rel": ["users"],
+      "href": "/api/orgs/80703382/classrooms/1/teams/1/users"
+    },
+    {
+      "rel": ["teams"],
+      "href": "/api/orgs/80703382/classrooms/1/teams"
+    },
+    {
+      "rel": ["classroom"],
+      "href": "/api/orgs/80703382/classrooms/1"
+    },
+    {
+      "rel": ["organization"],
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
+    }
+    
+  ]
+}
+```
 
 #### Bad Request
 ```
@@ -366,6 +513,12 @@ Status: 400 Bad Request
 ```
 Status: 401 Unauthorized
 ```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 
 #### Resource Not Found
 ```
@@ -405,6 +558,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -439,6 +598,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
