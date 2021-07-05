@@ -32,6 +32,16 @@ An assignment is a task allocated for [users](users.md) or [teams](teams.md) in 
     * non editable
     * type: **text** (Can be one of the following: `["individual", "group"]`)
     * example: `group`
+* `repoPrefix` - Prefix of the repositories to be created
+    * mandatory
+    * non editable
+    * type: **text**
+    * example: `assignment-1`
+* `repoTemplate` - Name of the GitHub repository to serve as a template
+    * non mandatory
+    * non editable
+    * type: **text**
+    * example: `template-repo`
 * `classroom` - Name of the classroom where the assignment is contained
     * mandatory
     * non editable, auto-assigned
@@ -42,6 +52,7 @@ An assignment is a task allocated for [users](users.md) or [teams](teams.md) in 
     * non editable, auto-assigned
     * type: **text**
     * example: `My Organization`
+  
 
 ## Link Relations
 * [self](#get-assignment)
@@ -50,6 +61,7 @@ An assignment is a task allocated for [users](users.md) or [teams](teams.md) in 
 * [assignments](#list-assignments)
 * [classroom](classrooms.md#get-classroom)
 * [organization](organizations.md#get-organization)
+* organizationGitHub (GitHub Organization URL)
 
 ## Actions
 * [List Assignments](#list-assignments)
@@ -83,6 +95,8 @@ Status: 200 OK
 {
   "class": ["assignment", "collection"],
   "properties": {
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests",
     "collectionSize": 2,
     "pageIndex": 0,
     "pageSize": 2
@@ -104,27 +118,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
         },
         {
           "rel": ["participants"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants"
         },
         {
           "rel": ["assignments"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments"
+          "href": "/api/orgs/80703382/classrooms/1/assignments"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     },
@@ -144,27 +162,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/2"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/2"
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/2/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/2/deliveries"
         },
         {
           "rel": ["participants"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/2/participants"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/2/participants"
         },
         {
           "rel": ["assignments"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments"
+          "href": "/api/orgs/80703382/classrooms/1/assignments"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     }
@@ -174,7 +196,7 @@ Status: 200 OK
       "name": "create-assignment",
       "title": "Create Assignment",
       "method": "POST",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments",
+      "href": "/api/orgs/80703382/classrooms/1/assignments",
       "type": "application/json",
       "fields": [
         {
@@ -219,19 +241,23 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -245,6 +271,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -292,7 +323,7 @@ Status: 200 OK
       "name": "edit-assignment",
       "title": "Edit Assignment",
       "method": "PUT",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1",
       "type": "application/json",
       "fields": [
         {
@@ -324,7 +355,7 @@ Status: 200 OK
       "name": "delete-assignment",
       "title": "Delete Assignment",
       "method": "DELETE",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1",
       "type": "application/json",
       "fields": [
         {
@@ -348,27 +379,31 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
     },
     {
       "rel": ["participants"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants"
     },
     {
       "rel": ["assignments"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments"
+      "href": "/api/orgs/80703382/classrooms/1/assignments"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -382,6 +417,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -398,22 +438,127 @@ POST /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments
 ```
 
 #### Parameters
-| Name            | Type        | In         | Description                                                                                  |
-| --------------- | ----------- | ---------- | -------------------------------------------------------------------------------------        |
-| accept          | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`                   |
-| content-type    | string      | header     | Should be set to `application/json`                                                          |
-| orgId           | integer     | path       | The GitHub Organization's unique identifier                                                  |
-| classroomNumber | integer     | path       | The classroom's identifier relative to the organization                                      |
-| name            | string      | body       | **Required**. Short name that defines the assignment                                         |
-| description     | string      | body       | Short description that characterizes the assignment                                          |
-| type            | string      | body       | **Required**. Type of the assignment. Can be one of the following: `["individual", "group"]` |
-| repoPrefix      | string      | body       | **Required**. Prefix to be used when creating GitHub repositories for the assignment         |
-| repoTemplate    | string      | body       | GitHub repository template to be used when creating GitHub repositories for the assignment   |
+| Name            | Type        | In         | Description                                                                                       |
+| --------------- | ----------- | ---------- | ------------------------------------------------------------------------------------------------- |
+| accept          | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`                        |
+| content-type    | string      | header     | Should be set to `application/json`                                                               |
+| orgId           | integer     | path       | The GitHub Organization's unique identifier                                                       |
+| classroomNumber | integer     | path       | The classroom's identifier relative to the organization                                           |
+| name            | string      | body       | **Required**. Short name that defines the assignment                                              |
+| description     | string      | body       | Short description that characterizes the assignment                                               |
+| type            | string      | body       | **Required**. Type of the assignment. Can be one of the following: `["individual", "group"]`      |
+| repoPrefix      | string      | body       | **Required**. Prefix to be used when creating GitHub repositories for the assignment              |
+| repoTemplate    | string      | body       | GitHub repository template name to be used when creating GitHub repositories for the assignment   |
 
 #### Default Response
 ```
 Status: 201 Created
 Location: /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}
+```
+```json
+{
+  "class": ["assignment"],
+  "properties": {
+    "id": 1,
+    "inviteCode": "inv3",
+    "number": 1,
+    "name": "Assignment C1 1",
+    "description": "Description of Assignment C1 1",
+    "type": "individual",
+    "repoPrefix": "Assignment1C1",
+    "repoTemplate": null,
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests"
+  },
+  "actions": [
+    {
+      "name": "edit-assignment",
+      "title": "Edit Assignment",
+      "method": "PUT",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "assignmentNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "name",
+          "type": "text"
+        },
+        {
+          "name": "description",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "delete-assignment",
+      "title": "Delete Assignment",
+      "method": "DELETE",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "assignmentNumber",
+          "type": "hidden",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": ["self"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
+    },
+    {
+      "rel": ["deliveries"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+    },
+    {
+      "rel": ["participants"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants"
+    },
+    {
+      "rel": ["assignments"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments"
+    },
+    {
+      "rel": ["classroom"],
+      "href": "/api/orgs/80703382/classrooms/1"
+    },
+    {
+      "rel": ["organization"],
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
+    }
+  ]
+}
 ```
 
 #### Bad Request
@@ -424,6 +569,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -471,6 +621,11 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -510,6 +665,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found

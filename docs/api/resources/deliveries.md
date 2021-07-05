@@ -8,6 +8,11 @@ A delivery defines the moment in time in which the participant must deliver a ve
     * non editable, auto-assigned
     * type: **number**
     * example: `1`
+* `number` - Stable identifier of a delivery relative to an assignment
+    * mandatory
+    * non editable, auto-assigned
+    * type: **number**
+    * example: `1`
 * `tag` - Name of the tag that's associated with this delivery. Must be used when creating git tags for the assignment
     * mandatory
     * editable
@@ -51,6 +56,7 @@ A delivery defines the moment in time in which the participant must deliver a ve
 * [assignment](assignments.md#get-assignment)
 * [classroom](classrooms.md#get-classroom)
 * [organization](organizations.md#get-organization)
+* organizationGitHub (GitHub Organization URL)
 * participant ([user](users.md#get-user) or [team](teams.md#get-team))
 
 ## Actions
@@ -61,6 +67,8 @@ A delivery defines the moment in time in which the participant must deliver a ve
 * [Create Delivery](#create-delivery)
 * [Edit Delivery](#edit-delivery)
 * [Delete Delivery](#delete-delivery)
+* [Submit Participant Delivery](#submit-participant-delivery)
+* [Delete Participant Delivery](#delete-participant-delivery)
 
 ------
 ### List Deliveries
@@ -88,6 +96,9 @@ Status: 200 OK
 {
   "class": ["delivery", "collection"],
   "properties": {
+    "assignment": "Assignment C1 1",
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests",
     "collectionSize": 2,
     "pageIndex": 0,
     "pageSize": 2
@@ -98,6 +109,7 @@ Status: 200 OK
       "rel": ["item"],
       "properties": {
         "id": 1,
+        "number": 1,
         "tag": "Delivery1A1",
         "dueDate": "2023-05-17T00:00:00+01:00",
         "assignment": "Assignment C1 1",
@@ -107,35 +119,36 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1"
         },
         {
           "rel": [ "deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     },
     {
-      "class": [
-        "delivery"
-      ],
-      "rel": [
-        "item"
-      ],
+      "class": ["delivery"],
+      "rel": ["item"],
       "properties": {
         "id": 2,
+        "number": 2,
         "tag": "Delivery2A1",
         "dueDate": "2023-05-17T00:00:00+01:00",
         "assignment": "Assignment C1 1",
@@ -145,23 +158,27 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries/2"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/2"
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         }
       ]
     }
@@ -171,7 +188,7 @@ Status: 200 OK
       "name": "create-delivery",
       "title": "Create Delivery",
       "method": "POST",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries",
       "type": "application/json",
       "fields": [
         {
@@ -203,23 +220,27 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -233,6 +254,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -267,6 +293,9 @@ Status: 200 OK
 {
   "class": ["delivery", "collection"],
   "properties": {
+    "assignment": "Assignment C1 1",
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests",
     "collectionSize": 2,
     "pageIndex": 0,
     "pageSize": 2
@@ -277,6 +306,7 @@ Status: 200 OK
       "rel": ["item"],
       "properties": {
         "id": 1,
+        "number": 1,
         "tag": "Delivery1A1",
         "dueDate": "2023-05-17T00:00:00+01:00",
         "isDelivered": true,
@@ -287,27 +317,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/1"
         },
         {
           "rel": ["participant-deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         },
         {
           "rel": ["participant"],
@@ -320,6 +354,7 @@ Status: 200 OK
       "rel": ["item"],
       "properties": {
         "id": 2,
+        "number": 2,
         "tag": "Delivery2A1",
         "dueDate": "2023-05-17T00:00:00+01:00",
         "isDelivered": false,
@@ -330,27 +365,31 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/2"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/2"
         },
         {
           "rel": ["participant-deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
+        },
+        {
+          "rel": ["organizationGitHub"],
+          "href": "https://github.com/i-on-project-codegarten-tests"
         },
         {
           "rel": ["participant"],
@@ -362,27 +401,31 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/assignments?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments{?page,limit}"
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     },
     {
       "rel": ["participant"],
@@ -400,6 +443,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -432,6 +480,7 @@ Status: 200 OK
   "class": ["delivery"],
   "properties": {
     "id": 1,
+    "number": 1,
     "tag": "Delivery1A1",
     "dueDate": "2023-05-17T00:00:00+01:00",
     "assignment": "Assignment C1 1",
@@ -443,7 +492,7 @@ Status: 200 OK
       "name": "edit-delivery",
       "title": "Edit Delivery",
       "method": "PUT",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
       "type": "application/json",
       "fields": [
         {
@@ -480,7 +529,7 @@ Status: 200 OK
       "name": "delete-delivery",
       "title": "Delete Delivery",
       "method": "DELETE",
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
       "type": "application/json",
       "fields": [
         {
@@ -509,23 +558,27 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1"
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     }
   ]
 }
@@ -541,6 +594,11 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -551,7 +609,7 @@ Status: 404 Not Found
 Get a delivery of a participant. This route allows checking if the participant has delivered the delivery, and if so, when it was delivered.
 
 ```http
-GET /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participant/{participantId}/deliveries/{deliveryNumber}
+GET /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants/{participantId}/deliveries/{deliveryNumber}
 ```
 
 #### Parameters
@@ -573,6 +631,7 @@ Status: 200 OK
   "class": ["delivery"],
   "properties": {
     "id": 1,
+    "number": 1,
     "tag": "Delivery1A1",
     "dueDate": "2023-05-17T00:00:00+01:00",
     "isDelivered": true,
@@ -584,27 +643,31 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries/1"
     },
     {
       "rel": ["participant-deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
     },
     {
       "rel": ["participant"],
@@ -622,6 +685,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -653,6 +721,114 @@ POST /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumbe
 Status: 201 Created
 Location: /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/deliveries/{deliveryNumber}
 ```
+```json
+{
+  "class": ["delivery"],
+  "properties": {
+    "id": 1,
+    "number": 1,
+    "tag": "Delivery1A1",
+    "dueDate": "2023-05-17T00:00:00+01:00",
+    "assignment": "Assignment C1 1",
+    "classroom": "Classroom 1",
+    "organization": "i-on-project-codegarten-tests"
+  },
+  "actions": [
+    {
+      "name": "edit-delivery",
+      "title": "Edit Delivery",
+      "method": "PUT",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "assignmentNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "deliveryNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "tag",
+          "type": "text"
+        },
+        {
+          "name": "dueDate",
+          "type": "datetime"
+        }
+      ]
+    },
+    {
+      "name": "delete-delivery",
+      "title": "Delete Delivery",
+      "method": "DELETE",
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1",
+      "type": "application/json",
+      "fields": [
+        {
+          "name": "orgId",
+          "type": "hidden",
+          "value": 80703382
+        },
+        {
+          "name": "classroomNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "assignmentNumber",
+          "type": "hidden",
+          "value": 1
+        },
+        {
+          "name": "deliveryNumber",
+          "type": "hidden",
+          "value": 1
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": ["self"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries/1"
+    },
+    {
+      "rel": ["deliveries"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/deliveries"
+    },
+    {
+      "rel": ["assignment"],
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
+    },
+    {
+      "rel": ["classroom"],
+      "href": "/api/orgs/80703382/classrooms/1"
+    },
+    {
+      "rel": ["organization"],
+      "href": "/api/orgs/80703382"
+    },
+    {
+      "rel": ["organizationGitHub"],
+      "href": "https://github.com/i-on-project-codegarten-tests"
+    }
+  ]
+}
+```
 
 #### Bad Request
 ```
@@ -662,6 +838,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -704,6 +885,11 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -739,6 +925,95 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+#### Resource Not Found
+```
+Status: 404 Not Found
+```
+
+------
+### Submit Participant Delivery
+Creates the tag relative to this delivery in the participant's repository (this tag references the latest commit). The authenticated user must be the participant in order to perform this action.
+
+```http
+PUT /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants/{participantId}/deliveries/{deliveryNumber}
+```
+
+#### Parameters
+| Name                  | Type        | In         | Description                                                                                     |
+| --------------------- | ----------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| accept                | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`                      |
+| orgId                 | integer     | path       | The organization's unique identifier                                                            |
+| classroomNumber       | integer     | path       | The classroom's identifier relative to the organization                                         |
+| assignmentNumber      | integer     | path       | The assignment's identifier relative to the classroom                                           |
+| deliveryNumber        | integer     | path       | The delivery's identifier relative to the assignment                                            |
+
+#### Default Response
+```
+Status: 201 Created
+```
+
+#### Bad Request
+```
+Status: 400 Bad Request
+```
+
+#### Requires Authentication
+```
+Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+#### Resource Not Found
+```
+Status: 404 Not Found
+```
+
+------
+### Delete Participant Delivery
+Deletes the tag relative to this delivery in the participant's repository. The authenticated user must be the participant in order to perform this action.
+
+```http
+DELETE /api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants/{participantId}/deliveries/{deliveryNumber}
+```
+
+#### Parameters
+| Name                  | Type        | In         | Description                                                                                     |
+| --------------------- | ----------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| accept                | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`                      |
+| orgId                 | integer     | path       | The organization's unique identifier                                                            |
+| classroomNumber       | integer     | path       | The classroom's identifier relative to the organization                                         |
+| assignmentNumber      | integer     | path       | The assignment's identifier relative to the classroom                                           |
+| deliveryNumber        | integer     | path       | The delivery's identifier relative to the assignment                                            |
+
+#### Default Response
+```
+Status: 200 OK
+```
+
+#### Bad Request
+```
+Status: 400 Bad Request
+```
+
+#### Requires Authentication
+```
+Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
