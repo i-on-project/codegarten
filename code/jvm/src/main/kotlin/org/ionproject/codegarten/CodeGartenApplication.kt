@@ -19,8 +19,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.DependsOn
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Component
 import org.springframework.util.Base64Utils
@@ -67,7 +65,6 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	}
 
 	@Bean
-	@DependsOn("getJacksonMapper")
 	fun getGithubInterface(mapper: ObjectMapper): GitHubInterface {
 		val ghAppPropertiesEnv = System.getenv(configProperties.gitHubAppPropertiesEnv)
 			?: throw IllegalStateException("Missing ${configProperties.gitHubAppPropertiesEnv} environment variable!")
@@ -100,11 +97,6 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 
 	@Bean
 	fun getCryptoUtils() = cryptoUtils
-
-	@Bean
-	fun getJacksonMapper(): ObjectMapper {
-		return Jackson2ObjectMapperBuilder().build()
-	}
 }
 
 @Component
