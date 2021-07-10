@@ -2,9 +2,11 @@ package org.ionproject.codegarten.responses.siren
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer
 import org.ionproject.codegarten.responses.Response
+import org.ionproject.codegarten.utils.MediaTypeDeserializer
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.web.util.UriTemplate
@@ -16,9 +18,12 @@ data class SirenAction(
     val title: String,
     val method: HttpMethod,
     val href: URI? = null,
+
     @JsonSerialize(using = ToStringSerializer::class)
     val hrefTemplate: UriTemplate? = null,
+
     @JsonSerialize(using = ToStringSerializer::class)
+    @JsonDeserialize(using = MediaTypeDeserializer::class)
     val type: MediaType? = null,
     var fields: List<SirenActionField>? = null
 )
@@ -40,6 +45,7 @@ data class SirenOneOf(
 data class SirenLink(
     val rel: List<String>,
     val href: URI? = null,
+
     @JsonSerialize(using = ToStringSerializer::class)
     val hrefTemplate: UriTemplate? = null
 )

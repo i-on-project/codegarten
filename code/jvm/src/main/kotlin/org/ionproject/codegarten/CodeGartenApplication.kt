@@ -11,6 +11,7 @@ import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
 import org.ionproject.codegarten.pipeline.interceptors.InstallationInterceptor
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubInterfaceImpl
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Component
@@ -56,15 +58,14 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	}
 
 	@Bean
-	fun getGithubInterface(): GitHubInterface {
-		val mapper: ObjectMapper = Jackson2ObjectMapperBuilder().build()
-
+	@DependsOn("getJacksonMapper")
+	fun getGithubInterface(mapper: ObjectMapper): GitHubInterface {
 		val ghAppProperties = mapper.readValue(
 			File(System.getenv(configProperties.gitHubAppPropertiesPathEnv)!!),
 			GitHubAppProperties::class.java
 		)
 
-		return GitHubInterface(
+		return GitHubInterfaceImpl(
 			ghAppProperties,
 			cryptoUtils.readRsaPrivateKey(
 				System.getenv(configProperties.gitHubAppPrivateKeyPemPath)!!
@@ -73,9 +74,13 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 		)
 	}
 
-
 	@Bean
 	fun getCryptoUtils() = cryptoUtils
+
+	@Bean
+	fun getJacksonMapper(): ObjectMapper {
+		return Jackson2ObjectMapperBuilder().build()
+	}
 }
 
 @Component
