@@ -21,7 +21,7 @@ class DatabaseInitializer : BeforeAllCallback, ExtensionContext.Store.CloseableR
     private val logger = LoggerFactory.getLogger(DatabaseInitializer::class.java)
 
     override fun beforeAll(context: ExtensionContext) {
-        synchronized(DatabaseInitializer::class.java) {
+        synchronized(this) {
             if (!started) {
                 started = true
 
