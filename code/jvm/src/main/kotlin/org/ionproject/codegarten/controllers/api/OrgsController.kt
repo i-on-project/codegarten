@@ -120,14 +120,17 @@ class OrgsController(
                 ).toSirenObject(
                     rel = listOf("item"),
                     links = listOf(
-                        SirenLink(listOf(SELF_PARAM), URI(it.html_url))
+                        SirenLink(listOf(SELF_PARAM), URI(it.html_url)),
+                        SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
+                        SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
+                        SirenLink(listOf("avatar"), URI(org.avatar_url)),
                     )
                 )
             },
             links = listOf(
                 SirenLink(listOf(SELF_PARAM), searchOrgRepositories(org.id)),
                 SirenLink(listOf("organization"), getOrgByIdUri(orgId)),
-                SirenLink(listOf("github"), getGithubLoginUri(org.login)),
+                SirenLink(listOf("organizationGitHub"), getGithubLoginUri(org.login)),
                 SirenLink(listOf("avatar"), URI(org.avatar_url)),
             )
         ).toResponseEntity(HttpStatus.OK)

@@ -11,6 +11,7 @@ import org.ionproject.codegarten.pipeline.argumentresolvers.UserResolver
 import org.ionproject.codegarten.pipeline.interceptors.AuthorizationInterceptor
 import org.ionproject.codegarten.pipeline.interceptors.InstallationInterceptor
 import org.ionproject.codegarten.remote.github.GitHubInterface
+import org.ionproject.codegarten.remote.github.GitHubInterfaceImpl
 import org.ionproject.codegarten.utils.CryptoUtils
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.core.kotlin.KotlinPlugin
@@ -18,6 +19,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.DependsOn
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Component
@@ -65,7 +67,8 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	}
 
 	@Bean
-	fun getGithubInterface(): GitHubInterface {
+	@DependsOn("getJacksonMapper")
+	fun getGithubInterface(mapper: ObjectMapper): GitHubInterface {
 		val ghAppPropertiesEnv = System.getenv(configProperties.gitHubAppPropertiesEnv)
 			?: throw IllegalStateException("Missing ${configProperties.gitHubAppPropertiesEnv} environment variable!")
 		val ghAppPrivateKeyEnv = System.getenv(configProperties.gitHubAppPrivateKeyEnv)
@@ -83,13 +86,12 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 			throw IllegalArgumentException("${configProperties.gitHubAppPrivateKeyEnv} environment variable is not a valid Base64 string!")
 		}
 
-		val mapper: ObjectMapper = Jackson2ObjectMapperBuilder().build()
 		val ghAppProperties = mapper.readValue(
 			ghAppPropertiesString,
 			GitHubAppProperties::class.java
 		)
 
-		return GitHubInterface(
+		return GitHubInterfaceImpl(
 			ghAppProperties,
 			cryptoUtils.readRsaPrivateKey(ghAppPrivateKeyString),
 			mapper
@@ -98,6 +100,11 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 
 	@Bean
 	fun getCryptoUtils() = cryptoUtils
+
+	@Bean
+	fun getJacksonMapper(): ObjectMapper {
+		return Jackson2ObjectMapperBuilder().build()
+	}
 }
 
 @Component

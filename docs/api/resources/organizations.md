@@ -5,24 +5,24 @@ An organization is a [GitHub Organization](https://docs.github.com/en/organizati
 ## Properties
 * `id` - Unique and stable global identifier of a GitHub Organization
     * mandatory
-    * non editable, auto-assigned
+    * non editable
     * type: **number**
     * example: `1`
 * `name` - Unique and short name that defines the GitHub Organization
     * mandatory
-    * editable
+    * non editable
     * type: **text**
     * example: `My Organization`
 * `description` - Short description that characterizes the GitHub Organization
     * non mandatory
-    * editable
+    * non editable
     * type: **text**
     * example: `This is my organization`
 
 ## Link Relations
 * [self](#get-organization)
-* github (GitHub Organization)
-* avatar (GitHub Organization's avatar)
+* github (GitHub Organization URL)
+* avatar (GitHub Organization Avatar URL)
 * [classrooms](classrooms.md#list-classrooms)
 * [organizations](#list-organizations)
 
@@ -68,7 +68,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         },
         {
           "rel": ["github"],
@@ -80,11 +80,11 @@ Status: 200 OK
         },
         {
           "rel": ["classrooms"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms"
+          "href": "/api/orgs/80703382/classrooms"
         },
         {
           "rel": ["organizations"],
-          "href": "http://localhost:8080/api/orgs"
+          "href": "/api/orgs"
         }
       ]
     },
@@ -99,7 +99,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/2"
+          "href": "/api/orgs/2"
         },
         {
           "rel": ["github"],
@@ -111,11 +111,11 @@ Status: 200 OK
         },
         {
           "rel": ["classrooms"],
-          "href": "http://localhost:8080/api/orgs/2/classrooms"
+          "href": "/api/orgs/2/classrooms"
         },
         {
           "rel": ["organizations"],
-          "href": "http://localhost:8080/api/orgs"
+          "href": "/api/orgs"
         }
       ]
     }
@@ -123,15 +123,15 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs?page=0&limit=10"
+      "href": "/api/orgs?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs{?page,limit}"
+      "hrefTemplate": "/api/orgs{?page,limit}"
     },
     {
       "rel": ["next"],
-      "href": "http://localhost:8080/api/orgs?page=1&limit=10"
+      "href": "/api/orgs?page=1&limit=10"
     }
   ]
 }
@@ -176,7 +176,7 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     },
     {
       "rel": ["github"],
@@ -188,11 +188,11 @@ Status: 200 OK
     },
     {
       "rel": ["classrooms"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms"
+      "href": "/api/orgs/80703382/classrooms"
     },
     {
       "rel": ["organizations"],
-      "href": "http://localhost:8080/api/orgs"
+      "href": "/api/orgs"
     }
   ]
 }

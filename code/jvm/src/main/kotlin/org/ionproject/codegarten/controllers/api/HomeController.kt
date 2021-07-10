@@ -10,6 +10,7 @@ import org.ionproject.codegarten.Routes.DELIVERIES_OF_PARTICIPANT_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.DELIVERY_BY_NUMBER_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.ORGS_HREF
 import org.ionproject.codegarten.Routes.ORG_BY_ID_HREF_TEMPLATE
+import org.ionproject.codegarten.Routes.ORG_SEARCH_REPOSITORIES_TEMPLATE
 import org.ionproject.codegarten.Routes.PARTICIPANTS_OF_ASSIGNMENT_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.PARTICIPATION_IN_ASSIGNMENT_OF_USER_TEMPLATE
 import org.ionproject.codegarten.Routes.PARTICIPATION_IN_CLASSROOM_OF_USER_TEMPLATE
@@ -50,6 +51,7 @@ class HomeController {
             links = listOf(
                 SirenLink(listOf("organizations"), URI(ORGS_HREF)),
                 SirenLink(listOf("organization"), hrefTemplate = ORG_BY_ID_HREF_TEMPLATE),
+                SirenLink(listOf("searchRepos"), hrefTemplate = ORG_SEARCH_REPOSITORIES_TEMPLATE),
 
                 SirenLink(listOf("classrooms"), hrefTemplate = CLASSROOMS_HREF_TEMPLATE),
                 SirenLink(listOf("classroom"), hrefTemplate = CLASSROOM_BY_NUMBER_HREF_TEMPLATE),

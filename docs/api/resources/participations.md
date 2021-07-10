@@ -61,9 +61,7 @@ Status: 200 OK
 ```
 ```json
 {
-  "class": [
-    "participant"
-  ],
+  "class": ["participant"],
   "properties": {
     "type": "user",
     "id": 1,
@@ -72,7 +70,7 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/assignments/3/participation"
+      "href": "/api/user/assignments/3/participation"
     },
     {
       "rel": ["repo"],
@@ -80,23 +78,23 @@ Status: 200 OK
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
     },
     {
       "rel": ["user"],
-      "href": "http://localhost:8080/api/users/1"
+      "href": "/api/users/1"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -111,14 +109,14 @@ Status: 200 OK
 {
   "class": ["participant"],
   "properties": {
-    "type": "user",
+    "type": "team",
     "id": 1,
-    "name": "codegartenStudent"
+    "name": "codegartenTeam1"
   },
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/assignments/3/participation"
+      "href": "/api/user/assignments/3/participation"
     },
     {
       "rel": ["repo"],
@@ -126,23 +124,23 @@ Status: 200 OK
     },
     {
       "rel": ["deliveries"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
     },
     {
       "rel": ["team"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+      "href": "/api/orgs/80703382/classrooms/1/teams/1"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -156,6 +154,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -192,19 +195,19 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/classrooms/1/participation"
+      "href": "/api/user/classrooms/1/participation"
     },
     {
       "rel": ["user"],
-      "href": "http://localhost:8080/api/users/1"
+      "href": "/api/users/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -218,6 +221,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -267,7 +275,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/users/1"
+          "href": "/api/users/1"
         },
         {
           "rel": ["avatar"],
@@ -275,19 +283,19 @@ Status: 200 OK
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
     },
@@ -301,7 +309,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/users/2"
+          "href": "/api/users/2"
         },
         {
           "rel": ["avatar"],
@@ -309,22 +317,21 @@ Status: 200 OK
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/2/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/2/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
-    },
     }
   ],
   "actions": [
@@ -332,7 +339,7 @@ Status: 200 OK
       "name": "add-participant-to-assignment",
       "title": "Add Participant To Assignment",
       "method": "PUT",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -360,7 +367,7 @@ Status: 200 OK
       "name": "remove-participant-from-assignment",
       "title": "Remove Participant From Assignment",
       "method": "DELETE",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/{userId}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants/{userId}",
       "type": "application/json",
       "fields": [
         {
@@ -388,23 +395,23 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants{?page,limit}"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -433,7 +440,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/1"
+          "href": "/api/orgs/80703382/classrooms/1/teams/1"
         },
         {
           "rel": ["avatar"],
@@ -441,19 +448,19 @@ Status: 200 OK
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/1/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
     },
@@ -467,7 +474,7 @@ Status: 200 OK
       "links": [
         {
           "rel": ["self"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/teams/2"
+          "href": "/api/orgs/80703382/classrooms/1/teams/2"
         },
         {
           "rel": ["avatar"],
@@ -475,22 +482,21 @@ Status: 200 OK
         },
         {
           "rel": ["deliveries"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/2/deliveries"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants/2/deliveries"
         },
         {
           "rel": ["assignment"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+          "href": "/api/orgs/80703382/classrooms/1/assignments/1"
         },
         {
           "rel": ["classroom"],
-          "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+          "href": "/api/orgs/80703382/classrooms/1"
         },
         {
           "rel": ["organization"],
-          "href": "http://localhost:8080/api/orgs/80703382"
+          "href": "/api/orgs/80703382"
         }
       ]
-    },
     }
   ],
   "actions": [
@@ -498,7 +504,7 @@ Status: 200 OK
       "name": "add-participant-to-assignment",
       "title": "Add Participant To Assignment",
       "method": "PUT",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/{teamNumber}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants/{teamNumber}",
       "type": "application/json",
       "fields": [
         {
@@ -526,7 +532,7 @@ Status: 200 OK
       "name": "remove-participant-from-assignment",
       "title": "Remove Participant From Assignment",
       "method": "DELETE",
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants/{teamNumber}",
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants/{teamNumber}",
       "type": "application/json",
       "fields": [
         {
@@ -554,23 +560,23 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants?page=0&limit=10"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1/participants?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1/participants{?page,limit}"
+      "hrefTemplate": "/api/orgs/80703382/classrooms/1/assignments/1/participants{?page,limit}"
     },
     {
       "rel": ["assignment"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1/assignments/1"
+      "href": "/api/orgs/80703382/classrooms/1/assignments/1"
     },
     {
       "rel": ["classroom"],
-      "href": "http://localhost:8080/api/orgs/80703382/classrooms/1"
+      "href": "/api/orgs/80703382/classrooms/1"
     },
     {
       "rel": ["organization"],
-      "href": "http://localhost:8080/api/orgs/80703382"
+      "href": "/api/orgs/80703382"
     }
   ]
 }
@@ -584,6 +590,11 @@ Status: 400 Bad Request
 #### Requires Authentication
 ```
 Status: 401 Unauthorized
+```
+
+#### Forbidden
+```
+Status: 403 Forbidden
 ```
 
 #### Resource Not Found
@@ -625,6 +636,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
@@ -663,9 +680,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
 ```
-------
-

@@ -104,7 +104,6 @@ class ParticipantsController(
             if (membership == TEACHER || assignment.isIndividualAssignment()) {
                 user
             } else {
-                //TODO: User can be in more than one team per assignment
                 teamsDb.getUserTeamInAssignment(assignment.aid, user.uid)
             }
 

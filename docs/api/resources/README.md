@@ -49,83 +49,87 @@ Status: 200 OK
   "links": [
     {
       "rel": ["organizations"],
-      "href": "http://localhost:8080/api/orgs"
+      "href": "/api/orgs"
     },
     {
       "rel": ["organization"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}"
+      "hrefTemplate": "/api/orgs/{orgId}"
+    },
+    {
+      "rel": ["searchRepos"],
+      "hrefTemplate": "/api/orgs/{orgId}/templaterepos"
     },
     {
       "rel": ["classrooms"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms"
     },
     {
       "rel": ["classroom"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}"
     },
     {
       "rel": ["classroomUsers"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/users"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/users"
     },
     {
       "rel": ["classroomTeams"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/teams"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/teams"
     },
     {
       "rel": ["classroomTeam"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/teams/{teamNumber}"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/teams/{teamNumber}"
     },
     {
       "rel": ["classroomTeamUsers"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/teams/{teamNumber}/users"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/teams/{teamNumber}/users"
     },
     {
       "rel": ["assignments"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments"
     },
     {
       "rel": ["assignment"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}"
     },
     {
       "rel": ["assignmentParticipants"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants"
     },
     {
       "rel": ["deliveries"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/deliveries"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/deliveries"
     },
     {
       "rel": ["delivery"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/deliveries/{deliveryNumber}"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/deliveries/{deliveryNumber}"
     },
     {
       "rel": ["participantDeliveries"],
-      "hrefTemplate": "http://localhost:8080/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants/{participantId}/deliveries"
+      "hrefTemplate": "/api/orgs/{orgId}/classrooms/{classroomNumber}/assignments/{assignmentNumber}/participants/{participantId}/deliveries"
     },
     {
       "rel": ["user"],
-      "hrefTemplate": "http://localhost:8080/api/users/{userId}"
+      "hrefTemplate": "/api/users/{userId}"
     },
     {
       "rel": ["authenticatedUser"],
-      "href": "http://localhost:8080/api/user"
+      "href": "/api/user"
     },
     {
       "rel": ["invitation"],
-      "hrefTemplate": "http://localhost:8080/api/user/invites/{inviteCode}"
+      "hrefTemplate": "/api/user/invites/{inviteCode}"
     },
     {
       "rel": ["invitationTeams"],
-      "hrefTemplate": "http://localhost:8080/api/user/invites/{inviteCode}/classroom/teams"
+      "hrefTemplate": "/api/user/invites/{inviteCode}/classroom/teams"
     },
     {
       "rel": ["classroomParticipation"],
-      "hrefTemplate": "http://localhost:8080/api/user/classrooms/{classroomId}/participation"
+      "hrefTemplate": "/api/user/classrooms/{classroomId}/participation"
     },
     {
       "rel": ["assignmentParticipation"],
-      "hrefTemplate": "http://localhost:8080/api/user/assignments/{assignmentId}/participation"
+      "hrefTemplate": "/api/user/assignments/{assignmentId}/participation"
     }
   ]
 }

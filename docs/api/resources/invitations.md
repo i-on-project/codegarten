@@ -73,8 +73,9 @@ An invitation represents an invite to a classroom or an assignment.
 
 ## Actions
 * [Get Invite Information](#get-invite-information)
-* [Get Invite Classroom Teams](#get-invite-classroom-teams)
+* [Get Teams of Classroom Invite](#get-teams-of-classroom-invite)
 * [Join Invite](#join-invite)
+
 ------
 ### Get Invite Information
 Get the detailed information of an invitation.
@@ -87,7 +88,8 @@ GET /api/user/invites/{inviteCode}
 | Name        | Type        | In         | Description                                                                           |
 | ----------- | ----------- | ---------- | ------------------------------------------------------------------------------------- |
 | accept      | string      | header     | Should be set to either `application/json` or `application/vnd.siren+json`            |
-| inviteCode  | string      | path        | The invite code's unique identifier                                                   |
+| inviteCode  | string      | path       | The invite code's unique identifier                                                   |
+
 #### Response if the invite is from a classroom
 ```
 Status: 200 OK
@@ -106,7 +108,7 @@ Status: 200 OK
       "name": "join-classroom",
       "title": "Join Classroom",
       "method": "PUT",
-      "href": "http://localhost:8080/api/user/invites/inv",
+      "href": "/api/user/invites/inv",
       "type": "application/json",
       "fields": [
         {
@@ -124,11 +126,11 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/invites/inv"
+      "href": "/api/user/invites/inv"
     },
     {
       "rel": ["teams"],
-      "href": "http://localhost:8080/api/user/invites/inv/classroom/teams"
+      "href": "/api/user/invites/inv/classroom/teams"
     },
     {
       "rel": ["classroom"],
@@ -157,7 +159,7 @@ Status: 200 OK
       "name": "join-assignment",
       "title": "Join Assignment",
       "method": "PUT",
-      "href": "http://localhost:8080/api/user/invites/inv",
+      "href": "/api/user/invites/inv",
       "type": "application/json",
       "fields": [
         {
@@ -175,11 +177,11 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/invites/inv"
+      "href": "/api/user/invites/inv"
     },
     {
       "rel": ["teams"],
-      "href": "http://localhost:8080/api/user/invites/inv3/classroom/teams"
+      "href": "/api/user/invites/inv3/classroom/teams"
     },
     {
       "rel": ["assignment"],
@@ -188,7 +190,6 @@ Status: 200 OK
   ]
 }
 ```
-
 
 #### Bad Request
 ```
@@ -206,7 +207,7 @@ Status: 404 Not Found
 ```
 
 ------
-### Get Invite Classroom Teams
+### Get Teams of Classroom Invite
 Get all teams of a classroom using an invitation.
 
 ```http
@@ -220,6 +221,7 @@ GET /api/user/invites/{inviteCode}/classroom/teams
 | inviteCode  | string      | path       | The invite code's unique identifier                                                   |
 | page        | integer     | query      | Specifies the current page of the list                                                |
 | limit       | integer     | query      | Specifies the number of results per page (max. 100)                                   |
+
 #### Default Response
 ```
 Status: 200 OK
@@ -271,15 +273,15 @@ Status: 200 OK
   "links": [
     {
       "rel": ["self"],
-      "href": "http://localhost:8080/api/user/invites/inv1/classroom/teams?page=0&limit=10"
+      "href": "/api/user/invites/inv1/classroom/teams?page=0&limit=10"
     },
     {
       "rel": ["page"],
-      "hrefTemplate": "http://localhost:8080/api/user/invites/inv1/classroom/teams{?page,limit}"
+      "hrefTemplate": "/api/user/invites/inv1/classroom/teams{?page,limit}"
     },
     {
       "rel": ["invite"],
-      "href": "http://localhost:8080/api/user/invites/inv"
+      "href": "/api/user/invites/inv"
     }
   ]
 }
@@ -316,6 +318,7 @@ PUT /api/user/invites/{inviteCode}
 | content-type | string      | header     | Should be set to `application/json`                                                   |
 | inviteCode   | string      | path       | The invite code's unique identifier                                                   |
 | teamId       | integer     | body       | The team's unique identifier                                                          |
+
 #### Default Response
 ```
 Status: 201 Created
@@ -332,9 +335,12 @@ Status: 400 Bad Request
 Status: 401 Unauthorized
 ```
 
+#### Forbidden
+```
+Status: 403 Forbidden
+```
+
 #### Resource Not Found
 ```
 Status: 404 Not Found
 ```
-
-------
