@@ -1,6 +1,5 @@
 package org.ionproject.codegarten.controllers.api
 
-import org.ionproject.codegarten.Routes
 import org.ionproject.codegarten.Routes.API_BASE_URI
 import org.ionproject.codegarten.Routes.ASSIGNMENTS_HREF_TEMPLATE
 import org.ionproject.codegarten.Routes.ASSIGNMENT_BY_NUMBER_HREF_TEMPLATE

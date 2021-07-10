@@ -23,10 +23,10 @@ import org.springframework.context.annotation.DependsOn
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.stereotype.Component
+import org.springframework.util.Base64Utils
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import java.io.File
 import java.net.URI
 
 @ConfigurationPropertiesScan
@@ -34,18 +34,27 @@ import java.net.URI
 @SpringBootApplication
 class CodeGartenApplication(private val configProperties: ConfigProperties) {
 
-	private val cryptoUtils = CryptoUtils(System.getenv(configProperties.cipherKeyEnv)!!)
+	private val cryptoUtils: CryptoUtils
+
+	init {
+		val cipherKey = System.getenv(configProperties.cipherKeyEnv)
+			?: throw IllegalStateException("Missing ${configProperties.cipherKeyEnv} environment variable!")
+
+		cryptoUtils = CryptoUtils(cipherKey)
+	}
 
 	@Bean
 	fun getJdbi(): Jdbi {
 		val jdbcConnectionString = System.getenv(configProperties.dbJdbcConnectionStringEnv)
 		val connectionUrl = System.getenv(configProperties.dbUrlConnectionStringEnv)
+		if (jdbcConnectionString == null && connectionUrl == null)
+			throw IllegalStateException("Missing ${configProperties.dbJdbcConnectionStringEnv} or ${configProperties.dbUrlConnectionStringEnv} environment variable!")
 
 		val connectionString: String =
 			if (jdbcConnectionString != null)
 				jdbcConnectionString
 			else {
-				val dbUri = URI(connectionUrl!!)
+				val dbUri = URI(connectionUrl)
 
 				val username: String = dbUri.userInfo.split(":")[0]
 				val password: String = dbUri.userInfo.split(":")[1]
@@ -60,16 +69,31 @@ class CodeGartenApplication(private val configProperties: ConfigProperties) {
 	@Bean
 	@DependsOn("getJacksonMapper")
 	fun getGithubInterface(mapper: ObjectMapper): GitHubInterface {
+		val ghAppPropertiesEnv = System.getenv(configProperties.gitHubAppPropertiesEnv)
+			?: throw IllegalStateException("Missing ${configProperties.gitHubAppPropertiesEnv} environment variable!")
+		val ghAppPrivateKeyEnv = System.getenv(configProperties.gitHubAppPrivateKeyEnv)
+			?: throw IllegalStateException("Missing ${configProperties.gitHubAppPrivateKeyEnv} environment variable!")
+
+		val ghAppPropertiesString = try {
+			Base64Utils.decodeFromString(ghAppPropertiesEnv)
+		} catch(ex: IllegalArgumentException) {
+			throw IllegalArgumentException("${configProperties.gitHubAppPropertiesEnv} environment variable is not a valid Base64 string!")
+		}
+
+		val ghAppPrivateKeyString = try {
+			String(Base64Utils.decodeFromString(ghAppPrivateKeyEnv))
+		} catch(ex: IllegalArgumentException) {
+			throw IllegalArgumentException("${configProperties.gitHubAppPrivateKeyEnv} environment variable is not a valid Base64 string!")
+		}
+
 		val ghAppProperties = mapper.readValue(
-			File(System.getenv(configProperties.gitHubAppPropertiesPathEnv)!!),
+			ghAppPropertiesString,
 			GitHubAppProperties::class.java
 		)
 
 		return GitHubInterfaceImpl(
 			ghAppProperties,
-			cryptoUtils.readRsaPrivateKey(
-				System.getenv(configProperties.gitHubAppPrivateKeyPemPath)!!
-			),
+			cryptoUtils.readRsaPrivateKey(ghAppPrivateKeyString),
 			mapper
 		)
 	}

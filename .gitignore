@@ -1,3 +1,7 @@
+# Docker environment files
+env_web
+env_server
+
 # Logs
 logs
 *.log
@@ -67,10 +71,6 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
-
-# dotenv environment variables file
-.env
-.env.test
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache

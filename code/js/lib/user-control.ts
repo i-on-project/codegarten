@@ -2,16 +2,14 @@
 
 import { NextFunction, Request, Response } from 'express'
 import { getAuthenticatedUser } from './repo/services/users'
-import { authRoutes } from './repo/api-routes'
 import { revokeAccessToken } from './repo/services/auth'
 import { Error } from './types/error-types'
 import * as crypto from 'crypto'
-import * as fs from 'fs'
 
 const ACCESS_TOKEN_VALIDITY_THRESHOLD = 1000 * 60 * 60 * 24 // 1 day
 const ACCESS_TOKEN_COOKIE = 'tok'
 
-const SECRET_KEY = fs.readFileSync(`${process.env.CG_WEB_CIPHER_KEY_PATH}`)
+const SECRET_KEY = getSecretKey()
 const CIPHER_ALGORITHM = 'aes-256-cbc'
 
 export = function(req: Request, res: Response, next: NextFunction): void {
@@ -90,4 +88,13 @@ function setAccessToken(res: Response, accessToken: AccessToken): void {
 
 function removeAccessToken(res: Response) {
     res.expireCookie(ACCESS_TOKEN_COOKIE)
+}
+
+function getSecretKey(): string {
+    const key = process.env.CG_WEB_CIPHER_KEY
+    if (!key || key.length != 32) {
+        throw Error('Invalid cipher key specified! The environment variable \'CG_WEB_CIPHER_KEY\' has to have exactly 32 characters.')
+    }
+
+    return key
 }

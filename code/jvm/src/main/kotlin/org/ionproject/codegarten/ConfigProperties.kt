@@ -10,8 +10,8 @@ data class ConfigProperties(
     val dbJdbcConnectionStringEnv: String,
 
     // GitHub App Info
-    val gitHubAppPropertiesPathEnv: String,
-    val gitHubAppPrivateKeyPemPath: String,
+    val gitHubAppPropertiesEnv: String,
+    val gitHubAppPrivateKeyEnv: String,
 
     // Used to encrypt/decrypt access tokens and other sensitive information
     val cipherKeyEnv: String
